@@ -1,7 +1,7 @@
-import useSWR from 'swr'
-import axios from '@/lib/axios'
-import { useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import useSWR from 'swr';
+import axios from '@/lib/axios';
+import { useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 
 export const useAuth = ({
                             middleware,
