@@ -16,7 +16,7 @@ const RootLayout = ({
                     } : {
     children: React.ReactNode
 }) => {
-    const { user } = useAuth();
+    const { user } = useAuth({ middleware: 'auth' });
 
     return (
         <html lang="en" className={nunitoFont.className}>
