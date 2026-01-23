@@ -1,12 +1,14 @@
 import Axios from 'axios'
+import { API_BASE_URL } from '@/Config/api'
+
+console.log("API URL - " + API_BASE_URL);
 
 const axios = Axios.create({
-    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+    baseURL: API_BASE_URL,
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
     },
-    withCredentials: true,
-    // withXSRFToken: true
+    withCredentials: true
 })
 
 export default axios

@@ -38,7 +38,7 @@ const Page = () => {
             <form onSubmit={submitForm}>
                 {/* Email Address */}
                 <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label className="email" htmlFor="email">Email</Label>
                     <Input
                         id="email"
                         type="email"
@@ -54,7 +54,7 @@ const Page = () => {
                 </div>
 
                 <div className="flex items-center justify-end mt-4">
-                    <Button>Email Password Reset Link</Button>
+                    <Button className="email reset">Email Password Reset Link</Button>
                 </div>
             </form>
         </>

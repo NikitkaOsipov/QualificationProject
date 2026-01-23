@@ -16,21 +16,19 @@ const RootLayout = ({
                     } : {
     children: React.ReactNode
 }) => {
+    console.log("Layout");
     const { user } = useAuth({ middleware: 'auth' });
+    // console.log(user === undefined)
+    console.log("User:" + user)
 
     return (
         <html lang="en" className={nunitoFont.className}>
             <body className="min-h-screen bg-gray-100">
-            {(user === undefined ? (
-                    <Loading/>
-                ) : (
-                    <>
-                        <Navigation user={user} />
+                <h1>Something</h1>
+                {/*User is {user}*/}
+                <Navigation user={user} />
 
-                        <main>{children}</main>
-                    </>
-                )
-            )}
+                <main>{children}</main>
             </body>
 
         </html>

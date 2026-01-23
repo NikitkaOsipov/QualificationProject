@@ -24,7 +24,10 @@ export const useAuth = ({
             }),
     )
 
-    const csrf = () => axios.get('/sanctum/csrf-cookie')
+    const csrf = async () => {
+        const response = await axios.get('/sanctum/csrf-cookie');
+        console.log("CSRF:   \n" + response.data);
+    }
 
     const register = async ({ setErrors, ...props }) => {
         await csrf()
@@ -98,7 +101,7 @@ export const useAuth = ({
     }
 
     const exceptEmailVerification = () => {
-        axios.post('http://localhost:8000/verify-email/2/95fc8a773d2a77f617254c61393c09562f822809?expires=1760266069&amp;signature=0fa8b5550c8ad8c4992fe9d614a5729bfc5f80b61df401f4353d46c206ff4106')
+        axios.post('https://10.0.2.2:8000/verify-email/2/95fc8a773d2a77f617254c61393c09562f822809?expires=1760266069&amp;signature=0fa8b5550c8ad8c4992fe9d614a5729bfc5f80b61df401f4353d46c206ff4106')
             .then(response => console.log(response))
     }
 
@@ -106,23 +109,28 @@ export const useAuth = ({
         if (!error) {
             await axios.post('/logout').then(() => mutate())
         }
-
+        console.log("LOGGED OUT");
         window.location.pathname = '/login'
     }
 
     useEffect(() => {
-        console.log(middleware);
-        if (middleware === 'guest' && redirectIfAuthenticated && user)
+        if (middleware === 'guest' && redirectIfAuthenticated && user){
+            console.log("Redirect if authenticated")
             router.push(redirectIfAuthenticated)
+        }
 
-        if (middleware === 'auth' && (user && !user.email_verified_at))
+        if (middleware === 'auth' && (user && !user.email_verified_at)) {
+            console.log("Auth and email verify");
             router.push('/verify-email')
-        
+        }
+
         if (
             window.location.pathname === '/verify-email' &&
             user?.email_verified_at
-        )
+        ) {
+            console.log("Redirect if authenticated and email")
             router.push(redirectIfAuthenticated)
+        }
         if (middleware === 'auth' && error) logout()
     }, [user, error])
 
