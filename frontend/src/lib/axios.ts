@@ -1,7 +1,6 @@
 import Axios from 'axios'
-import { API_BASE_URL } from '@/Config/api'
-
-console.log("API URL - " + API_BASE_URL);
+import { Preferences } from '@capacitor/preferences'
+import { API_BASE_URL, isNative } from '@/Config/api'
 
 const axios = Axios.create({
     baseURL: API_BASE_URL,
@@ -10,5 +9,15 @@ const axios = Axios.create({
     },
     withCredentials: true
 })
+
+axios.interceptors.request.use(async (config) => {
+    if (isNative) {
+        const { value } = await Preferences.get({ key: 'auth_token' });
+        if (value) {
+            config.headers.Authorization = `Bearer ${value}`;
+        }
+    }
+    return config;
+});
 
 export default axios

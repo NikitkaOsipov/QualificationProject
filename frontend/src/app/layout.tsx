@@ -17,7 +17,7 @@ const RootLayout = ({
     children: React.ReactNode
 }) => {
     console.log("Layout");
-    const { user } = useAuth({ middleware: 'auth' });
+    const { user } = useAuth({ });
     // console.log(user === undefined)
     console.log("User:" + user)
 
