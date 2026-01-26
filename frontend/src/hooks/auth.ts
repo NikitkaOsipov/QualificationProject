@@ -2,6 +2,8 @@ import useSWR from 'swr';
 import axios from '@/lib/axios';
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { isNative } from '@/Config/api';
+import { Preferences } from '@capacitor/preferences'
 
 export const useAuth = ({
                             middleware,
@@ -24,10 +26,7 @@ export const useAuth = ({
             }),
     )
 
-    const csrf = async () => {
-        const response = await axios.get('/sanctum/csrf-cookie');
-        console.log("CSRF:   \n" + response.data);
-    }
+    const csrf = () => !isNative ? axios.get('/sanctum/csrf-cookie') : null;
 
     const register = async ({ setErrors, ...props }) => {
         await csrf()
@@ -35,7 +34,7 @@ export const useAuth = ({
         setErrors([])
 
         axios
-            .post('/register', props)
+            .post((isNative ? '/api' : '') + `/register`, props)
             .then(() => mutate())
             .catch(error => {
                 if (error.response.status !== 422) throw error
@@ -45,19 +44,32 @@ export const useAuth = ({
     }
 
     const login = async ({ setErrors, setStatus, ...props }) => {
-        await csrf()
+        await csrf();
 
-        setErrors([])
-        setStatus(null)
+        setErrors([]);
+        setStatus(null);
 
-        axios
-            .post('/login', props)
-            .then(() => mutate())
+        const response = await axios
+            .post((isNative ? '/api' : '') + '/login', props)
             .catch(error => {
                 if (error.response.status !== 422) throw error
 
                 setErrors(error.response.data.errors)
-            })
+            });
+
+        if (isNative && response) {
+
+            console.log(response);
+
+            const token = response.data.token;
+
+            await Preferences.set({
+                key: 'auth_token',
+                value: token,
+            });
+        }
+
+        await mutate();
     }
 
     const forgotPassword = async ({ setErrors, setStatus, email }) => {
@@ -67,7 +79,7 @@ export const useAuth = ({
         setStatus(null)
 
         axios
-            .post('/forgot-password', { email })
+            .post((isNative ? '/api' : '') + '/forgot-password', { email })
             .then(response => setStatus(response.data.status))
             .catch(error => {
                 if (error.response.status !== 422) throw error
@@ -83,7 +95,7 @@ export const useAuth = ({
         setStatus(null)
 
         axios
-            .post('/reset-password', { token: params.token, ...props })
+            .post((isNative ? '/api' : '') + '/reset-password', { token: params.token, ...props })
             .then(response =>
                 router.push('/login?reset=' + btoa(response.data.status)),
             )
@@ -96,7 +108,7 @@ export const useAuth = ({
 
     const resendEmailVerification = ({ setStatus }) => {
         axios
-            .post('/email/verification-notification')
+            .post((isNative ? '/api' : '') + '/email/verification-notification')
             .then(response => setStatus(response.data.status))
     }
 
@@ -107,7 +119,7 @@ export const useAuth = ({
 
     const logout = async () => {
         if (!error) {
-            await axios.post('/logout').then(() => mutate())
+            await axios.post((isNative ? '/api' : '') + '/logout').then(() => mutate())
         }
         console.log("LOGGED OUT");
         window.location.pathname = '/login'
