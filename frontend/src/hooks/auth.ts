@@ -26,7 +26,7 @@ export const useAuth = ({
             }),
     )
 
-    const csrf = () => !isNative ? axios.get('/sanctum/csrf-cookie') : null;
+    const csrf = () => !isNative ? axios.get('/sanctum/csrf-cookie', {withCredentials: true}) : null;
 
     const register = async ({ setErrors, ...props }) => {
         await csrf()
@@ -50,7 +50,7 @@ export const useAuth = ({
         setStatus(null);
 
         const response = await axios
-            .post((isNative ? '/api' : '') + '/login', props)
+            .post('/api/login', props, { withCredentials: true })
             .catch(error => {
                 if (error.response.status !== 422) throw error
 
@@ -112,11 +112,6 @@ export const useAuth = ({
             .then(response => setStatus(response.data.status))
     }
 
-    const exceptEmailVerification = () => {
-        axios.post('https://10.0.2.2:8000/verify-email/2/95fc8a773d2a77f617254c61393c09562f822809?expires=1760266069&amp;signature=0fa8b5550c8ad8c4992fe9d614a5729bfc5f80b61df401f4353d46c206ff4106')
-            .then(response => console.log(response))
-    }
-
     const logout = async () => {
         if (!error) {
             await axios.post((isNative ? '/api' : '') + '/logout').then(() => mutate())
@@ -153,7 +148,6 @@ export const useAuth = ({
         forgotPassword,
         resetPassword,
         resendEmailVerification,
-        logout,
-        exceptEmailVerification
+        logout
     }
 }

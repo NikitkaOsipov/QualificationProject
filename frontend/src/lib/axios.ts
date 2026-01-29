@@ -6,8 +6,9 @@ const axios = Axios.create({
     baseURL: API_BASE_URL,
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
+        'accept': `${ isNative ? "application/json, " : ""}text/plain, */*`
     },
-    withCredentials: true
+    withCredentials: !isNative
 })
 
 axios.interceptors.request.use(async (config) => {
