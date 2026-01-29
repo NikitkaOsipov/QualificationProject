@@ -24,14 +24,14 @@ Route::post('/reset-password', [NewPasswordController::class, 'store'])
     ->middleware('guest')
     ->name('password.store');
 
-Route::get('/verify-email/{user}/{hash}', VerifyEmailController::class)
+Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
     ->middleware(['signed', 'throttle:6,1'])
     ->name('verification.verify');
 
 Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
-    ->middleware(['auth', 'throttle:6,1'])
+    ->middleware(['auth:sanctum', 'throttle:6,1'])
     ->name('verification.send');
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->middleware('auth')
+    ->middleware('auth:sanctum')
     ->name('logout');
