@@ -34,7 +34,7 @@ export const useAuth = ({
         setErrors([])
 
         axios
-            .post((isNative ? '/api' : '') + `/register`, props)
+            .post(`/api/register`, props)
             .then(() => mutate())
             .catch(error => {
                 if (error.response.status !== 422) throw error
@@ -79,7 +79,7 @@ export const useAuth = ({
         setStatus(null)
 
         axios
-            .post((isNative ? '/api' : '') + '/forgot-password', { email })
+            .post('/api/forgot-password', { email })
             .then(response => setStatus(response.data.status))
             .catch(error => {
                 if (error.response.status !== 422) throw error
@@ -95,7 +95,7 @@ export const useAuth = ({
         setStatus(null)
 
         axios
-            .post((isNative ? '/api' : '') + '/reset-password', { token: params.token, ...props })
+            .post('/api/reset-password', { token: params.token, ...props })
             .then(response =>
                 router.push('/login?reset=' + btoa(response.data.status)),
             )
@@ -108,13 +108,13 @@ export const useAuth = ({
 
     const resendEmailVerification = ({ setStatus }) => {
         axios
-            .post((isNative ? '/api' : '') + '/email/verification-notification')
+            .post('/api/email/verification-notification')
             .then(response => setStatus(response.data.status))
     }
 
     const logout = async () => {
         if (!error) {
-            await axios.post((isNative ? '/api' : '') + '/logout').then(() => mutate())
+            await axios.post('/api/logout').then(() => mutate())
         }
         console.log("LOGGED OUT");
         window.location.pathname = '/login'
@@ -126,7 +126,8 @@ export const useAuth = ({
             router.push(redirectIfAuthenticated)
         }
 
-        if (middleware === 'auth' && (user && !user.email_verified_at)) {
+        if ((user && !user.email_verified_at)) {
+            //middleware === 'auth' &&
             console.log("Auth and email verify");
             router.push('/verify-email')
         }

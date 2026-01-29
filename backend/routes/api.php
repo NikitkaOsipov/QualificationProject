@@ -47,7 +47,9 @@ Route::get('/debug-user', function (Request $request) {
 });
 
 Route::post('/event', [EventController::class, 'store']);
+//
+//Route::post('/login', [AuthenticatedSessionController::class, 'storeMobile'])
+//    ->middleware('guest')
+//    ->name('login');
 
-Route::post('/login', [AuthenticatedSessionController::class, 'storeMobile'])
-    ->middleware('guest')
-    ->name('login');
+require __DIR__.'/auth.php';
