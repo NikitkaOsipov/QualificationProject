@@ -29,13 +29,6 @@ class AuthenticatedSessionController extends Controller
 
         // 🟢 SPA → session cookie already created, just return user
         if ($request->expectsJson() === false) {
-
-            try {
-                Log::info('Session ID:', [$request->session()->getId()]);
-            } catch (Exception $e) {
-                Log::error("No session stored in headers");
-            }
-
             return response()->json($user);
         }
 

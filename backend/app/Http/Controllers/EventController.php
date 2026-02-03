@@ -44,6 +44,9 @@ class EventController extends Controller
 //            'holiday_id' => 'nullable|exists:holidays,id',
         ]);
 
+        Log::info("Post -----------------------------------------------");
+        Log::info("Fields", [json_encode($fields)]);
+
         $fields['start_date'] = Carbon::parse($fields['start_date'])->toDateTimeString();
         $fields['end_date'] = Carbon::parse($fields['end_date'])->toDateTimeString();
 
@@ -53,25 +56,23 @@ class EventController extends Controller
             'longitude' => $fields['lng'],
             'name' => 'Event Location',
         ]);
-        unset($fields['lat']);
-        unset($fields['lng']);
-
-        $fields['address_id'] = $address->id;
-
-        $fields['user_id'] = Auth::id();
 
         $imagePath = null;
-
         if ($request->hasFile('background_image')) {
-            $imagePath = Storage::disk('public')->put('background_image', $request->avatar);
+            $imagePath = Storage::disk('public')->put('BackgroundImages', $request->background_image);
 
-            $fields['background_image'] = $imagePath;
+            $fields['background_image_path'] = $imagePath;
         }
 
+        unset($fields['lat']);
+        unset($fields['lng']);
+        unset($fields['background_image']);
+
+        $fields['address_id'] = $address->id;
+        $fields['user_id'] = Auth::id();
+
         try {
-            Log::info('Before Creating event with fields', $fields);
             $event = Event::create($fields);
-            Log::info('After Creating event with fields', $fields);
         } catch (\Exception $exception) {
             Log::info('Error'. $exception->getMessage());
 

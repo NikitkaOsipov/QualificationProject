@@ -12,7 +12,7 @@ class Event extends Model
         'start_date',
         'end_date',
         'price' ,
-        'background_image',
+        'background_image_path',
         'lat',
         'lng',
         'user_id',
