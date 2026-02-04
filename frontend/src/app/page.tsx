@@ -1,11 +1,17 @@
+
+import Map from "../components/Map/MapParent";
+
+
 export const metadata = {
     title: 'Laravel',
 }
 
 const Home = () => {
+
     console.log("STASRTING APPP")
     return (
         <>
+            <Map/>
             <div className="relative flex items-top justify-center min-h-screen bg-gray-100 dark:bg-gray-900 sm:items-center sm:pt-0">
                 {/*<LoginLinks />*/}
 
