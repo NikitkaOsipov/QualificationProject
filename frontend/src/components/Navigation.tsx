@@ -10,7 +10,6 @@ import { useAuth } from '@/hooks/auth'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import LoginLinks from '@/app/LoginLinks'
-import Loading from '@/app/Loading'
 import { Autocomplete, TextField } from '@mui/material'
 
 const Navigation = ({ user }) => {

@@ -3,7 +3,6 @@
 import { Nunito } from 'next/font/google';
 import '@/app/global.css';
 import { useAuth } from '@/hooks/auth';
-import Loading from '@/app/Loading';
 import Navigation from '@/components/Navigation';
 
 const nunitoFont = Nunito({

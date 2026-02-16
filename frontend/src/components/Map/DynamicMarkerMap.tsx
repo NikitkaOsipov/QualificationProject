@@ -1,20 +1,27 @@
 'use client';
 
 import { useMemo} from 'react'
-import type { Props } from './Map'
+import type { MarkerMapProps } from './MarkerMap'
 import dynamic from "next/dynamic"
 import Loading from '@/components/Loading'
 
-function DynamicMap(props: Props) {
+function DynamicMap(props: MarkerMapProps) {
     const Map = useMemo(() => dynamic(
-        () => import('./Map'),
+        () => import('./MarkerMap'),
         {
             loading: () => <Loading/>,
             ssr: false
         }
     ), [])
 
-    return <Map {...props}/>;
+    return (
+        <>
+            <Map
+                {...props}
+            >
+            </Map>
+        </>
+    )
 }
 
 export default DynamicMap;

@@ -1,4 +1,4 @@
-import LoadingProgress from '@/app/Loading'
+import LoadingProgress from '@/components/Loading'
 
 export default function Loading()
 {
