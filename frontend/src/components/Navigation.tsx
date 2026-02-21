@@ -47,8 +47,8 @@ const Navigation = ({ user }) => {
                         {/* Navigation Links */}
                         <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                             <NavLink
-                                href="/"
-                                active={usePathname() === '/'}>
+                                href="/map"
+                                active={usePathname() === '/map'}>
                                 Map View
                             </NavLink>
                         </div>
@@ -129,8 +129,8 @@ const Navigation = ({ user }) => {
                 <div className="block sm:hidden">
                     <div className="pt-2 pb-3 space-y-1">
                         <ResponsiveNavLink
-                            href="/"
-                            active={usePathname() === '/'}>
+                            href="/map"
+                            active={usePathname() === '/map'}>
                             Map view
                         </ResponsiveNavLink>
                     </div>
