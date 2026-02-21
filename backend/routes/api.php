@@ -23,8 +23,6 @@ Route::get('/debug-user', function (Request $request) {
     ];
 });
 
-Route::post('/event', [EventController::class, 'store']);
-
 
 require __DIR__.'/auth.php';
 require __DIR__.'/post.php';

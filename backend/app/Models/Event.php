@@ -13,9 +13,21 @@ class Event extends Model
         'end_date',
         'price' ,
         'background_image_path',
-        'lat',
+        'lat', // NEXT TIME FIND out how you save lat and lng as it is saved somewhere else in db
         'lng',
         'user_id',
         'address_id',
     ];
+
+    public function getLatAttribute()
+    {
+        return $this->address?->lat;
+    }
+
+    public function address() {
+        return $this->belongsTo(Address::class);
+    }
+    public function user() {
+        return $this->belongsTo(Address::class);
+    }
 }

@@ -12,4 +12,8 @@ class Address extends Model
         'longitude',
         'name',
     ];
+
+    public function events() {
+        return $this->hasMany(Event::class);
+    }
 }

@@ -1,18 +1,11 @@
-import axios from 'axios'
-
-export interface Post {
-    id: number;
-    title: string;
-    body: string;
-    created_at: string;
-    updated_at: string;
-}
+import axios from '@/lib/axios';
+import type { MarkerType } from './Types'
 
 export const getPosts = async (params?: { page?: number; search?:string }) =>
-    axios.get('/api/posts', { params }).then(r => r.data as { data: Post[], meta?: any});
+    axios.get('/api/all-events', { params }).then(r => r.data.data as MarkerType[]);
 
 export const getPost = async (id: number) =>
-    axios.get(`/api/posts/${id}`).then(r => r.data as Post);
+    axios.get(`/api/posts/${id}`).then(r => r.data as MarkerType);
 
 export const createPost = async (data: { title: string; body: string }) =>
-    axios.post('/api/posts', data).then(r => r.data as Post);
+    axios.post('/api/posts', data).then(r => r.data as MarkerType);

@@ -19,7 +19,7 @@ class EventController extends Controller
      */
     public function index()
     {
-        //
+        return Event::all()->toResourceCollection();
     }
 
     /**
@@ -43,6 +43,8 @@ class EventController extends Controller
 //            'address_id' => 'required|exists:addresses,id',
 //            'holiday_id' => 'nullable|exists:holidays,id',
         ]);
+
+        $fields['price'] = $fields['price'] ?? 0;
 
         Log::info("Post -----------------------------------------------");
         Log::info("Fields", [json_encode($fields)]);
@@ -69,6 +71,10 @@ class EventController extends Controller
         unset($fields['background_image']);
 
         $fields['address_id'] = $address->id;
+
+        Log::info("Post ----------------------------------------------");
+        Log::info(Auth::id());
+        Log::info("Post ----------------------------------------------");
         $fields['user_id'] = Auth::id();
 
         try {

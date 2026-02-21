@@ -1,30 +1,22 @@
 'use client'
 
 import Map from '@/components/Map/Map'
-import { Marker, Popup } from 'react-leaflet'
+import { Marker, MapContainerProps, Popup } from 'react-leaflet'
 import type { MarkerType } from '@/utils/Types'
 
-export interface MarkerMapProps {
-    markers: MarkerType[]
+export type MarkerMapProps = MapContainerProps & {
+    markers: MarkerType[];
 }
 
-const MapPage = ({ markers }: MarkerMapProps) => {
+const MapPage = ({markers, ...props}: MarkerMapProps) => {
 
     return (
         <>
             <Map
-                center={{
-                    lat: 10,
-                    lng: 10
-                }}
-                size={{
-                    height: "400px",
-                    width: "400px"
-                }}
-                zoom={8}
+                {...props}
             >
                 { markers.map((m, index) =>
-                    <Marker key={index} position={[m.lat, m.lng]}>
+                    <Marker key={index} position={[m.address.lat, m.address.lng]}>
                         <Popup>{m.title}</Popup>
                     </Marker>)
                 }
