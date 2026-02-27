@@ -11,7 +11,7 @@ import Loading from '@/components/Loading'
 
 type EventPreviewProps = {
     isOpen: boolean;
-    onClose: () => void;
+    toggleModal: (value: boolean) => void;
     event: MarkerType | null
 };
 
@@ -37,12 +37,12 @@ function formatEventDate(start?: Date, end?: Date) {
     return `${formattedStart} — ${formattedEnd}`;
 }
 
-const EventPreview = ({isOpen, onClose, event}: EventPreviewProps) => {
+const EventPreview = ({isOpen, toggleModal, event}: EventPreviewProps) => {
     if (!event) return;
 
     return (
         <>
-            <SideModal isOpen={isOpen} onClose={onClose}>
+            <SideModal isOpen={isOpen} toggleModal={toggleModal}>
                 <div className="flex flex-col gap-6 p-6">
 
                     {/* Title */}

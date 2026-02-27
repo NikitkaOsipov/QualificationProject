@@ -24,8 +24,11 @@ const MapPage = () => {
         fetchPosts();
     }, [])
 
-    const closePreview = () => setOpen(false);
-    const selectEvent = (event: MarkerType) => setSelectedEvent(event);
+    const toggleModal = (value: boolean) => setOpen(value);
+    const selectEvent = (event: MarkerType) => {
+        setOpen(true);
+        setSelectedEvent(event);
+    }
 
     return (
         <>
@@ -49,7 +52,7 @@ const MapPage = () => {
                         >
                             <EventPreview
                                 isOpen={open}
-                                onClose={closePreview}
+                                toggleModal={toggleModal}
                                 event={selectedEvent}/>
                         </div>
                     </div>
