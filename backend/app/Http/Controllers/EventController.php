@@ -103,7 +103,8 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        //
+        // Add multiple auth checks in future
+        return $event->toResource();
     }
 
     /**

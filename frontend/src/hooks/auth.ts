@@ -6,8 +6,8 @@ import { isNative } from '@/Config/api';
 import { Preferences } from '@capacitor/preferences'
 
 export const useAuth = ({
-                            middleware,
-                            redirectIfAuthenticated
+    middleware,
+    redirectIfAuthenticated
 } : {
     middleware?: string,
     redirectIfAuthenticated?: string

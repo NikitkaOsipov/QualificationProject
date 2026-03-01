@@ -16,12 +16,12 @@ const MapPage = () => {
     const [selectedEvent, setSelectedEvent] = useState<MarkerType | null>(null);
 
     useEffect(() => {
-        const fetchPosts = async () => {
+        const fetchEvents = async () => {
             const result = await getPosts();
             setPosts(result);
         }
 
-        fetchPosts();
+        fetchEvents();
     }, [])
 
     const toggleModal = (value: boolean) => setOpen(value);

@@ -10,10 +10,12 @@ export interface address {
 }
 
 export interface MarkerType {
+    id: number;
     title: string;
     description?: string;
     start_date?: Date;
     end_date?: Date;
     price?: number;
     address: address;
+    backgroundImage: string;
 }
