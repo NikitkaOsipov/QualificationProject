@@ -1,9 +1,15 @@
-import { useState } from "react"
+import { useState } from "react";
+import { createComment, getEventComments } from '@/utils/comment_service';
+import { createPost } from '@/utils/post_service'
 
 const MIN_LENGTH = 3
 const MAX_LENGTH = 300
 
-function CommentsSection() {
+interface Params {
+    eventId: number | string;
+}
+
+function CommentsSection({ eventId }: Params) {
     const [comments, setComments] = useState([
         { id: 1, author: "Anna", text: "Looks interesting! I'll probably come." },
         { id: 2, author: "Mark", text: "Is there a schedule available?" }
@@ -23,7 +29,7 @@ function CommentsSection() {
         return ""
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const validationError = validate(newComment)
 
         if (validationError) {
@@ -36,6 +42,17 @@ function CommentsSection() {
             author: "You",
             text: newComment.trim()
         }
+
+        const result = await createComment(
+            newEntry.text,
+            eventId
+        );
+
+        // const result = await createPost({
+        //     'title': newEntry.text,
+        //     'body': "sdfsdfsdfdsf"
+        // });
+        console.log(result);
 
         setComments([newEntry, ...comments])
         setNewComment("")

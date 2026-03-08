@@ -7,5 +7,13 @@ export const getEventComments = async (params?: { eventId: number | string; page
 export const getUserComments = async (params?: { userId: number | string; page?: number; search?:string }) =>
     axios.get(`/api/user-comments/${params.userId}`).then(r => r.data.data as MarkerType);
 
-export const createComment = async (data: { text: string; eventId: number | string }) =>
-    axios.post('/api/comment', data).then(r => r.data as MarkerType);
+export const createComment = async (text: string, eventId: number | string) =>
+{
+    const data = {
+        text: text,
+        event_id: eventId
+    };
+
+    return axios.post('/api/comment', data).then(r => r.data as MarkerType);
+}
+

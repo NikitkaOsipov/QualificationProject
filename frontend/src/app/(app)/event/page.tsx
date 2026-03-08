@@ -12,13 +12,17 @@ import { useAuth } from '@/hooks/auth';
 import CommentsSection from '@/components/Event/CommentsSection';
 
 export default function EventPage() {
-    const { user } = useAuth({ });
+    const { user } = useAuth();
+    const [eventId, setEventId] = useState<string>();
 
     const [event, setEvent] = useState<MarkerType>();
-    const searchParams = useSearchParams();
-    const id = searchParams.get("id");
-
+    // const searchParams = useSearchParams();
     useEffect(()  => {
+        const id = typeof window !== "undefined"
+            ? new URLSearchParams(window.location.search).get("id")
+            : null; // UseSearchParams() gave error on build: useSearchParams() should be wrapped in a suspense boundary at page "/event"
+        setEventId(id);
+
         async function fetchPost() {
             const post = await getPost(id);
             console.log(post);
@@ -120,7 +124,7 @@ export default function EventPage() {
 
 
                             {/* Comments */}
-                            <CommentsSection/>
+                            <CommentsSection eventId={eventId}/>
 
                         </div>
 

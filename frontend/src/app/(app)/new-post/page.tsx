@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import axios from '@/lib/axios';
+import { createPost } from '@/utils/post_service'
 
 type Errors = { [key: string]: string }
 
@@ -84,8 +85,7 @@ export default function NewEventPage() {
 
         try {
             logFormData(data);
-            const res = await axios
-                .post('/api/event/', data);
+            const res = await createPost(data);
             console.log(res);
             const json = res.data;
             console.log(json);

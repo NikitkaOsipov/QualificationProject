@@ -37,11 +37,12 @@ class CommentsController extends Controller
     {
         $fields = $request->validate([
             'text' => 'required|string|max:255|min:3',
-            'user_id' => 'required|integer|exists:users,id',
             'event_id' => 'required|integer|exists:events,id',
         ]);
 
-        Log::info($fields['text']);
+        Log::info(Auth::id());
+        $fields['user_id'] = Auth::id();
+
         try {
             $comment = Comment::create($fields);
         } catch (\Exception $exception) {

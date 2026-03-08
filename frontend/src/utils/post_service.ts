@@ -7,5 +7,5 @@ export const getPosts = async (params?: { page?: number; search?:string }) =>
 export const getPost = async (id: string | number) =>
     axios.get(`/api/event/${id}`).then(r => r.data.data as MarkerType);
 
-export const createPost = async (data: { title: string; body: string }) =>
+export const createPost = async (data: any) =>
     axios.post('/api/event', data).then(r => r.data as MarkerType);
