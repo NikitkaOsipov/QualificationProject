@@ -1,3 +1,8 @@
+export interface User {
+    name: string;
+    id: string;
+}
+
 export interface Post {
     title: string;
     content: string;
@@ -18,4 +23,10 @@ export interface MarkerType {
     price?: number;
     address: address;
     backgroundImage: string;
+}
+
+export interface Comment {
+    id: number;
+    text: string;
+    user: User;
 }

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from 'react'
 import { createComment, getEventComments } from '@/utils/comment_service';
 import { createPost } from '@/utils/post_service'
+import Loading from '@/components/Loading'
 
 const MIN_LENGTH = 3
 const MAX_LENGTH = 300
@@ -10,13 +11,21 @@ interface Params {
 }
 
 function CommentsSection({ eventId }: Params) {
-    const [comments, setComments] = useState([
-        { id: 1, author: "Anna", text: "Looks interesting! I'll probably come." },
-        { id: 2, author: "Mark", text: "Is there a schedule available?" }
-    ])
+    const [comments, setComments] = useState<Comment[] | null>();
 
     const [newComment, setNewComment] = useState("")
     const [error, setError] = useState("")
+
+    useEffect(() => {
+        const getComments = async () => {
+            if (!eventId) return;
+            const res = await getEventComments(eventId);
+            console.log(res);
+
+            setComments(res);
+        }
+        getComments();
+    }, []);
 
     const validate = (text: string) => {
         const trimmedText = text.trim();
@@ -63,6 +72,9 @@ function CommentsSection({ eventId }: Params) {
         setNewComment(value)
         setError(validate(value))
     }
+
+
+    if (comments == null) return <Loading />
 
     return (
         <div>

@@ -64,7 +64,10 @@ class CommentsController extends Controller
      */
     public function eventComments(Event $event)
     {
-        return response()->json($event->comments());
+        Log::info("---------------------------------Comments");
+        Log::info(response()->json($event->comments()));
+        Log::info("---------------------------------Comments");
+        return $event->comments()->toResource();
     }
     /**
      * Display the specified resource.
