@@ -54,8 +54,8 @@ class EventController extends Controller
 
 
         $address = Address::create([
-            'latitude' => $fields['lat'],
-            'longitude' => $fields['lng'],
+            'lat' => $fields['lat'],
+            'lng' => $fields['lng'],
             'name' => 'Event Location',
         ]);
 

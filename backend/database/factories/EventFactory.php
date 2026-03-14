@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Address;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -29,6 +30,7 @@ class EventFactory extends Factory
             'end_date' => $start_date->copy()->addDays(1),
             'created_at' => now(),
             'updated_at' => now(),
+            'address_id' => Address::factory(),
         ];
     }
 }

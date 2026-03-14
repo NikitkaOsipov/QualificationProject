@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CommentResource;
 use App\Models\Address;
 use App\Models\Comment;
 use App\Models\Event;
@@ -65,9 +66,9 @@ class CommentsController extends Controller
     public function eventComments(Event $event)
     {
         Log::info("---------------------------------Comments");
-        Log::info(response()->json($event->comments()));
+//        Log::info(CommentResource::collection($event->comments));
         Log::info("---------------------------------Comments");
-        return $event->comments()->toResource();
+        return CommentResource::collection($event->comments);
     }
     /**
      * Display the specified resource.
