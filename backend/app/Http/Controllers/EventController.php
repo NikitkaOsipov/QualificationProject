@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Address;
 use App\Models\Event;
+use App\Models\EventGoing;
+use App\Models\EventInterested;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -11,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Ramsey\Uuid\Type\Integer;
+use Throwable;
 
 class EventController extends Controller
 {
@@ -122,5 +126,81 @@ class EventController extends Controller
     public function destroy(Event $event)
     {
         //
+    }
+
+    public function interested(Event $event, Request $request) {
+        try {
+            $request->validate([
+                'interested' => 'required|boolean',
+            ]);
+
+            $user = Auth::user();
+
+            if ($request->interested) {
+                EventInterested::firstOrCreate([
+                    'event_id' => $event->id,
+                    'user_id' => $user->id,
+                ]);
+            } else {
+                EventInterested::where([
+                    'event_id' => $event->id,
+                    'user_id' => $user->id,
+                ])->delete();
+            }
+
+            return response()->json([
+                'status' => 'ok',
+                'interested' => $request->interested,
+            ]);
+        } catch (Throwable $e) {
+            \Log::error('Interested toggle failed', [
+                'error' => $e->getMessage(),
+                'event_id' => $event->id,
+                'user_id' => Auth::id(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong while updating interest.',
+            ], 500);
+        }
+    }
+    public function going(Event $event, Request $request) {
+        try {
+            $request->validate([
+                'going' => 'required|boolean',
+            ]);
+
+            $user = Auth::user();
+
+            if ($request->going) {
+                EventGoing::firstOrCreate([
+                    'event_id' => $event->id,
+                    'user_id' => $user->id,
+                ]);
+            } else {
+                EventGoing::where([
+                    'event_id' => $event->id,
+                    'user_id' => $user->id,
+                ])->delete();
+            }
+
+            return response()->json([
+                'status' => 'ok',
+                'interested' => $request->interested,
+            ]);
+
+        } catch (Throwable $e) {
+            \Log::error('Going toggle failed', [
+                'error' => $e->getMessage(),
+                'event_id' => $event->id,
+                'user_id' => Auth::id(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong while updating going.',
+            ], 500);
+        }
     }
 }

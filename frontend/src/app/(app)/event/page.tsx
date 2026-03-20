@@ -1,7 +1,7 @@
 "use client"
 
 import { useSearchParams } from "next/navigation";
-import { getPost } from '@/utils/post_service';
+import { getPost, setGoingPost, setInterestedPost } from '@/utils/post_service'
 import { useEffect, useState } from 'react';
 import { MarkerType } from '@/utils/Types';
 import { API_BASE_URL} from '@/Config/api';
@@ -10,10 +10,14 @@ import Image from "next/image";
 import Loading from '@/components/Loading';
 import { useAuth } from '@/hooks/auth';
 import CommentsSection from '@/components/Event/CommentsSection';
+import InterestedButton from '@/components/Event/InterestedButton'
+import GoingButton from '@/components/Event/GoingButton'
 
 export default function EventPage() {
     const { user } = useAuth();
     const [eventId, setEventId] = useState<string>();
+    const [interested, setInterested] = useState<boolean>(false);
+    const [going, setGoing] = useState<boolean>(false);
 
     const [event, setEvent] = useState<MarkerType>();
     // const searchParams = useSearchParams();
@@ -34,6 +38,16 @@ export default function EventPage() {
 
     const creator = "John Doe"
     const host = "Tech Community Riga"
+
+    async function handleInterested(value: boolean) {
+        await setInterestedPost(eventId, value);
+        setInterested(value);
+    }
+
+    async function handleGoing(value: boolean) {
+        await setGoingPost(eventId, value);
+        setGoing(value);
+    }
 
     return (
         event ?
@@ -74,9 +88,9 @@ export default function EventPage() {
                                     Add to Calendar
                                 </button>
 
-                                <button className="px-4 py-2 border rounded-lg hover:bg-gray-100">
-                                    I'm Interested
-                                </button>
+                                <InterestedButton isInterested={interested} onClick={handleInterested}/>
+
+                                <GoingButton isGoing={going} onClick={handleGoing} />
 
                                 <button className="px-4 py-2 border rounded-lg hover:bg-gray-100">
                                     Share

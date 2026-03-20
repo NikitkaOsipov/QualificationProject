@@ -9,3 +9,9 @@ export const getPost = async (id: string | number) =>
 
 export const createPost = async (data: any) =>
     axios.post('/api/event', data).then(r => r.data as MarkerType);
+
+export const setInterestedPost = async (eventId: string | number, interestedValue: boolean) =>
+    axios.post(`/api/event/${eventId}/interested`, { interested: interestedValue }).then(r => r.data as MarkerType);
+
+export const setGoingPost = async (eventId: string | number, goingValue: boolean) =>
+    axios.post(`/api/event/${eventId}/going`, { going: goingValue }).then(r => r.data as MarkerType);

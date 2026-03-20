@@ -38,4 +38,14 @@ class Event extends Model
     public function user() {
         return $this->belongsTo(Address::class);
     }
+
+    public function interestedUsers()
+    {
+        return $this->hasMany(EventInterested::class);
+    }
+
+    public function goingUsers()
+    {
+        return $this->hasMany(EventGoing::class);
+    }
 }

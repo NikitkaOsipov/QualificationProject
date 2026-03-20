@@ -11,9 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('event_reactions', function (Blueprint $table) {
+        Schema::create('event_reactions_interested', function (Blueprint $table) {
             $table->id();
-            $table->tinyInteger('stars');
+            $table->foreignId('event_id')->constrained('events')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+        Schema::create('event_reactions_going', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('event_id')->constrained('events')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
@@ -25,6 +31,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('event_reactions');
+        Schema::dropIfExists('event_reactions_interested');
+        Schema::dropIfExists('event_reactions_going');
     }
 };
