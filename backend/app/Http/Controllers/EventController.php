@@ -108,8 +108,28 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        // Add multiple auth checks in future
-        return $event->toResource();
+        $user = Auth::user();
+
+        $isInterested = false;
+        $isGoing = false;
+
+        if ($user) {
+            $isInterested = $event->interestedUsers()
+                ->where('user_id', $user->id)
+                ->exists();
+
+            $isGoing = $event->goingUsers()
+                ->where('user_id', $user->id)
+                ->exists();
+        }
+
+        return response()->json([
+            'event' => $event->toResource(),
+            'meta' => [
+                'isInterested' => $isInterested,
+                'isGoing' => $isGoing,
+            ]
+        ]);
     }
 
     /**

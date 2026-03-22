@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { getPost, setGoingPost, setInterestedPost } from '@/utils/post_service'
 import { useEffect, useState } from 'react';
-import { MarkerType } from '@/utils/Types';
+import { EventType, MarkerType } from '@/utils/Types'
 import { API_BASE_URL} from '@/Config/api';
 import Map from '@/components/Map/DynamicMarkerMap';
 import Image from "next/image";
@@ -15,11 +15,12 @@ import GoingButton from '@/components/Event/GoingButton'
 
 export default function EventPage() {
     const { user } = useAuth();
+
     const [eventId, setEventId] = useState<string>();
     const [interested, setInterested] = useState<boolean>(false);
     const [going, setGoing] = useState<boolean>(false);
 
-    const [event, setEvent] = useState<MarkerType>();
+    const [event, setEvent] = useState<EventType>();
     // const searchParams = useSearchParams();
     useEffect(()  => {
         const id = typeof window !== "undefined"
@@ -28,9 +29,11 @@ export default function EventPage() {
         setEventId(id);
 
         async function fetchPost() {
-            const post = await getPost(id);
-            console.log(post);
-            setEvent(post);
+            const event = await getPost(id);
+            console.log(event);
+            setEvent(event.event);
+            setGoing(event.meta.isGoing);
+            setInterested(event.meta.isInterested);
         }
 
         fetchPost();
@@ -88,9 +91,16 @@ export default function EventPage() {
                                     Add to Calendar
                                 </button>
 
-                                <InterestedButton isInterested={interested} onClick={handleInterested}/>
+                                {
+                                    user ? (
+                                        <>
+                                            <InterestedButton isInterested={interested} onClick={handleInterested}/>
 
-                                <GoingButton isGoing={going} onClick={handleGoing} />
+                                            <GoingButton isGoing={going} onClick={handleGoing} />
+                                        </>
+                                    ) : <></>
+                                }
+
 
                                 <button className="px-4 py-2 border rounded-lg hover:bg-gray-100">
                                     Share

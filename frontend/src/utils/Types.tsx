@@ -8,10 +8,33 @@ export interface Post {
     content: string;
 }
 
-export interface address {
+export interface Address {
     name: string;
     lat: number;
     lng: number;
+}
+
+export interface EventType {
+    id: number
+    title: string
+    description?: string
+    start_date?: string
+    end_date?: string
+    price?: number
+    address: Address
+    backgroundImage?: string
+}
+
+// Metadata for the event request (Details page for event)
+export interface EventMeta {
+    isInterested: boolean
+    isGoing: boolean
+}
+
+// Result of the event request (Details page for event)
+export interface EventResponse {
+    event: EventType
+    meta: EventMeta
 }
 
 export interface MarkerType {
@@ -21,7 +44,7 @@ export interface MarkerType {
     start_date?: Date;
     end_date?: Date;
     price?: number;
-    address: address;
+    address: Address;
     backgroundImage: string;
 }
 

@@ -25,5 +25,5 @@ Route::get('/debug-user', function (Request $request) {
 
 
 require __DIR__.'/auth.php';
-require __DIR__.'/post.php';
+require __DIR__.'/event.php';
 require __DIR__.'/comment.php';
