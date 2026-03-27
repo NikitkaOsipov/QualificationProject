@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends Controller
 {
@@ -28,7 +29,41 @@ class ProfileController extends Controller
      */
     public function show(User $user)
     {
-        //
+        $authUser = Auth::user();
+
+        $eventsCount = $user->events()->count();
+        $followersCount = $user->followers()->count();
+        $friendsCount = $user->followers()
+            ->whereIn('follower_id', $user->following()->pluck('users.id'))
+            ->count();
+
+        $isFollowing = false;
+        $isOwner = false;
+
+        if ($authUser) {
+            $isFollowing = $authUser->following()
+                ->where('following_id', $user->id)
+                ->exists();
+
+            $isOwner = $authUser->id === $user->id;
+        }
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'avatar' => $user->avatar ?? null,
+                'stats' => [
+                    'events' => $eventsCount,
+                    'followers' => 0,
+                    'friends' => 0,
+                ]
+            ],
+            'meta' => [
+                'isFollowing' => $isFollowing,
+                'isOwner' => $isOwner,
+            ]
+        ]);
     }
 
     /**
