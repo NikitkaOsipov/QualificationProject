@@ -43,8 +43,13 @@ export default function EventPage() {
     const host = "Tech Community Riga"
 
     async function handleInterested(value: boolean) {
-        await setInterestedPost(eventId, value);
-        setInterested(value);
+        const response = await setInterestedPost(eventId, value);
+
+        if (response.status == "ok") {
+            setInterested(value);
+        } else {
+            console.log(response.message);
+        }
     }
 
     async function handleGoing(value: boolean) {
@@ -56,7 +61,6 @@ export default function EventPage() {
         event ?
                 <div className="max-w-6xl mx-auto pb-16">
 
-                    {/* Hero Image */}
                     <div className="relative w-full h-72 md:h-96 rounded-xl overflow-hidden mb-8">
                         <Image
                             src={event.backgroundImage ?? `${API_BASE_URL}/storage/BackgroundImages/default.jpg`}
@@ -66,13 +70,10 @@ export default function EventPage() {
                         />
                     </div>
 
-                    {/* Main Layout */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                        {/* LEFT COLUMN */}
                         <div className="lg:col-span-2 flex flex-col gap-8">
 
-                            {/* Title & Creator */}
                             <div>
                                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
                                     {event.title}
@@ -84,7 +85,6 @@ export default function EventPage() {
                             </div>
 
 
-                            {/* Action Buttons */}
                             <div className="flex gap-3 flex-wrap">
 
                                 <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
@@ -109,7 +109,6 @@ export default function EventPage() {
                             </div>
 
 
-                            {/* Date & Location */}
                             <div>
                                 <h2 className="text-xl font-semibold mb-3">
                                     Date & Location
@@ -123,7 +122,6 @@ export default function EventPage() {
                                     📍 {event.address.name}
                                 </div>
 
-                                {/* Map */}
                                 <div className="h-64 rounded-xl overflow-hidden border">
                                     {/*<Map*/}
                                     {/*    center={[event.address.lat, event.address.lng]}*/}
@@ -135,7 +133,6 @@ export default function EventPage() {
                             </div>
 
 
-                            {/* About Event */}
                             <div>
                                 <h2 className="text-xl font-semibold mb-3">
                                     About the Event
@@ -147,17 +144,12 @@ export default function EventPage() {
                             </div>
 
 
-                            {/* Comments */}
                             <CommentsSection eventId={eventId}/>
 
                         </div>
 
-
-
-                        {/* RIGHT COLUMN */}
                         <div className="flex flex-col gap-6">
 
-                            {/* Price */}
                             <div className="border rounded-xl p-5 shadow-sm">
                                 <p className="text-sm text-gray-500 mb-1">
                                     Price
@@ -169,7 +161,6 @@ export default function EventPage() {
                             </div>
 
 
-                            {/* Host */}
                             <div className="border rounded-xl p-5 shadow-sm">
 
                                 <h3 className="font-semibold mb-2">
@@ -183,7 +174,6 @@ export default function EventPage() {
                             </div>
 
 
-                            {/* Friends attending */}
                             <div className="border rounded-xl p-5 shadow-sm">
 
                                 <h3 className="font-semibold mb-3">

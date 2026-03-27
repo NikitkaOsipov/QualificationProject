@@ -1,5 +1,5 @@
 import axios from '@/lib/axios';
-import type { EventResponse, MarkerType } from './Types'
+import type { CreateResponse, EventResponse, MarkerType } from './Types'
 
 
 export const getPosts = async (params?: { page?: number; search?:string }) =>
@@ -12,7 +12,7 @@ export const createPost = async (data: any) =>
     axios.post('/api/event', data).then(r => r.data as MarkerType);
 
 export const setInterestedPost = async (eventId: string | number, interestedValue: boolean) =>
-    axios.post(`/api/event/${eventId}/interested`, { interested: interestedValue }).then(r => r.data as MarkerType);
+    axios.post(`/api/event/${eventId}/interested`, { interested: interestedValue }).then(r => r.data as CreateResponse);
 
 export const setGoingPost = async (eventId: string | number, goingValue: boolean) =>
     axios.post(`/api/event/${eventId}/going`, { going: goingValue }).then(r => r.data as MarkerType);

@@ -1,6 +1,19 @@
 export interface User {
     name: string;
     id: string;
+    avatar: string;
+    stats: {
+        events: number;
+        followers: number;
+        friends: number;
+    }
+}
+export interface UserProfile {
+    user: User;
+    meta: {
+        isFollowing: boolean,
+        isOwner: boolean,
+    }
 }
 
 export interface Post {
@@ -25,16 +38,13 @@ export interface EventType {
     backgroundImage?: string
 }
 
-// Metadata for the event request (Details page for event)
-export interface EventMeta {
-    isInterested: boolean
-    isGoing: boolean
-}
-
 // Result of the event request (Details page for event)
 export interface EventResponse {
     event: EventType
-    meta: EventMeta
+    meta: {
+        isInterested: boolean
+        isGoing: boolean
+    }
 }
 
 export interface MarkerType {
@@ -52,4 +62,9 @@ export interface Comment {
     id: number;
     text: string;
     user: User;
+}
+
+export interface CreateResponse {
+    status: "ok" | "error";
+    message?: string;
 }
