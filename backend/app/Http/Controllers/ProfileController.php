@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\EventResource;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -42,7 +44,7 @@ class ProfileController extends Controller
 
         if ($authUser) {
             $isFollowing = $authUser->following()
-                ->where('following_id', $user->id)
+                ->where('target_id', $user->id)
                 ->exists();
 
             $isOwner = $authUser->id === $user->id;
@@ -55,8 +57,8 @@ class ProfileController extends Controller
                 'avatar' => $user->avatar ?? null,
                 'stats' => [
                     'events' => $eventsCount,
-                    'followers' => 0,
-                    'friends' => 0,
+                    'followers' => $followersCount,
+                    'friends' => $friendsCount,
                 ]
             ],
             'meta' => [
@@ -77,8 +79,50 @@ class ProfileController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function events(User $user)
     {
-        //
+        return EventResource::collection(
+            $user->events()->latest()->paginate(9)
+        );
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function comments(User $user)
+    {
+        return response()->json(
+            $user->comments()->latest()->paginate(10)
+        );
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function likes(User $user)
+    {
+        return response()->json(
+            $user->likedEvents()->latest()->paginate(9)
+        );
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function following(User $user)
+    {
+        return UserResource::collection(
+            $user->following()->paginate(10)
+        );
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function friends(User $user)
+    {
+//        return response()->json(
+//            $friends->paginate(10)
+//        );
     }
 }

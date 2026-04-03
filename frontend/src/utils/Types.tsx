@@ -68,3 +68,13 @@ export interface CreateResponse {
     status: "ok" | "error";
     message?: string;
 }
+
+// Profile
+export const TABS = ["events", "comments", "likes", "following", "friends"] as const;
+export type TabState = typeof TABS[number];
+
+export interface ProfileTabResponse {
+    data: any[];
+    current_page: number;
+    last_page: number;
+}

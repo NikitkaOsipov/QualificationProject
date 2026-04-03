@@ -18,19 +18,12 @@ class UserController extends Controller
         //
     }
 
-    public function follow(User $user)
+    public function follow(User $targetUser)
     {
         try {
             $authUser = Auth::user();
 
-            if (!$authUser) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Unauthorized'
-                ], 401);
-            }
-
-            if ($authUser->id === $user->id) {
+            if ($authUser->id === $targetUser->id) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'You cannot follow yourself'
@@ -39,7 +32,7 @@ class UserController extends Controller
 
             $existing = Follower::where([
                 'follower_id' => $authUser->id,
-                'following_id' => $user->id,
+                'target_id' => $targetUser->id,
             ])->first();
 
             if ($existing) {
@@ -48,7 +41,7 @@ class UserController extends Controller
             } else {
                 Follower::create([
                     'follower_id' => $authUser->id,
-                    'target_id' => $user->id,
+                    'target_id' => $targetUser->id,
                 ]);
                 $isFollowing = true;
             }
@@ -81,7 +74,7 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(user $user)
+    public function show(user $targetUser)
     {
         //
     }
@@ -89,7 +82,7 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(user $user)
+    public function edit(user $targetUser)
     {
         //
     }
@@ -97,7 +90,7 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, user $user)
+    public function update(Request $request, user $targetUser)
     {
         //
     }
@@ -105,7 +98,7 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(user $user)
+    public function destroy(user $targetUser)
     {
         //
     }

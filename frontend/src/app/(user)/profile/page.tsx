@@ -3,14 +3,20 @@
 import { useEffect, useState } from "react";
 import Tab from '@/components/User/ProfileTab';
 import { followUser, getUserProfile } from '@/utils/user_service'
-import { User } from '@/utils/Types'
+import { TABS, TabState, User } from '@/utils/Types'
 import { API_BASE_URL } from '@/Config/api'
+import ProfilePaginationTable from '@/components/User/ProfilePaginationTable'
+import { useAuth } from '@/hooks/auth'
+
+const DefaultTab = "events";
 
 export default function ProfilePage() {
-    const [user, setUser] = useState<User | null>(null)
+    const [profileUser, setprofileUser] = useState<User | null>(null)
     const [isFollowing, setIsFollowing] = useState(false)
     const [isOwner, setIsOwner] = useState(false)
-    const [activeTab, setActiveTab] = useState<"events" | "comments" | "likes">("events")
+    const [activeTab, setActiveTab] = useState<TabState>(DefaultTab)
+
+    const {user} = useAuth();
 
     useEffect(() => {
         const id = typeof window !== "undefined"
@@ -22,7 +28,7 @@ export default function ProfilePage() {
 
             const data = await getUserProfile(id);
 
-            setUser(data.user)
+            setprofileUser(data.user)
             setIsFollowing(data.meta.isFollowing)
             setIsOwner(data.meta.isOwner)
         }
@@ -31,7 +37,7 @@ export default function ProfilePage() {
     }, [])
 
     const toggleFollow = async () => {
-        const response = await followUser(user.id);
+        const response = await followUser(profileUser.id);
 
         if (response.status == "ok") {
             setIsFollowing(!isFollowing);
@@ -40,24 +46,25 @@ export default function ProfilePage() {
         }
     }
 
-    if (!user) return <p className="p-4">Loading...</p>
+    if (!profileUser) return <p className="p-4">Loading...</p>
 
+    console.log(user);
     return (
         <div className="max-w-5xl mx-auto p-4 flex flex-col gap-6">
             <div className="flex justify-between items-start gap-4">
                 <div className="flex items-center gap-4">
                     <img
-                        src={user.avatar || `${API_BASE_URL}/storage/AvatarImages/DefaultAvatar.jpg`}
-                        alt={user.name}
+                        src={profileUser.avatar || `${API_BASE_URL}/storage/AvatarImages/DefaultAvatar.jpg`}
+                        alt={profileUser.name}
                         className="w-20 h-20 rounded-full object-cover"
                     />
 
                     <h1 className="text-2xl font-semibold">
-                        {user.name}
+                        {profileUser.name}
                     </h1>
                 </div>
 
-                {(!isOwner && !user) && (
+                {(!isOwner && user) && (
                     <button
                         onClick={toggleFollow}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition
@@ -72,9 +79,9 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex gap-6 text-sm text-gray-600 border-b pb-3">
-                <div><span className="font-semibold">{user.stats.events}</span> Events</div>
-                <div><span className="font-semibold">{user.stats.followers}</span> Followers</div>
-                <div><span className="font-semibold">{user.stats.friends}</span> Friends</div>
+                <div><span className="font-semibold">{profileUser.stats.events}</span> Events</div>
+                <div><span className="font-semibold">{profileUser.stats.followers}</span> Followers</div>
+                <div><span className="font-semibold">{profileUser.stats.friends}</span> Friends</div>
             </div>
 
             <div className="flex gap-6 border-b">
@@ -82,6 +89,18 @@ export default function ProfilePage() {
                     label="Events"
                     active={activeTab === "events"}
                     onClick={() => setActiveTab("events")}
+                />
+
+                <Tab
+                    label="following"
+                    active={activeTab === "following"}
+                    onClick={() => setActiveTab("following")}
+                />
+
+                <Tab
+                    label="friends"
+                    active={activeTab === "friends"}
+                    onClick={() => setActiveTab("friends")}
                 />
 
                 {isOwner && (
@@ -101,17 +120,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="mt-4">
-                {activeTab === "events" && (
-                    <p>Events list goes here...</p>
-                )}
-
-                {activeTab === "comments" && isOwner && (
-                    <p>Your comments...</p>
-                )}
-
-                {activeTab === "likes" && isOwner && (
-                    <p>Your liked events...</p>
-                )}
+                <ProfilePaginationTable userId={profileUser.id} tab={activeTab} />
             </div>
         </div>
     )
