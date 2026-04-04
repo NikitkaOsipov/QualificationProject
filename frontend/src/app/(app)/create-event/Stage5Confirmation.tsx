@@ -1,16 +1,16 @@
 'use client';
 
 import React from 'react';
-import { EventFormData, CATEGORIES } from './types';
-
+import { EventFormData, Category } from './types';
 interface ConfirmationStageProps {
     formData: EventFormData;
     imagePreview: string | null;
+    categoryList: Category[];
 }
 
-const ConfirmationStage = ({ formData, imagePreview }: ConfirmationStageProps) => {
+const ConfirmationStage = ({ formData, imagePreview, categoryList }: ConfirmationStageProps) => {
     const categoryNames = formData.categories
-        .map((id) => CATEGORIES.find((c) => c.id === id)?.name)
+        .map((id) => categoryList.find((c) => c.id === id)?.name)
         .filter(Boolean);
 
     const formatDate = (dateString: string) => {

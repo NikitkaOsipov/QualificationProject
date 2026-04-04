@@ -19,7 +19,6 @@ return new class extends Migration
             $table->dateTime('end_date');
             $table->decimal('price');
             $table->string('background_image_path')->nullable();
-            $table->foreignId('event_type_id')->nullable()->constrained('event_types')->onDelete('cascade');
             $table->foreignId('event_visibility_id')->nullable()->constrained('event_visibilities')->onDelete('cascade');
             $table->foreignId('event_access_type_id')->nullable()->constrained('event_access_types')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');

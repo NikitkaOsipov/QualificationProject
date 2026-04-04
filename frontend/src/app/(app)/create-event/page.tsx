@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createPost } from '@/utils/post_service';
+import { getCategories } from '@/utils/category_service';
 import Timeline from './Timeline';
 import LocationStage from './Stage1Location';
 import DetailsStage from './Stage2Details';
 import VisualsStage from './Stage3Visuals';
 import VisibilityStage from './Stage4Visibility';
 import ConfirmationStage from './Stage5Confirmation';
-import { EventFormData } from './types';
+import { EventFormData, Category } from './types';
 
 export default function CreateEventPage() {
     const router = useRouter();
@@ -17,6 +18,24 @@ export default function CreateEventPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [serverError, setServerError] = useState<string | null>(null);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loadingCategories, setLoadingCategories] = useState(true);
+
+    // Fetch categories once on mount
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const fetchedCategories = await getCategories();
+                setCategories(fetchedCategories);
+            } catch (error) {
+                console.error('Failed to fetch categories:', error);
+            } finally {
+                setLoadingCategories(false);
+            }
+        };
+
+        fetchCategories();
+    }, []);
 
     const [formData, setFormData] = useState<EventFormData>({
         // Stage 1
@@ -42,7 +61,6 @@ export default function CreateEventPage() {
     const validateStage1 = useCallback((): boolean => {
         const errors: Record<string, string> = {};
 
-        formData.address = "Rīga";
         // if (!formData.address.trim()) {
         //     errors.address = 'Address is required';
         // }
@@ -142,9 +160,18 @@ export default function CreateEventPage() {
             if (formData.backgroundImage) {
                 data.append('background_image', formData.backgroundImage);
             }
-            // TODO: Add categories and visibility to backend when available
-            // data.append('categories', JSON.stringify(formData.categories));
-            // data.append('visibility', formData.visibility);
+            // Add categories if selected
+            if (formData.categories.length > 0) {
+                formData.categories.forEach((categoryId) => {
+                    data.append('categories[]', categoryId.toString());
+                });
+            }
+            // Add visibility
+            data.append('visibility', formData.visibility);
+
+            // TODO:
+            // Add viability and error checks on backend
+            // Make addresses work
 
             const response = await createPost(data);
 
@@ -221,6 +248,8 @@ export default function CreateEventPage() {
                         <VisualsStage
                             backgroundImage={formData.backgroundImage}
                             categories={formData.categories}
+                            categoryList={categories}
+                            loadingCategories={loadingCategories}
                             onBackgroundImageChange={(backgroundImage) => {
                                 setFormData((prev) => ({ ...prev, backgroundImage }));
                                 if (backgroundImage) {
@@ -253,6 +282,7 @@ export default function CreateEventPage() {
                         <ConfirmationStage
                             formData={formData}
                             imagePreview={imagePreview}
+                            categoryList={categories}
                         />
                     )}
                 </div>

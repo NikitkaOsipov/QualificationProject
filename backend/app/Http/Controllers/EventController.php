@@ -41,6 +41,9 @@ class EventController extends Controller
             'background_image' => 'nullable|file|image|mimes:jpeg,png,jpg,svg|max:2048',
             'lat' => 'required|numeric',
             'lng' => 'required|numeric',
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:event_categories,id',
+            'visibility' => 'nullable|string|in:public,friends,private',
 //            'event_type_id' => 'required|exists:event_types,id',
 //            'event_visibility_id' => 'required|exists:event_visibilities,id',
 //            'event_access_type_id' => 'required|exists:event_access_types,id',
@@ -49,6 +52,12 @@ class EventController extends Controller
         ]);
 
         $fields['price'] = $fields['price'] ?? 0;
+
+        // Extract categories and visibility before creating event
+        $categories = $fields['categories'] ?? [];
+        $visibility = $fields['visibility'] ?? 'public';
+        unset($fields['categories']);
+        unset($fields['visibility']);
 
         Log::info("Post -----------------------------------------------");
         Log::info("Fields", [json_encode($fields)]);
@@ -83,6 +92,11 @@ class EventController extends Controller
 
         try {
             $event = Event::create($fields);
+
+            // Attach categories if provided
+            if (!empty($categories)) {
+                $event->categories()->attach($categories);
+            }
         } catch (\Exception $exception) {
             Log::info('Error'. $exception->getMessage());
 

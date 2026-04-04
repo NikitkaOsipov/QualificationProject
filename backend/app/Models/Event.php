@@ -48,4 +48,9 @@ class Event extends Model
     {
         return $this->hasMany(EventGoing::class);
     }
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'event_category_mappings', 'event_id', 'category_id');
+    }
 }

@@ -22,6 +22,11 @@ export interface EventFormData {
     errors: Record<string, string>;
 }
 
+export interface Category {
+    id: number;
+    name: string;
+}
+
 export const CATEGORIES = [
     { id: 1, name: 'Technology' },
     { id: 2, name: 'Business' },

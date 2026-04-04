@@ -70,9 +70,19 @@ export interface Comment {
     created_at: string;
 }
 
+export interface ValidationErrors {
+    [field: string]: string[];
+}
+
 export interface CreateResponse {
     status: "ok" | "error";
     message?: string;
+    errors?: ValidationErrors;
+}
+
+export interface Category {
+    id: number;
+    name: string;
 }
 
 // Profile
