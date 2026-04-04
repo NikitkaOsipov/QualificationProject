@@ -1,8 +1,13 @@
 export interface User {
+    id: number;
     name: string;
-    id: string;
-    avatar: string;
-    stats: {
+    email: string;
+    avatar_path?: string | null;
+    email_verified_at?: string;
+    created_at?: string;
+    updated_at?: string;
+    avatar?: string;
+    stats?: {
         events: number;
         followers: number;
         friends: number;
@@ -62,6 +67,7 @@ export interface Comment {
     id: number;
     text: string;
     user: User;
+    created_at: string;
 }
 
 export interface CreateResponse {

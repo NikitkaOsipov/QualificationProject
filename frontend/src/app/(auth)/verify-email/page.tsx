@@ -7,7 +7,7 @@ import { useState } from 'react'
 const Page = () => {
     const { logout, resendEmailVerification, exceptEmailVerification } = useAuth({
         middleware: 'auth',
-        redirectIfAuthenticated: '/dashboard',
+        redirectIfAuthenticated: '/',
     })
 
     const [status, setStatus] = useState(null)
@@ -32,8 +32,6 @@ const Page = () => {
                 <Button onClick={() => resendEmailVerification({ setStatus })}>
                     Resend Verification Email
                 </Button>
-
-                <a href="http://localhost:8000/verify-email/2/95fc8a773d2a77f617254c61393c09562f822809?expires=1760266069&amp;signature=0fa8b5550c8ad8c4992fe9d614a5729bfc5f80b61df401f4353d46c206ff4106">YYYEYEY</a>
 
                 <button
                     type="button"

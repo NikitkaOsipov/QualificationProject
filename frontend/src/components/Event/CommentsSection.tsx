@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { createComment, getEventComments } from '@/utils/comment_service';
-import { createPost } from '@/utils/post_service'
+import { Comment } from '@/utils/Types';
 import Loading from '@/components/Loading'
+import { API_BASE_URL } from '@/Config/api'
 
 const MIN_LENGTH = 3
 const MAX_LENGTH = 300
@@ -38,6 +39,37 @@ function CommentsSection({ eventId }: Params) {
         return ""
     }
 
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return "just now";
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+
+        return date.toLocaleDateString();
+    }
+
+    const getAvatarUrl = (user: any) => {
+        if (user.avatar_path) {
+            return `${API_BASE_URL}/storage/${user.avatar_path}`;
+        }
+        return null;
+    }
+
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map(n => n[0])
+            .join('')
+            .toUpperCase();
+    }
+
     const handleSubmit = async () => {
         const validationError = validate(newComment)
 
@@ -46,24 +78,17 @@ function CommentsSection({ eventId }: Params) {
             return
         }
 
-        const newEntry = {
-            id: Date.now(),
-            author: "You",
-            text: newComment.trim()
-        }
-
         const result = await createComment(
-            newEntry.text,
+            newComment.trim(),
             eventId
         );
 
-        // const result = await createPost({
-        //     'title': newEntry.text,
-        //     'body': "sdfsdfsdfdsf"
-        // });
         console.log(result);
 
-        setComments([newEntry, ...comments])
+        // Refresh comments after posting
+        const updatedComments = await getEventComments(eventId);
+        setComments(updatedComments);
+
         setNewComment("")
         setError("")
     }
@@ -122,12 +147,32 @@ function CommentsSection({ eventId }: Params) {
 
             {/* Comments */}
             <div className="flex flex-col gap-4">
-                {comments.map((c) => (
-                    <div key={c.id} className="border rounded-lg p-3">
-                        <p className="text-sm font-medium">{c.author}</p>
-                        <p className="text-gray-600 text-sm">{c.text}</p>
-                    </div>
-                ))}
+                {comments.map((c) => {
+                    const avatarUrl = getAvatarUrl(c.user);
+                    const initials = getInitials(c.user.name);
+
+                    return (
+                        <div key={c.id} className="border rounded-lg p-4 hover:bg-gray-50 transition">
+                            <div className="flex gap-3 mb-2">
+                                <div className="flex-shrink-0">
+                                    <img
+                                        src={c.user.avatar || `${API_BASE_URL}/storage/AvatarImages/default.jpg`}
+                                        alt={c.user.name}
+                                        className="w-8 h-8 rounded-full object-cover"
+                                    />
+                                </div>
+
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm font-medium">{c.user.name}</p>
+                                        <p className="text-xs text-gray-500">{formatDate(c.created_at)}</p>
+                                    </div>
+                                    <p className="text-gray-700 text-sm mt-1">{c.text}</p>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     )

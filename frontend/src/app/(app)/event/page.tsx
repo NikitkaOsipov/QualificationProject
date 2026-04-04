@@ -87,9 +87,9 @@ export default function EventPage() {
 
                             <div className="flex gap-3 flex-wrap">
 
-                                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                    Add to Calendar
-                                </button>
+                                {/*<button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">*/}
+                                {/*    Add to Calendar*/}
+                                {/*</button>*/}
 
                                 {
                                     user ? (
@@ -102,9 +102,9 @@ export default function EventPage() {
                                 }
 
 
-                                <button className="px-4 py-2 border rounded-lg hover:bg-gray-100">
-                                    Share
-                                </button>
+                                {/*<button className="px-4 py-2 border rounded-lg hover:bg-gray-100">*/}
+                                {/*    Share*/}
+                                {/*</button>*/}
 
                             </div>
 
@@ -123,11 +123,13 @@ export default function EventPage() {
                                 </div>
 
                                 <div className="h-64 rounded-xl overflow-hidden border">
-                                    {/*<Map*/}
-                                    {/*    center={[event.address.lat, event.address.lng]}*/}
-                                    {/*    zoom={14}*/}
-                                    {/*    className="w-full h-full"*/}
-                                    {/*/>*/}
+                                    <Map
+                                        center={[event.address.lat, event.address.lng]}
+                                        zoom={14}
+                                        markers={[event as unknown as MarkerType]}
+                                        onMarkerClick={() => {}}
+                                        className="w-full h-full"
+                                    />
                                 </div>
 
                             </div>
@@ -161,39 +163,39 @@ export default function EventPage() {
                             </div>
 
 
-                            <div className="border rounded-xl p-5 shadow-sm">
+                            {/*<div className="border rounded-xl p-5 shadow-sm">*/}
 
-                                <h3 className="font-semibold mb-2">
-                                    Hosted by
-                                </h3>
+                            {/*    <h3 className="font-semibold mb-2">*/}
+                            {/*        Hosted by*/}
+                            {/*    </h3>*/}
 
-                                <p className="text-gray-700">
-                                    {host}
-                                </p>
+                            {/*    <p className="text-gray-700">*/}
+                            {/*        {host}*/}
+                            {/*    </p>*/}
 
-                            </div>
+                            {/*</div>*/}
 
 
-                            <div className="border rounded-xl p-5 shadow-sm">
+                            {/*<div className="border rounded-xl p-5 shadow-sm">*/}
 
-                                <h3 className="font-semibold mb-3">
-                                    Friends attending
-                                </h3>
+                            {/*    <h3 className="font-semibold mb-3">*/}
+                            {/*        Friends attending*/}
+                            {/*    </h3>*/}
 
-                                <div className="flex -space-x-2">
+                            {/*    <div className="flex -space-x-2">*/}
 
-                                    <div className="w-8 h-8 rounded-full bg-gray-300"></div>
-                                    <div className="w-8 h-8 rounded-full bg-gray-400"></div>
-                                    <div className="w-8 h-8 rounded-full bg-gray-500"></div>
-                                    <div className="w-8 h-8 rounded-full bg-gray-600"></div>
+                            {/*        <div className="w-8 h-8 rounded-full bg-gray-300"></div>*/}
+                            {/*        <div className="w-8 h-8 rounded-full bg-gray-400"></div>*/}
+                            {/*        <div className="w-8 h-8 rounded-full bg-gray-500"></div>*/}
+                            {/*        <div className="w-8 h-8 rounded-full bg-gray-600"></div>*/}
 
-                                </div>
+                            {/*    </div>*/}
 
-                                <p className="text-sm text-gray-500 mt-2">
-                                    +12 people going
-                                </p>
+                            {/*    <p className="text-sm text-gray-500 mt-2">*/}
+                            {/*        +12 people going*/}
+                            {/*    </p>*/}
 
-                            </div>
+                            {/*</div>*/}
 
                         </div>
 

@@ -7,6 +7,7 @@ import type { MarkerType } from '@/utils/Types'
 export type MarkerMapProps = MapContainerProps & {
     markers: MarkerType[];
     onMarkerClick: (event: MarkerType) => void;
+
 }
 
 const MapPage = ({markers, onMarkerClick, ...props}: MarkerMapProps) => {
@@ -16,13 +17,12 @@ const MapPage = ({markers, onMarkerClick, ...props}: MarkerMapProps) => {
             <Map
                 {...props}
             >
-                { markers.map((m, index) =>
+                { markers ? markers.map((m, index) =>
                     <Marker
                         key={index}
                         position={[m.address.lat, m.address.lng]}
                         eventHandlers={{ click: () => onMarkerClick(m) }}>
-                        <Popup>{m.title}</Popup>
-                    </Marker>)
+                    </Marker>) : <></>
                 }
 
             </Map>

@@ -6,6 +6,7 @@ import { TabState } from '@/utils/Types';
 import CommentCard from '@/components/User/CommentCard';
 import UserCard from '@/components/User/UserCard';
 import EventCard from '@/components/Event/EventCard';
+import Loading from '@/components/Loading'
 
 function ProfileTable({
             userId,
@@ -47,7 +48,7 @@ function ProfileTable({
 
     return (
         <>
-            {loadingTab && <p>Loading...</p>}
+            {loadingTab && <Loading/>}
 
             <div className="mt-4">
                 {currentTab == tab && (
@@ -55,50 +56,68 @@ function ProfileTable({
 
 
                         {(!loadingTab && tab === "events" && tabData) && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {tabData.map(e => <EventCard key={e.id} event={e} />)}
-                            </div>
+                            <>
+                                {tabData.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {tabData.map(e => <EventCard key={e.id} event={e} />)}
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 text-center py-8">There are no events yet</p>
+                                )}
+                            </>
                         )}
 
                         {!loadingTab && tab === "comments" && (
                             <div className="flex flex-col gap-3">
-                                comment
-                                {/*{tabData.map(c => <CommentCard key={c.id} comment={c} />)}*/}
+                                {tabData && tabData.length > 0 ? (
+                                    <>{/*comment*/}</>
+                                ) : (
+                                    <p className="text-gray-500 text-center py-8">There are no comments yet</p>
+                                )}
                             </div>
                         )}
 
                         {!loadingTab && (tab === "following" || tab === "friends") && (
-                            <div className="flex flex-col gap-3">
-                                user
-                                {/*{tabData.map(u => <UserCard key={u.id} user={u} />)}*/}
-                            </div>
+                            <>
+                                {tabData && tabData.length > 0 ? (
+                                    <div className="flex flex-col gap-3">
+                                        {tabData.map(u => <UserCard key={u.id} user={u} />)}
+                                    </div>
+                                ) : (
+                                    <p className="text-gray-500 text-center py-8">There are no {tab === "following" ? "following" : "friends"} yet</p>
+                                )}
+                            </>
                         )}
                     </>
                 )
                 }
             </div>
 
-            <div className="flex justify-center gap-2 mt-6">
-                <button
-                    disabled={page === 1 || loadingTab}
-                    onClick={() => fetchTabData(tab, String(userId), page - 1)}
-                    className="px-3 py-1 border rounded disabled:opacity-50"
-                >
-                    Prev
-                </button>
 
-                <span className="px-3 py-1 text-sm">
-                    {page} / {lastPage}
-                </span>
 
-                <button
-                    disabled={page === lastPage || loadingTab}
-                    onClick={() => fetchTabData(tab, String(userId), page + 1)}
-                    className="px-3 py-1 border rounded disabled:opacity-50"
-                >
-                    Next
-                </button>
-            </div>
+            {tabData && tabData.length >= 20 && (
+                <div className="flex justify-center gap-2 mt-6">
+                    <button
+                        disabled={page === 1 || loadingTab}
+                        onClick={() => fetchTabData(tab, String(userId), page - 1)}
+                        className="px-3 py-1 border rounded disabled:opacity-50"
+                    >
+                        Prev
+                    </button>
+
+                    <span className="px-3 py-1 text-sm">
+                        {page} / {lastPage}
+                    </span>
+
+                    <button
+                        disabled={page === lastPage || loadingTab}
+                        onClick={() => fetchTabData(tab, String(userId), page + 1)}
+                        className="px-3 py-1 border rounded disabled:opacity-50"
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
         </>
     );
 }

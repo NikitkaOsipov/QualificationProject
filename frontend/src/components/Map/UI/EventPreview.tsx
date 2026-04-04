@@ -4,6 +4,7 @@ import type { MarkerType } from '@/utils/Types'
 import Map from '@/components/Map/DynamicMarkerMap'
 import SideModal from '@/components/SideModal'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 import { getPosts } from '@/utils/post_service'
 import Loading from '@/components/Loading'
@@ -38,62 +39,90 @@ function formatEventDate(start?: Date, end?: Date) {
 }
 
 const EventPreview = ({isOpen, toggleModal, event}: EventPreviewProps) => {
+    const router = useRouter();
+
+    const handleGoToEvent = () => {
+        if (event?.id) {
+            router.push(`/event?id=${event.id}`);
+            toggleModal(false);
+        }
+    };
+
     if (!event) return;
 
     return (
         <>
             <SideModal isOpen={isOpen} toggleModal={toggleModal}>
-                <div className="flex flex-col gap-6 p-6">
+                <div className="flex flex-col gap-4 p-6">
 
-                    {/* Title */}
+                    {/* Header with Title and Price */}
                     <div>
-                        <p className="text-xs uppercase text-gray-500 tracking-wide">
-                            Event
-                        </p>
-
-                        <h2 className="text-xl font-semibold text-gray-900">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">
                             {event.title}
                         </h2>
+
+                        <div className="flex items-center gap-3">
+                            <span className="text-2xl font-bold text-blue-600">
+                                {event.price ? `€${event.price}` : "Free"}
+                            </span>
+                            <span className="text-xs uppercase text-gray-500 tracking-wide">
+                                Price
+                            </span>
+                        </div>
                     </div>
 
+                    {/* Date and Location Info Grid */}
+                    <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
+                        <div>
+                            <p className="text-xs uppercase text-gray-500 tracking-wide mb-1 font-semibold">
+                                📅 Date
+                            </p>
+                            <p className="text-sm text-gray-800 font-medium">
+                                {formatEventDate(event.start_date, event.end_date)}
+                            </p>
+                        </div>
+
+                        <div>
+                            <p className="text-xs uppercase text-gray-500 tracking-wide mb-1 font-semibold">
+                                📍 Location
+                            </p>
+                            <p className="text-sm text-gray-800 font-medium">
+                                {event.address.name}
+                            </p>
+                        </div>
+                    </div>
 
                     {/* Description */}
                     {event.description && (
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                            {event.description}
-                        </p>
+                        <div>
+                            <p className="text-xs uppercase text-gray-500 tracking-wide mb-2 font-semibold">
+                                About
+                            </p>
+                            <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
+                                {event.description}
+                            </p>
+                        </div>
                     )}
 
-
-                    {/* Date */}
-                    <div className="border-t pt-4">
-                        <p className="text-xs uppercase text-gray-500 tracking-wide mb-2">
-                            Date
+                    {/* Coordinates */}
+                    <div className="border-t pt-3">
+                        <p className="text-xs text-gray-500">
+                            📌 {event.address.lat.toFixed(4)}, {event.address.lng.toFixed(4)}
                         </p>
-
-                        <p className="text-sm text-gray-800">
-                            📅 {formatEventDate(event.start_date, event.end_date)}
-                        </p>
-
-                        <button className="mt-3 text-sm text-blue-600 hover:text-blue-700">
-                            Add to Calendar
-                        </button>
                     </div>
 
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-2 border-t pt-4">
+                        <button
+                            onClick={handleGoToEvent}
+                            className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm"
+                        >
+                            View Full Event
+                        </button>
 
-                    {/* Location */}
-                    <div className="border-t pt-4">
-                        <p className="text-xs uppercase text-gray-500 tracking-wide mb-2">
-                            Location
-                        </p>
-
-                        <p className="text-sm font-medium text-gray-800">
-                            {event.address.name}
-                        </p>
-
-                        <p className="text-xs text-gray-500">
-                            {event.address.lat.toFixed(4)}, {event.address.lng.toFixed(4)}
-                        </p>
+                        {/*<button className="w-full px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition font-medium text-sm">*/}
+                        {/*    Add to Calendar*/}
+                        {/*</button>*/}
                     </div>
 
                 </div>

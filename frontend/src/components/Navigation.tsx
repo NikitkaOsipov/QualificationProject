@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/auth'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import LoginLinks from '@/app/LoginLinks'
-import { Autocomplete, TextField } from '@mui/material'
+import { TextField } from '@mui/material'
 
 const Navigation = ({ user }) => {
     const { logout } = useAuth()
@@ -31,18 +31,18 @@ const Navigation = ({ user }) => {
                             </Link>
                         </div>
 
-                        {/* Search */}
-                        <div className="ml-4 hidden sm:flex sm:items-center sm:ml-4">
-                            <TextField
-                                size="small"
-                                placeholder="Search..."
-                                value={searchValue}
-                                onChange={(e) => setSearchValue(e.target.value)}
-                                variant="outlined"
-                                className="w-64"
-                                InputProps={{ className: 'h-8' }}
-                            />
-                        </div>
+                        {/*/!* Search *!/*/}
+                        {/*<div className="ml-4 hidden sm:flex sm:items-center sm:ml-4">*/}
+                        {/*    <TextField*/}
+                        {/*        size="small"*/}
+                        {/*        placeholder="Search..."*/}
+                        {/*        value={searchValue}*/}
+                        {/*        onChange={(e) => setSearchValue(e.target.value)}*/}
+                        {/*        variant="outlined"*/}
+                        {/*        className="w-64"*/}
+                        {/*        slotProps={{ input: { className: 'h-8' } }}*/}
+                        {/*    />*/}
+                        {/*</div>*/}
 
                         {/* Navigation Links */}
                         <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
@@ -67,10 +67,8 @@ const Navigation = ({ user }) => {
                         {/* Create Event Button */}
                         {user && (
                             <div className="hidden sm:flex sm:items-center mr-4">
-                                <Link href="/create-event">
-                                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm">
-                                        Create Event
-                                    </button>
+                                <Link href="/create-event" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm">
+                                    Create Event
                                 </Link>
                             </div>
                         )}
@@ -99,6 +97,13 @@ const Navigation = ({ user }) => {
                                                 </div>
                                             </button>
                                         }>
+                                        {/* Profile Link */}
+                                        <Link href={`/profile?id=${user?.id}`}>
+                                            <DropdownButton>
+                                                Profile
+                                            </DropdownButton>
+                                        </Link>
+
                                         {/* Authentication */}
                                         <DropdownButton onClick={logout}>
                                             Logout
@@ -186,6 +191,13 @@ const Navigation = ({ user }) => {
                             </div>
 
                             <div className="mt-3 space-y-1">
+                                {/* Profile Link */}
+                                <ResponsiveNavLink
+                                    href={`/profile?id=${user?.id}`}
+                                    active={usePathname() === '/profile'}>
+                                    Profile
+                                </ResponsiveNavLink>
+
                                 {/* Authentication */}
                                 <ResponsiveNavButton onClick={logout}>
                                     Logout

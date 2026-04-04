@@ -9,10 +9,10 @@ export const getPost = async (id: string | number) =>
     axios.get(`/api/event/${id}`).then(r => r.data as EventResponse);
 
 export const createPost = async (data: any) =>
-    axios.post('/api/event', data).then(r => r.data as MarkerType);
+    axios.post('/api/event', data).then(r => r.data as CreateResponse);
 
 export const setInterestedPost = async (eventId: string | number, interestedValue: boolean) =>
     axios.post(`/api/event/${eventId}/interested`, { interested: interestedValue }).then(r => r.data as CreateResponse);
 
 export const setGoingPost = async (eventId: string | number, goingValue: boolean) =>
-    axios.post(`/api/event/${eventId}/going`, { going: goingValue }).then(r => r.data as MarkerType);
+    axios.post(`/api/event/${eventId}/going`, { going: goingValue }).then(r => r.data as CreateResponse);

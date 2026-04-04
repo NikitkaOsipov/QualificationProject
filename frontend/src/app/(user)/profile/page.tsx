@@ -7,6 +7,7 @@ import { TABS, TabState, User } from '@/utils/Types'
 import { API_BASE_URL } from '@/Config/api'
 import ProfilePaginationTable from '@/components/User/ProfilePaginationTable'
 import { useAuth } from '@/hooks/auth'
+import Loading from '@/components/Loading'
 
 const DefaultTab = "events";
 
@@ -46,15 +47,14 @@ export default function ProfilePage() {
         }
     }
 
-    if (!profileUser) return <p className="p-4">Loading...</p>
+    if (!profileUser) return <Loading/>;
 
-    console.log(user);
     return (
         <div className="max-w-5xl mx-auto p-4 flex flex-col gap-6">
             <div className="flex justify-between items-start gap-4">
                 <div className="flex items-center gap-4">
                     <img
-                        src={profileUser.avatar || `${API_BASE_URL}/storage/AvatarImages/DefaultAvatar.jpg`}
+                        src={profileUser.avatar || `${API_BASE_URL}/storage/AvatarImages/default.jpg`}
                         alt={profileUser.name}
                         className="w-20 h-20 rounded-full object-cover"
                     />
@@ -97,11 +97,11 @@ export default function ProfilePage() {
                     onClick={() => setActiveTab("following")}
                 />
 
-                <Tab
-                    label="friends"
-                    active={activeTab === "friends"}
-                    onClick={() => setActiveTab("friends")}
-                />
+                {/*<Tab*/}
+                {/*    label="friends"*/}
+                {/*    active={activeTab === "friends"}*/}
+                {/*    onClick={() => setActiveTab("friends")}*/}
+                {/*/>*/}
 
                 {isOwner && (
                     <>
@@ -110,11 +110,11 @@ export default function ProfilePage() {
                             active={activeTab === "comments"}
                             onClick={() => setActiveTab("comments")}
                         />
-                        <Tab
-                            label="Likes"
-                            active={activeTab === "likes"}
-                            onClick={() => setActiveTab("likes")}
-                        />
+                        {/*<Tab*/}
+                        {/*    label="Likes"*/}
+                        {/*    active={activeTab === "likes"}*/}
+                        {/*    onClick={() => setActiveTab("likes")}*/}
+                        {/*/>*/}
                     </>
                 )}
             </div>

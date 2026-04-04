@@ -97,10 +97,11 @@ class EventController extends Controller
         }
 
         Log::info("Post Created successfully");
+
         return response()->json([
-            'success' => 'Event created successfully',
-            'event' => $event,
-        ], 201);
+            'status' => 'ok',
+            'message' => 'You successfully created event',
+        ]);
     }
 
     /**

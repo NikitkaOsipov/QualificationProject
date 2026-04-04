@@ -38,7 +38,7 @@ const MapPage = () => {
                     >
 
                         <Map
-                            center={[10, 10]}
+                            center={[56.88, 24.28]}
                             zoom={8}
                             markers={posts}
                             className={"w-full h-full"}

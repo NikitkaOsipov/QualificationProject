@@ -1,239 +1,290 @@
 'use client';
-import React, { useState } from 'react';
-import axios from '@/lib/axios';
-import { createPost } from '@/utils/post_service'
 
-type Errors = { [key: string]: string }
+import React, { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { createPost } from '@/utils/post_service';
+import Timeline from './Timeline';
+import LocationStage from './Stage1Location';
+import DetailsStage from './Stage2Details';
+import VisualsStage from './Stage3Visuals';
+import VisibilityStage from './Stage4Visibility';
+import ConfirmationStage from './Stage5Confirmation';
+import { EventFormData } from './types';
 
-export default function NewEventPage() {
-    const [title, setTitle] = useState('')
-    const [description, setDescription] = useState('')
-    const [startDate, setStartDate] = useState('')
-    const [endDate, setEndDate] = useState('')
-    const [price, setPrice] = useState('')
-    const [file, setFile] = useState<File | null>(null)
-    const [latitude, setLatitude] = useState('')
-    const [longitude, setLongitude] = useState('')
-    const [errors, setErrors] = useState<Errors>({})
-    const [status, setStatus] = useState<string | null>(null)
-    const [submitting, setSubmitting] = useState(false)
+export default function CreateEventPage() {
+    const router = useRouter();
+    const [currentStage, setCurrentStage] = useState(1);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [serverError, setServerError] = useState<string | null>(null);
 
-    function validate() {
-        const e: Errors = {}
-        if (!title.trim()) e.title = 'Title is required'
-        if (title.length > 255) e.title = 'Title must be 255 characters or less'
-        if (!startDate) e.start_date = 'Start date is required'
-        if (!endDate) e.end_date = 'End date is required'
-        if (price && isNaN(Number(price))) e.price = 'Price must be numeric'
-        if (file) {
-            const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'image/svg+xml']
-            if (!allowed.includes(file.type)) e.background_image = 'Invalid image type'
-            if (file.size > 2 * 1024 * 1024) e.background_image = 'Image too large (max 2MB)'
+    const [formData, setFormData] = useState<EventFormData>({
+        // Stage 1
+        address: '',
+        latitude: null,
+        longitude: null,
+        // Stage 2
+        title: '',
+        description: '',
+        startDate: '',
+        endDate: '',
+        price: '',
+        // Stage 3
+        backgroundImage: null,
+        categories: [],
+        // Stage 4
+        visibility: 'public',
+        // Meta
+        errors: {},
+    });
+
+    // Validation functions
+    const validateStage1 = useCallback((): boolean => {
+        const errors: Record<string, string> = {};
+
+        formData.address = "Rīga";
+        // if (!formData.address.trim()) {
+        //     errors.address = 'Address is required';
+        // }
+        if (formData.latitude === null || formData.longitude === null) {
+            errors.location = 'Location coordinates are required. Click on the map or search for an address.';
         }
 
-        if (latitude) {
-            const lat = Number(latitude)
-            if (isNaN(lat)) e.latitude = 'Latitude must be a number'
-            else if (lat < -90 || lat > 90) e.latitude = 'Latitude must be between -90 and 90'
+        setFormData((prev) => ({ ...prev, errors }));
+        return Object.keys(errors).length === 0;
+    }, [formData.address, formData.latitude, formData.longitude]);
+
+    const validateStage2 = useCallback((): boolean => {
+        const errors: Record<string, string> = {};
+
+        if (!formData.title.trim()) {
+            errors.title = 'Title is required';
+        }
+        if (formData.title.length > 255) {
+            errors.title = 'Title must be 255 characters or less';
+        }
+        if (!formData.startDate) {
+            errors.startDate = 'Start date is required';
+        }
+        if (formData.price && isNaN(Number(formData.price))) {
+            errors.price = 'Price must be a valid number';
+        }
+        if (formData.endDate && formData.startDate && new Date(formData.endDate) < new Date(formData.startDate)) {
+            errors.endDate = 'End date cannot be earlier than start date';
         }
 
-        if (longitude) {
-            const lon = Number(longitude)
-            if (isNaN(lon)) e.longitude = 'Longitude must be a number'
-            else if (lon < -180 || lon > 180) e.longitude = 'Longitude must be between -180 and 180'
-        }
+        setFormData((prev) => ({ ...prev, errors }));
+        return Object.keys(errors).length === 0;
+    }, [formData.title, formData.startDate, formData.endDate, formData.price]);
 
-        return e
-    }
+    const validateStage3 = useCallback((): boolean => {
+        const errors: Record<string, string> = {};
 
-    async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault()
-        setStatus(null)
-        const clientErrors = validate()
-        if (Object.keys(clientErrors).length > 0) {
-            setErrors(clientErrors)
-            return
-        }
-        setErrors({})
-        setSubmitting(true)
-
-        const data = new FormData()
-        data.append('title', title)
-        data.append('description', description)
-        // convert datetime-local value to ISO string (backend expects datetime)
-        data.append('start_date', new Date(startDate).toISOString())
-        data.append('end_date', new Date(endDate).toISOString())
-        if (price) data.append('price', price)
-        if (file) data.append('background_image', file)
-        if (latitude) data.append('lat', latitude)
-        if (longitude) data.append('lng', longitude)
-
-
-        function logFormData(fd: FormData) {
-            // quick dump of all entries
-            console.log(Array.from(fd.entries()));
-
-            // nicer per-entry logging (shows file metadata for files)
-            for (const [key, value] of fd.entries()) {
-                if (value instanceof File) {
-                    console.log(key, { name: value.name, type: value.type, size: value.size });
-                } else {
-                    console.log(key, value);
-                }
+        if (formData.backgroundImage) {
+            const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'image/svg+xml', 'image/webp'];
+            if (!allowed.includes(formData.backgroundImage.type)) {
+                errors.backgroundImage = 'Invalid image type. Please use PNG, JPG, JPEG, SVG, or WebP';
+            }
+            if (formData.backgroundImage.size > 2 * 1024 * 1024) {
+                errors.backgroundImage = 'Image is too large. Maximum size is 2MB';
             }
         }
+
+        setFormData((prev) => ({ ...prev, errors }));
+        return Object.keys(errors).length === 0;
+    }, [formData.backgroundImage]);
+
+    const validateStage4 = useCallback((): boolean => {
+        return true; // No validation needed
+    }, []);
+
+    const handleNextStage = useCallback(async () => {
+        let isValid = false;
+
+        if (currentStage === 1) {
+            isValid = validateStage1();
+        } else if (currentStage === 2) {
+            isValid = validateStage2();
+        } else if (currentStage === 3) {
+            isValid = validateStage3();
+        } else if (currentStage === 4) {
+            isValid = validateStage4();
+        }
+
+        if (isValid) {
+            setCurrentStage((prev) => Math.min(prev + 1, 5));
+            window.scrollTo(0, 0);
+        }
+    }, [currentStage, validateStage1, validateStage2, validateStage3, validateStage4]);
+
+    const handlePreviousStage = useCallback(() => {
+        setCurrentStage((prev) => Math.max(prev - 1, 1));
+        window.scrollTo(0, 0);
+    }, []);
+
+    const handleSubmit = useCallback(async () => {
+        setIsSubmitting(true);
+        setServerError(null);
 
         try {
-            logFormData(data);
-            const res = await createPost(data);
-            console.log(res);
-            const json = res.data;
-            console.log(json);
-            if (!res.status) {
-                // assume server returns validation errors in { errors: { field: message } } or message
-                setErrors(json.errors || (json.message ? { form: json.message } : { form: 'Unknown error' }))
-                setStatus(null)
-            } else {
-                setStatus('Event created successfully')
-                // reset form
-                // setTitle('')
-                // setDescription('')
-                // setStartDate('')
-                // setEndDate('')
-                // setPrice('')
-                // setFile(null)
-                // setLatitude('')
-                // setLongitude('')
+            const data = new FormData();
+            data.append('title', formData.title);
+            data.append('description', formData.description);
+            data.append('start_date', new Date(formData.startDate).toISOString());
+            if (formData.endDate) {
+                data.append('end_date', new Date(formData.endDate).toISOString());
             }
-        } catch (err) {
-            setErrors({ form: 'Network error' })
+            if (formData.price) {
+                data.append('price', formData.price);
+            }
+            data.append('lat', formData.latitude!.toString());
+            data.append('lng', formData.longitude!.toString());
+            if (formData.backgroundImage) {
+                data.append('background_image', formData.backgroundImage);
+            }
+            // TODO: Add categories and visibility to backend when available
+            // data.append('categories', JSON.stringify(formData.categories));
+            // data.append('visibility', formData.visibility);
+
+            const response = await createPost(data);
+
+            if (response.status == "ok") {
+                // Success
+                router.push(`/`);
+            } else {
+                setServerError('Failed to create event. Please try again.');
+            }
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'An error occurred. Please try again.';
+            setServerError(errorMessage);
         } finally {
-            setSubmitting(false)
+            setIsSubmitting(false);
         }
-    }
+    }, [formData, router]);
 
     return (
-        <main className="max-w-3xl mx-auto p-6">
-            <div className="bg-white shadow rounded-lg p-6">
-                <h1 className="text-2xl font-semibold mb-4">Create event</h1>
+        <main className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto">
+                {/* Timeline */}
+                <Timeline currentStage={currentStage} totalStages={5} />
 
-                {status && <div className="text-green-700 bg-green-50 p-2 rounded mb-4">{status}</div>}
-                {errors.form && <div className="text-red-700 bg-red-50 p-2 rounded mb-4">{errors.form}</div>}
+                {/* Stage Content */}
+                <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+                    {serverError && (
+                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-red-800">{serverError}</p>
+                        </div>
+                    )}
 
-                <form onSubmit={handleSubmit} encType="multipart/form-data" noValidate>
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700">Title *</label>
-                        <input
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            value={title}
-                            onChange={e => setTitle(e.target.value)}
-                            maxLength={255}
-                            required
+                    {currentStage === 1 && (
+                        <LocationStage
+                            address={formData.address}
+                            latitude={formData.latitude}
+                            longitude={formData.longitude}
+                            onAddressChange={(address) =>
+                                setFormData((prev) => ({ ...prev, address }))
+                            }
+                            onCoordinatesChange={(lat, lng) =>
+                                setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }))
+                            }
+                            error={formData.errors.location || formData.errors.address}
                         />
-                        {errors.title && <div className="text-sm text-red-600 mt-1">{errors.title}</div>}
-                    </div>
+                    )}
 
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            value={description}
-                            onChange={e => setDescription(e.target.value)}
+                    {currentStage === 2 && (
+                        <DetailsStage
+                            title={formData.title}
+                            description={formData.description}
+                            startDate={formData.startDate}
+                            endDate={formData.endDate}
+                            price={formData.price}
+                            onTitleChange={(title) =>
+                                setFormData((prev) => ({ ...prev, title }))
+                            }
+                            onDescriptionChange={(description) =>
+                                setFormData((prev) => ({ ...prev, description }))
+                            }
+                            onStartDateChange={(startDate) =>
+                                setFormData((prev) => ({ ...prev, startDate }))
+                            }
+                            onEndDateChange={(endDate) =>
+                                setFormData((prev) => ({ ...prev, endDate }))
+                            }
+                            onPriceChange={(price) =>
+                                setFormData((prev) => ({ ...prev, price }))
+                            }
+                            errors={formData.errors}
                         />
-                        {errors.description && <div className="text-sm text-red-600 mt-1">{errors.description}</div>}
-                    </div>
+                    )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Start Date *</label>
-                            <input
-                                type="datetime-local"
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                value={startDate}
-                                onChange={e => setStartDate(e.target.value)}
-                                required
-                            />
-                            {errors.start_date && <div className="text-sm text-red-600 mt-1">{errors.start_date}</div>}
-                        </div>
+                    {currentStage === 3 && (
+                        <VisualsStage
+                            backgroundImage={formData.backgroundImage}
+                            categories={formData.categories}
+                            onBackgroundImageChange={(backgroundImage) => {
+                                setFormData((prev) => ({ ...prev, backgroundImage }));
+                                if (backgroundImage) {
+                                    const reader = new FileReader();
+                                    reader.onload = (e) => {
+                                        setImagePreview(e.target?.result as string);
+                                    };
+                                    reader.readAsDataURL(backgroundImage);
+                                } else {
+                                    setImagePreview(null);
+                                }
+                            }}
+                            onCategoriesChange={(categories) =>
+                                setFormData((prev) => ({ ...prev, categories }))
+                            }
+                            errors={formData.errors}
+                        />
+                    )}
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">End Date *</label>
-                            <input
-                                type="datetime-local"
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                value={endDate}
-                                onChange={e => setEndDate(e.target.value)}
-                                required
-                            />
-                            {errors.end_date && <div className="text-sm text-red-600 mt-1">{errors.end_date}</div>}
-                        </div>
-                    </div>
+                    {currentStage === 4 && (
+                        <VisibilityStage
+                            visibility={formData.visibility}
+                            onVisibilityChange={(visibility) =>
+                                setFormData((prev) => ({ ...prev, visibility }))
+                            }
+                        />
+                    )}
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Price</label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                value={price}
-                                onChange={e => setPrice(e.target.value)}
-                                placeholder="0.00"
-                            />
-                            {errors.price && <div className="text-sm text-red-600 mt-1">{errors.price}</div>}
-                        </div>
+                    {currentStage === 5 && (
+                        <ConfirmationStage
+                            formData={formData}
+                            imagePreview={imagePreview}
+                        />
+                    )}
+                </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Background Image</label>
-                            <input
-                                type="file"
-                                accept=".png,.jpg,.jpeg,.svg"
-                                className="mt-1 block w-full text-sm text-gray-700"
-                                onChange={e => setFile(e.target.files ? e.target.files[0] : null)}
-                            />
-                            {errors.background_image && <div className="text-sm text-red-600 mt-1">{errors.background_image}</div>}
-                        </div>
-                    </div>
+                {/* Navigation Buttons */}
+                <div className="flex justify-between gap-4">
+                    <button
+                        onClick={handlePreviousStage}
+                        disabled={currentStage === 1}
+                        className="px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                        ← Previous
+                    </button>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Latitude</label>
-                            <input
-                                type="text"
-                                inputMode="decimal"
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                value={latitude}
-                                onChange={e => setLatitude(e.target.value)}
-                                placeholder="e.g. 37.7749"
-                            />
-                            {errors.latitude && <div className="text-sm text-red-600 mt-1">{errors.latitude}</div>}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Longitude</label>
-                            <input
-                                type="text"
-                                inputMode="decimal"
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                value={longitude}
-                                onChange={e => setLongitude(e.target.value)}
-                                placeholder="e.g. -122.4194"
-                            />
-                            {errors.longitude && <div className="text-sm text-red-600 mt-1">{errors.longitude}</div>}
-                        </div>
-                    </div>
-
-                    <div>
+                    {currentStage < 5 ? (
                         <button
-                            type="submit"
-                            disabled={submitting}
-                            className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
+                            onClick={handleNextStage}
+                            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
                         >
-                            {submitting ? 'Submitting...' : 'Create'}
+                            Next →
                         </button>
-                    </div>
-                </form>
+                    ) : (
+                        <button
+                            onClick={handleSubmit}
+                            disabled={isSubmitting}
+                            className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        >
+                            {isSubmitting ? 'Publishing...' : 'Publish Event'}
+                        </button>
+                    )}
+                </div>
             </div>
         </main>
-    )
+    );
 }
