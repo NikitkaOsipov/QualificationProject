@@ -4,13 +4,13 @@ import React from 'react';
 
 const VISIBILITY_OPTIONS = [
     { value: 'public', label: 'Public - Anyone can see this event' },
-    { value: 'friends', label: 'Friends Only - Only your friends can see' },
+    { value: 'friends_only', label: 'Friends Only - Only your friends can see' },
     { value: 'private', label: 'Private - Invite only via link' },
 ];
 
 interface VisibilityStageProps {
-    visibility: 'public' | 'friends' | 'private';
-    onVisibilityChange: (visibility: 'public' | 'friends' | 'private') => void;
+    visibility: 'public' | 'friends_only' | 'private';
+    onVisibilityChange: (visibility: 'public' | 'friends_only' | 'private') => void;
 }
 
 const VisibilityStage = ({
@@ -30,7 +30,7 @@ const VisibilityStage = ({
                     <button
                         key={option.value}
                         type="button"
-                        onClick={() => onVisibilityChange(option.value as 'public' | 'friends' | 'private')}
+                        onClick={() => onVisibilityChange(option.value as 'public' | 'friends_only' | 'private')}
                         className={`w-full p-4 rounded-lg border-2 transition text-left ${
                             visibility === option.value
                                 ? 'border-blue-500 bg-blue-50'
@@ -73,7 +73,7 @@ const VisibilityStage = ({
                             <li>✓ Can be shared freely</li>
                         </>
                     )}
-                    {visibility === 'friends' && (
+                    {visibility === 'friends_only' && (
                         <>
                             <li>✓ Only your friends can see this event</li>
                             <li>✓ Event won't appear in public search</li>
@@ -101,5 +101,4 @@ const VisibilityStage = ({
 };
 
 export default VisibilityStage;
-
 

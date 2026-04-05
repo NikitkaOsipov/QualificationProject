@@ -16,10 +16,11 @@ class Event extends Model
         'end_date',
         'price' ,
         'background_image_path',
-        'lat', // NEXT TIME FIND out how you save lat and lng as it is saved somewhere else in db
+        'lat',
         'lng',
         'user_id',
         'address_id',
+        'event_visibility_id',
     ];
 
     public function getLatAttribute()
@@ -52,5 +53,10 @@ class Event extends Model
     public function categories()
     {
         return $this->belongsToMany(Category::class, 'event_category_mappings', 'event_id', 'category_id');
+    }
+
+    public function visibility()
+    {
+        return $this->belongsTo(EventVisibility::class, 'event_visibility_id');
     }
 }

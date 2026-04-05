@@ -38,19 +38,6 @@ const Timeline = ({ currentStage, totalStages }: TimelineProps) => {
                         >
                             {stage.label}
                         </p>
-
-                        {/* Connecting Line */}
-                        {index < stages.length - 1 && (
-                            <div
-                                className={`absolute h-1 w-full max-w-xs transition-all ${
-                                    stage.number < currentStage ? 'bg-blue-600' : 'bg-gray-200'
-                                }`}
-                                style={{
-                                    top: '1.5rem',
-                                    left: `calc(50% + 1.5rem)`,
-                                }}
-                            />
-                        )}
                     </div>
                 ))}
             </div>

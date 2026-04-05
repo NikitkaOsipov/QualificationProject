@@ -10,7 +10,7 @@ import DetailsStage from './Stage2Details';
 import VisualsStage from './Stage3Visuals';
 import VisibilityStage from './Stage4Visibility';
 import ConfirmationStage from './Stage5Confirmation';
-import { EventFormData, Category } from './types';
+import { EventFormData, Category } from '@/utils/Types';
 
 export default function CreateEventPage() {
     const router = useRouter();
@@ -131,13 +131,17 @@ export default function CreateEventPage() {
 
         if (isValid) {
             setCurrentStage((prev) => Math.min(prev + 1, 5));
-            window.scrollTo(0, 0);
+            if (typeof window !== 'undefined') {
+                window.scrollTo(0, 0);
+            }
         }
     }, [currentStage, validateStage1, validateStage2, validateStage3, validateStage4]);
 
     const handlePreviousStage = useCallback(() => {
         setCurrentStage((prev) => Math.max(prev - 1, 1));
-        window.scrollTo(0, 0);
+        if (typeof window !== 'undefined') {
+            window.scrollTo(0, 0);
+        }
     }, []);
 
     const handleSubmit = useCallback(async () => {
@@ -172,6 +176,8 @@ export default function CreateEventPage() {
             // TODO:
             // Add viability and error checks on backend
             // Make addresses work
+            // Make good map component
+            // Remove window reference from this component as it gives errors on build
 
             const response = await createPost(data);
 
@@ -246,7 +252,6 @@ export default function CreateEventPage() {
 
                     {currentStage === 3 && (
                         <VisualsStage
-                            backgroundImage={formData.backgroundImage}
                             categories={formData.categories}
                             categoryList={categories}
                             loadingCategories={loadingCategories}

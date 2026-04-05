@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { EventFormData, Category } from './types';
+import { EventFormData, Category } from '@/utils/Types';
 interface ConfirmationStageProps {
     formData: EventFormData;
     imagePreview: string | null;

@@ -33,6 +33,7 @@ class EventResource extends JsonResource
             'event_access_type_id' => $this->event_access_type_id,
             'event_type_id' => $this->event_type_id,
             'event_visibility_id' => $this->event_visibility_id,
+            'visibility' => $this->visibility?->name,
             'holiday_id' => $this->holiday_id,
             'updated_at' => $this->updated_at,
         ];

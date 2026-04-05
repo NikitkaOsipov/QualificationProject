@@ -1,3 +1,33 @@
+export type Visibility = 'public' | 'friends_only' | 'private';
+
+export interface EventFormData {
+    // Stage 1: Location
+    address: string;
+    latitude: number | null;
+    longitude: number | null;
+
+    // Stage 2: Details
+    title: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+    price: string;
+
+    // Stage 3: Visuals & Categories
+    backgroundImage: File | null;
+    categories: number[];
+
+    // Stage 4: Visibility
+    visibility: Visibility;
+
+    // Meta
+    errors: Record<string, string>;
+}
+
+export interface Category {
+    id: number;
+    name: string;
+}
 export interface User {
     id: number;
     name: string;

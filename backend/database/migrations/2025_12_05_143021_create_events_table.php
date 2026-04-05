@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->dateTime('start_date');
-            $table->dateTime('end_date');
+            $table->dateTime('end_date')->nullable();
             $table->decimal('price');
             $table->string('background_image_path')->nullable();
             $table->foreignId('event_visibility_id')->nullable()->constrained('event_visibilities')->onDelete('cascade');

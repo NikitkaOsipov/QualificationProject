@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { Category } from './types';
+import type { Category } from '@/utils/Types';
 import Loading from '@/components/Loading'
 
 interface VisualsStageProps {

@@ -6,6 +6,7 @@ use App\Models\Address;
 use App\Models\Event;
 use App\Models\EventGoing;
 use App\Models\EventInterested;
+use App\Models\EventVisibility;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -36,19 +37,14 @@ class EventController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'start_date' => 'required|date',
-            'end_date' => 'required|date',
+            'end_date' => 'nullable|date',
             'price' => 'nullable|numeric',
             'background_image' => 'nullable|file|image|mimes:jpeg,png,jpg,svg|max:2048',
             'lat' => 'required|numeric',
             'lng' => 'required|numeric',
             'categories' => 'nullable|array',
             'categories.*' => 'exists:event_categories,id',
-            'visibility' => 'nullable|string|in:public,friends,private',
-//            'event_type_id' => 'required|exists:event_types,id',
-//            'event_visibility_id' => 'required|exists:event_visibilities,id',
-//            'event_access_type_id' => 'required|exists:event_access_types,id',
-//            'address_id' => 'required|exists:addresses,id',
-//            'holiday_id' => 'nullable|exists:holidays,id',
+            'visibility' => 'nullable|string|in:public,friends_only,private',
         ]);
 
         $fields['price'] = $fields['price'] ?? 0;
@@ -59,12 +55,17 @@ class EventController extends Controller
         unset($fields['categories']);
         unset($fields['visibility']);
 
-        Log::info("Post -----------------------------------------------");
-        Log::info("Fields", [json_encode($fields)]);
+        // Get visibility id
+        $visibilityModel = EventVisibility::where('name', $visibility)->first();
+        if ($visibilityModel) {
+            $fields['event_visibility_id'] = $visibilityModel->id;
+        }
 
         $fields['start_date'] = Carbon::parse($fields['start_date'])->toDateTimeString();
-        $fields['end_date'] = Carbon::parse($fields['end_date'])->toDateTimeString();
 
+        if (isset($fields['end_date']) && $fields['end_date'] != null) {
+            $fields['end_date'] = Carbon::parse($fields['end_date'])->toDateTimeString();
+        }
 
         $address = Address::create([
             'lat' => $fields['lat'],
