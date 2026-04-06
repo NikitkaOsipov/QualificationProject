@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo} from 'react'
-import type { Props } from './Map'
 import dynamic from "next/dynamic"
 import Loading from '@/components/Loading'
+import { MapContainerProps } from 'react-leaflet'
 
-function DynamicMap(props: Props) {
+function DynamicMap(props: MapContainerProps) {
     const Map = useMemo(() => dynamic(
         () => import('./Map'),
         {

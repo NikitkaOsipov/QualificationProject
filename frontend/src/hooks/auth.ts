@@ -116,30 +116,29 @@ export const useAuth = ({
         if (!error) {
             await axios.post('/api/logout').then(() => mutate())
         }
-        console.log("LOGGED OUT");
-        window.location.pathname = '/login'
+        window.location.pathname = '/login';
     }
 
     useEffect(() => {
         if (middleware === 'guest' && redirectIfAuthenticated && user){
-            console.log("Redirect if authenticated")
-            router.push(redirectIfAuthenticated)
+            console.log("Redirect if authenticated");
+            router.push(redirectIfAuthenticated);
         }
 
-        if ((user && !user.email_verified_at)) {
-            //middleware === 'auth' &&
+        if (middleware === 'auth' && (user && !user.email_verified_at)) {
             console.log("Auth and email verify");
-            router.push('/verify-email')
+            router.push('/verify-email');
         }
 
         if (
             window.location.pathname === '/verify-email' &&
             user?.email_verified_at
         ) {
-            console.log("Redirect if authenticated and email")
             router.push(redirectIfAuthenticated)
         }
-        if (middleware === 'auth' && error) logout()
+        if (middleware === 'auth' && error) logout();
+        if (middleware === 'auth' && !user)
+            router.push('/');
     }, [user, error])
 
     return {

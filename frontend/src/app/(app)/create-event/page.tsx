@@ -11,6 +11,8 @@ import VisualsStage from './Stage3Visuals';
 import VisibilityStage from './Stage4Visibility';
 import ConfirmationStage from './Stage5Confirmation';
 import { EventFormData, Category } from '@/utils/Types';
+import { useAuth } from '@/hooks/auth';
+import Loading from '@/components/Loading';
 
 export default function CreateEventPage() {
     const router = useRouter();
@@ -20,6 +22,9 @@ export default function CreateEventPage() {
     const [serverError, setServerError] = useState<string | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
+
+    const { user } = useAuth({middleware: 'auth'});
+    if (!user) return <Loading />
 
     // Fetch categories once on mount
     useEffect(() => {
