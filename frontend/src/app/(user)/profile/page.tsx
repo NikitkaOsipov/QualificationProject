@@ -2,22 +2,24 @@
 
 import { useEffect, useState } from "react";
 import Tab from '@/components/User/ProfileTab';
-import { followUser, getUserProfile } from '@/utils/user_service'
-import { TABS, TabState, User } from '@/utils/Types'
-import { API_BASE_URL } from '@/Config/api'
-import ProfilePaginationTable from '@/components/User/ProfilePaginationTable'
-import { useAuth } from '@/hooks/auth'
-import Loading from '@/components/Loading'
+import { followUser, getUserProfile, sendFriendRequest, respondFriendRequest, removeFriend } from '@/utils/user_service';
+import { TabState, User, FriendshipStatus } from '@/utils/Types';
+import ProfilePaginationTable from '@/components/User/ProfilePaginationTable';
+import { useAuth } from '@/hooks/auth';
+import Loading from '@/components/Loading';
+import UserAvatar from '@/components/User/UserAvatar';
 
 const DefaultTab = "events";
 
 export default function ProfilePage() {
-    const [profileUser, setprofileUser] = useState<User | null>(null)
+    const [profileUser, setProfileUser] = useState<User | null>(null)
     const [isFollowing, setIsFollowing] = useState(false)
     const [isOwner, setIsOwner] = useState(false)
+    const [friendshipStatus, setFriendshipStatus] = useState<FriendshipStatus>('none')
     const [activeTab, setActiveTab] = useState<TabState>(DefaultTab)
+    const [actionLoading, setActionLoading] = useState(false)
 
-    const {user} = useAuth();
+    const { user } = useAuth();
 
     useEffect(() => {
         const id = typeof window !== "undefined"
@@ -26,100 +28,163 @@ export default function ProfilePage() {
 
         async function fetchUser() {
             if (!id) return
-
             const data = await getUserProfile(id);
-
-            setprofileUser(data.user)
+            setProfileUser(data.user)
             setIsFollowing(data.meta.isFollowing)
             setIsOwner(data.meta.isOwner)
+            setFriendshipStatus(data.meta.friendshipStatus)
         }
 
         fetchUser()
     }, [])
 
     const toggleFollow = async () => {
+        if (actionLoading) return;
+        setActionLoading(true);
         const response = await followUser(profileUser.id);
-
-        if (response.status == "ok") {
-            setIsFollowing(!isFollowing);
-        } else {
-            console.log(response.message);
-        }
+        if (response.status === "ok") setIsFollowing(prev => !prev);
+        setActionLoading(false);
     }
 
-    if (!profileUser) return <Loading/>;
+    const handleSendFriendRequest = async () => {
+        if (actionLoading) return;
+        setActionLoading(true);
+        const response = await sendFriendRequest(profileUser.id);
+        if (response.status === "ok") setFriendshipStatus('pending_sent');
+        setActionLoading(false);
+    }
+
+    const handleRespondRequest = async (action: 'accept' | 'decline') => {
+        if (actionLoading) return;
+        setActionLoading(true);
+        const response = await respondFriendRequest(profileUser.id, action);
+        if (response.status === "ok") setFriendshipStatus(action === 'accept' ? 'friends' : 'none');
+        setActionLoading(false);
+    }
+
+    const handleRemoveFriend = async () => {
+        if (actionLoading) return;
+        setActionLoading(true);
+        const response = await removeFriend(profileUser.id);
+        if (response.status === "ok") setFriendshipStatus('none');
+        setActionLoading(false);
+    }
+
+    if (!profileUser) return <Loading />;
 
     return (
         <div className="max-w-5xl mx-auto p-4 flex flex-col gap-6">
-            <div className="flex justify-between items-start gap-4">
+            {/* Header card */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                {/* Avatar + Name */}
                 <div className="flex items-center gap-4">
-                    <img
-                        src={profileUser.avatar || `${API_BASE_URL}/storage/AvatarImages/default.jpg`}
-                        alt={profileUser.name}
-                        className="w-20 h-20 rounded-full object-cover"
-                    />
-
-                    <h1 className="text-2xl font-semibold">
-                        {profileUser.name}
-                    </h1>
+                    <UserAvatar src={profileUser.avatar} name={profileUser.name} className="w-20 h-20 ring-2 ring-gray-100" />
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">{profileUser.name}</h1>
+                        {friendshipStatus === 'friends' && (
+                            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                                Friends
+                            </span>
+                        )}
+                    </div>
                 </div>
 
+                {/* Action buttons — only shown to logged-in non-owners */}
                 {(!isOwner && user) && (
-                    <button
-                        onClick={toggleFollow}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition
-                            ${isFollowing
-                            ? "bg-gray-200 text-gray-800"
-                            : "bg-blue-600 text-white hover:bg-blue-700"
-                        }`}
-                    >
-                        {isFollowing ? "Following" : "Follow"}
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                        {/* Follow button */}
+                        <button
+                            onClick={toggleFollow}
+                            disabled={actionLoading}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-60
+                                ${isFollowing
+                                    ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                    : "bg-blue-600 text-white hover:bg-blue-700"
+                                }`}
+                        >
+                            {isFollowing ? "Following" : "Follow"}
+                        </button>
+
+                        {/* Friend request button — state-driven */}
+                        {friendshipStatus === 'none' && (
+                            <button
+                                onClick={handleSendFriendRequest}
+                                disabled={actionLoading}
+                                className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-60"
+                            >
+                                Add Friend
+                            </button>
+                        )}
+
+                        {friendshipStatus === 'pending_sent' && (
+                            <button
+                                onClick={handleRemoveFriend}
+                                disabled={actionLoading}
+                                className="px-4 py-2 rounded-lg text-sm font-medium bg-yellow-50 text-yellow-700 border border-yellow-300 hover:bg-yellow-100 transition disabled:opacity-60"
+                            >
+                                Request Sent — Cancel
+                            </button>
+                        )}
+
+                        {friendshipStatus === 'pending_received' && (
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => handleRespondRequest('accept')}
+                                    disabled={actionLoading}
+                                    className="px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-60"
+                                >
+                                    Accept
+                                </button>
+                                <button
+                                    onClick={() => handleRespondRequest('decline')}
+                                    disabled={actionLoading}
+                                    className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition disabled:opacity-60"
+                                >
+                                    Decline
+                                </button>
+                            </div>
+                        )}
+
+                        {friendshipStatus === 'friends' && (
+                            <button
+                                onClick={handleRemoveFriend}
+                                disabled={actionLoading}
+                                className="px-4 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition disabled:opacity-60"
+                            >
+                                Unfriend
+                            </button>
+                        )}
+                    </div>
                 )}
             </div>
 
-            <div className="flex gap-6 text-sm text-gray-600 border-b pb-3">
-                <div><span className="font-semibold">{profileUser.stats.events}</span> Events</div>
-                <div><span className="font-semibold">{profileUser.stats.followers}</span> Followers</div>
-                <div><span className="font-semibold">{profileUser.stats.friends}</span> Friends</div>
+            {/* Stats row */}
+            <div className="flex gap-8 text-sm text-gray-600">
+                <div className="flex flex-col items-center">
+                    <span className="text-xl font-bold text-gray-900">{profileUser.stats.events}</span>
+                    <span>Events</span>
+                </div>
+                <div className="flex flex-col items-center">
+                    <span className="text-xl font-bold text-gray-900">{profileUser.stats.followers}</span>
+                    <span>Followers</span>
+                </div>
+                <div className="flex flex-col items-center">
+                    <span className="text-xl font-bold text-gray-900">{profileUser.stats.friends}</span>
+                    <span>Friends</span>
+                </div>
             </div>
 
-            <div className="flex gap-6 border-b">
-                <Tab
-                    label="Events"
-                    active={activeTab === "events"}
-                    onClick={() => setActiveTab("events")}
-                />
-
-                <Tab
-                    label="following"
-                    active={activeTab === "following"}
-                    onClick={() => setActiveTab("following")}
-                />
-
-                {/*<Tab*/}
-                {/*    label="friends"*/}
-                {/*    active={activeTab === "friends"}*/}
-                {/*    onClick={() => setActiveTab("friends")}*/}
-                {/*/>*/}
-
+            {/* Tabs */}
+            <div className="flex gap-6 border-b border-gray-200">
+                <Tab label="Events" active={activeTab === "events"} onClick={() => setActiveTab("events")} />
+                <Tab label="Following" active={activeTab === "following"} onClick={() => setActiveTab("following")} />
+                <Tab label="Friends" active={activeTab === "friends"} onClick={() => setActiveTab("friends")} />
                 {isOwner && (
-                    <>
-                        <Tab
-                            label="Comments"
-                            active={activeTab === "comments"}
-                            onClick={() => setActiveTab("comments")}
-                        />
-                        {/*<Tab*/}
-                        {/*    label="Likes"*/}
-                        {/*    active={activeTab === "likes"}*/}
-                        {/*    onClick={() => setActiveTab("likes")}*/}
-                        {/*/>*/}
-                    </>
+                    <Tab label="Comments" active={activeTab === "comments"} onClick={() => setActiveTab("comments")} />
                 )}
             </div>
 
-            <div className="mt-4">
+            <div className="mt-2">
                 <ProfilePaginationTable userId={profileUser.id} tab={activeTab} />
             </div>
         </div>

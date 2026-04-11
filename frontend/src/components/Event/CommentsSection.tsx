@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { createComment, getEventComments } from '@/utils/comment_service';
 import { Comment } from '@/utils/Types';
-import Loading from '@/components/Loading'
-import { API_BASE_URL } from '@/Config/api'
+import Loading from '@/components/Loading';
+import UserAvatar from '@/components/User/UserAvatar';
 
-const MIN_LENGTH = 3
-const MAX_LENGTH = 300
+const MIN_LENGTH = 3;
+const MAX_LENGTH = 300;
 
 interface Params {
     eventId: number | string;
@@ -14,8 +14,8 @@ interface Params {
 function CommentsSection({ eventId }: Params) {
     const [comments, setComments] = useState<Comment[] | null>();
 
-    const [newComment, setNewComment] = useState("")
-    const [error, setError] = useState("")
+    const [newComment, setNewComment] = useState("");
+    const [error, setError] = useState("");
 
     useEffect(() => {
         const getComments = async () => {
@@ -31,10 +31,10 @@ function CommentsSection({ eventId }: Params) {
     const validate = (text: string) => {
         const trimmedText = text.trim();
         if (trimmedText.length != 0 && trimmedText.length < MIN_LENGTH) {
-            return `Comment must be at least ${MIN_LENGTH} characters`
+            return `Comment must be at least ${MIN_LENGTH} characters`;
         }
         if (trimmedText.length > MAX_LENGTH) {
-            return `Comment must be less than ${MAX_LENGTH} characters`
+            return `Comment must be less than ${MAX_LENGTH} characters`;
         }
         return ""
     }
@@ -55,27 +55,12 @@ function CommentsSection({ eventId }: Params) {
         return date.toLocaleDateString();
     }
 
-    const getAvatarUrl = (user: any) => {
-        if (user.avatar_path) {
-            return `${API_BASE_URL}/storage/${user.avatar_path}`;
-        }
-        return null;
-    }
-
-    const getInitials = (name: string) => {
-        return name
-            .split(' ')
-            .map(n => n[0])
-            .join('')
-            .toUpperCase();
-    }
-
     const handleSubmit = async () => {
-        const validationError = validate(newComment)
+        const validationError = validate(newComment);
 
         if (validationError) {
-            setError(validationError)
-            return
+            setError(validationError);
+            return;
         }
 
         const result = await createComment(
@@ -148,18 +133,11 @@ function CommentsSection({ eventId }: Params) {
             {/* Comments */}
             <div className="flex flex-col gap-4">
                 {comments.map((c) => {
-                    const avatarUrl = getAvatarUrl(c.user);
-                    const initials = getInitials(c.user.name);
-
                     return (
                         <div key={c.id} className="border rounded-lg p-4 hover:bg-gray-50 transition">
                             <div className="flex gap-3 mb-2">
                                 <div className="flex-shrink-0">
-                                    <img
-                                        src={c.user.avatar || `${API_BASE_URL}/storage/AvatarImages/default.jpg`}
-                                        alt={c.user.name}
-                                        className="w-8 h-8 rounded-full object-cover"
-                                    />
+                                    <UserAvatar src={c.user.avatar} name={c.user.name} className="w-8 h-8" />
                                 </div>
 
                                 <div className="flex-1">

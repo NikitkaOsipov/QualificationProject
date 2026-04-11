@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Friend;
 use App\Notifications\ResetPasswordNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -79,5 +80,20 @@ class User extends Authenticatable implements MustVerifyEmail
     public function followers()
     {
         return $this->belongsToMany(User::class, 'followers', 'target_id', 'follower_id');
+    }
+
+    public function friends()
+    {
+        return User::where(function ($q) {
+            $q->whereIn('id', Friend::where('user1_id', $this->id)->pluck('user2_id'))
+              ->orWhereIn('id', Friend::where('user2_id', $this->id)->pluck('user1_id'));
+        });
+    }
+
+    public function friendsCount(): int
+    {
+        return Friend::where('user1_id', $this->id)
+            ->orWhere('user2_id', $this->id)
+            ->count();
     }
 }

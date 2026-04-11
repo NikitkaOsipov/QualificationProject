@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\EventResource;
 use App\Http\Resources\UserResource;
+use App\Models\Friend;
+use App\Models\FriendshipRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,21 +35,30 @@ class ProfileController extends Controller
     {
         $authUser = Auth::user();
 
-        $eventsCount = $user->events()->count();
+        $eventsCount    = $user->events()->count();
         $followersCount = $user->followers()->count();
-        $friendsCount = $user->followers()
-            ->whereIn('follower_id', $user->following()->pluck('users.id'))
-            ->count();
+        $friendsCount   = $user->friendsCount();
 
-        $isFollowing = false;
-        $isOwner = false;
+        $isFollowing      = false;
+        $isOwner          = false;
+        $friendshipStatus = 'none'; // none | pending_sent | pending_received | friends
 
         if ($authUser) {
-            $isFollowing = $authUser->following()
-                ->where('target_id', $user->id)
-                ->exists();
+            $isFollowing = $authUser->following()->where('target_id', $user->id)->exists();
+            $isOwner     = $authUser->id === $user->id;
 
-            $isOwner = $authUser->id === $user->id;
+            if (!$isOwner) {
+                if (Friend::areFriends($authUser->id, $user->id)) {
+                    $friendshipStatus = 'friends';
+                } else {
+                    $req = FriendshipRequest::getBetween($authUser->id, $user->id);
+                    if ($req) {
+                        $friendshipStatus = $req->user_id === $authUser->id
+                            ? 'pending_sent'
+                            : 'pending_received';
+                    }
+                }
+            }
         }
 
         return response()->json([
@@ -64,7 +75,8 @@ class ProfileController extends Controller
             'meta' => [
                 'isFollowing' => $isFollowing,
                 'isOwner' => $isOwner,
-            ]
+                'friendshipStatus' => $friendshipStatus,
+            ],
         ]);
     }
 
@@ -121,8 +133,7 @@ class ProfileController extends Controller
      */
     public function friends(User $user)
     {
-//        return response()->json(
-//            $friends->paginate(10)
-//        );
+        $friends = $user->friends()->paginate(10);
+        return UserResource::collection($friends);
     }
 }

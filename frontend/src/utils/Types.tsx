@@ -43,11 +43,14 @@ export interface User {
         friends: number;
     }
 }
+export type FriendshipStatus = 'none' | 'pending_sent' | 'pending_received' | 'friends';
+
 export interface UserProfile {
     user: User;
     meta: {
         isFollowing: boolean,
         isOwner: boolean,
+        friendshipStatus: FriendshipStatus,
     }
 }
 

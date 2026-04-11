@@ -2,4 +2,9 @@
 
 use App\Http\Controllers\UserController;
 
-Route::post('/users/{targetUser}/follow', [UserController::class, 'follow'])->middleware('auth');
+Route::middleware('auth')->group(function () {
+    Route::post('/users/{targetUser}/follow', [UserController::class, 'follow']);
+    Route::post('/users/{targetUser}/friend-request', [UserController::class, 'sendFriendRequest']);
+    Route::post('/users/{targetUser}/friend-request/respond', [UserController::class, 'respondFriendRequest']);
+    Route::delete('/users/{targetUser}/friend', [UserController::class, 'removeFriend']);
+});
