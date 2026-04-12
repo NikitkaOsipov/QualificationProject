@@ -1,0 +1,250 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { AppNotification } from '@/utils/Types';
+import NotificationItem from '@/components/NotificationItem';
+import {
+    getNotifications,
+    markAllNotificationsAsRead,
+    markNotificationAsRead,
+    deleteNotification,
+    deleteAllNotifications,
+} from '@/utils/notification_service';
+import { configureAppEcho, getEcho } from '@/lib/echo';
+
+interface Props {
+    user: { id: number | string } | null | undefined;
+}
+
+const MAX_VISIBLE_NOTIFICATIONS = 8;
+const MAX_BUFFERED_NOTIFICATIONS = 50;
+
+const Notifications = ({ user }: Props) => {
+    const [notificationOpen, setNotificationOpen] = useState(false);
+    const [notifications, setNotifications] = useState<AppNotification[]>([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+    const latestNotifications = useMemo(
+        () => notifications.slice(0, MAX_VISIBLE_NOTIFICATIONS),
+        [notifications],
+    );
+
+    const mapNotification = (payload: any): AppNotification => {
+        const timestamp = payload.created_at ?? new Date().toISOString();
+
+        return {
+            id: String(payload.id),
+            read_at: payload.read_at ?? null,
+            created_at: timestamp,
+            data: payload.data,
+        };
+    };
+
+    // Check if user clicks outside of notification window
+    useEffect(() => {
+        if (!notificationOpen) {
+            return;
+        }
+
+        const handleDocumentPointerDown = (event: PointerEvent) => {
+            const target = event.target as Node | null;
+
+            if (!target || dropdownRef.current?.contains(target)) {
+                return;
+            }
+
+            setNotificationOpen(false);
+        };
+
+        document.addEventListener('pointerdown', handleDocumentPointerDown);
+
+        return () => {
+            document.removeEventListener('pointerdown', handleDocumentPointerDown);
+        };
+    }, [notificationOpen]);
+
+    // Fetches notifications if user is logged in
+    useEffect(() => {
+        if (!user) {
+            setNotifications([]);
+            setUnreadCount(0);
+            return;
+        }
+
+        let isActive = true;
+
+        getNotifications(1, 20)
+            .then((response) => {
+                if (!isActive) {
+                    return;
+                }
+
+                setNotifications(response.data.data.slice(0, MAX_BUFFERED_NOTIFICATIONS));
+                setUnreadCount(response.meta.unread_count);
+            })
+            .catch(() => {
+                if (!isActive) {
+                    return;
+                }
+
+                setNotifications([]);
+                setUnreadCount(0);
+            });
+
+        return () => {
+            isActive = false;
+        };
+    }, [user?.id]);
+
+    // Sets up Echo listener for real-time notifications.
+    useEffect(() => {
+        if (!user) {
+            return;
+        }
+
+        // Prevents stale async flow from updating state after unmount or user switch.
+        let isActive = true;
+        const channelName = `App.Models.User.${user.id}`;
+
+        void (async () => {
+            await configureAppEcho();
+
+            if (!isActive) {
+                return;
+            }
+
+            const echo = getEcho();
+
+            if (!echo) {
+                return;
+            }
+
+            echo.private(channelName).notification((incoming: any) => {
+                const mapped = mapNotification(incoming);
+
+                setNotifications((prev) =>
+                    [mapped, ...prev.filter((item) => item.id !== mapped.id)].slice(0, MAX_BUFFERED_NOTIFICATIONS),
+                );
+                setUnreadCount((prev) => prev + 1);
+            });
+        })();
+
+        return () => {
+            isActive = false;
+            const echo = getEcho();
+            echo?.leave(channelName);
+        };
+    }, [user?.id]);
+
+    const handleNotificationClick = async (notificationId: string) => {
+        const target = notifications.find((item) => item.id === notificationId);
+
+        if (!target || target.read_at) {
+            return;
+        }
+
+        await markNotificationAsRead(notificationId);
+
+        setNotifications((prev) =>
+            prev.map((item) =>
+                item.id === notificationId ? { ...item, read_at: new Date().toISOString() } : item,
+            ),
+        );
+        setUnreadCount((prev) => Math.max(prev - 1, 0));
+    };
+
+    const handleReadAll = async () => {
+        await markAllNotificationsAsRead();
+        setNotifications((prev) =>
+            prev.map((item) => ({ ...item, read_at: item.read_at ?? new Date().toISOString() })),
+        );
+        setUnreadCount(0);
+    };
+
+    const handleDeleteNotification = async (notificationId: string) => {
+        try {
+            await deleteNotification(notificationId);
+            setNotifications((prev) => prev.filter((item) => item.id !== notificationId));
+
+            // Update unread count if the deleted notification was unread.
+            const deletedNotification = notifications.find((item) => item.id === notificationId);
+            if (deletedNotification && !deletedNotification.read_at) {
+                setUnreadCount((prev) => Math.max(prev - 1, 0));
+            }
+        } catch (error) {
+            console.error('Failed to delete notification:', error);
+        }
+    };
+
+    const handleClearAll = async () => {
+        try {
+            await deleteAllNotifications();
+            setNotifications([]);
+            setUnreadCount(0);
+        } catch (error) {
+            console.error('Failed to clear notifications:', error);
+        }
+    };
+
+    return (
+        <div ref={dropdownRef} className="relative">
+            <button
+                onClick={() => setNotificationOpen((value) => !value)}
+                className="relative rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                aria-label="Notifications"
+            >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {unreadCount > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-semibold leading-none text-white">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                )}
+            </button>
+
+            {notificationOpen && (
+                <div className="absolute right-0 z-20 mt-2 w-96 rounded-lg border border-gray-200 bg-white shadow-lg">
+                    <div className="flex items-center justify-between border-b border-gray-100 px-4 py-2">
+                        <span className="text-sm font-semibold text-gray-900">Notifications</span>
+                        <div className="flex gap-2">
+                            {latestNotifications.length > 0 && (
+                                <button
+                                    onClick={handleClearAll}
+                                    className="text-xs font-medium text-red-600 hover:text-red-700"
+                                >
+                                    Clear all
+                                </button>
+                            )}
+                            {unreadCount > 0 && (
+                                <button
+                                    onClick={handleReadAll}
+                                    className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                                >
+                                    Mark all as read
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="max-h-96 overflow-y-auto py-1">
+                        {latestNotifications.length === 0 && (
+                            <div className="px-4 py-5 text-sm text-gray-500">No notifications yet.</div>
+                        )}
+
+                        {latestNotifications.map((notification) => (
+                            <NotificationItem
+                                key={notification.id}
+                                notification={notification}
+                                onClick={handleNotificationClick}
+                                onClose={() => setNotificationOpen(false)}
+                                onDelete={handleDeleteNotification}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default Notifications;

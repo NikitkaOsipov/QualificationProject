@@ -6,6 +6,7 @@ use App\Models\Friend;
 use App\Notifications\ResetPasswordNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -24,7 +25,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
-        'avatar_path'
+        'avatar_path',
+        'read_at'
     ];
 
     /**
@@ -95,5 +97,31 @@ class User extends Authenticatable implements MustVerifyEmail
         return Friend::where('user1_id', $this->id)
             ->orWhere('user2_id', $this->id)
             ->count();
+    }
+
+    /**
+     * Returns users notification preferences.
+     */
+    public function notificationPreferences(): HasMany
+    {
+        return $this->hasMany(NotificationPreference::class);
+    }
+
+    /**
+     * Check if a specific notification type is enabled for the user. (user can change it in preferences)
+     */
+    public function notificationTypeEnabled(string $type): bool
+    {
+        if ($this->relationLoaded('notificationPreferences')) {
+            $preference = $this->notificationPreferences->firstWhere('type', $type);
+
+            return $preference?->is_enabled ?? true;
+        }
+
+        $preference = $this->notificationPreferences()
+            ->where('type', $type)
+            ->first();
+
+        return $preference?->is_enabled ?? true;
     }
 }

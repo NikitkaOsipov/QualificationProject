@@ -1,5 +1,6 @@
 "use client";
 
+import '@/lib/echo-init'; // Initializes echo before everything else
 import { Nunito } from 'next/font/google';
 import '@/app/global.css';
 import { useAuth } from '@/hooks/auth';

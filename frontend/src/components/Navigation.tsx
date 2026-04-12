@@ -10,13 +10,13 @@ import { useAuth } from '@/hooks/auth'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import LoginLinks from '@/app/LoginLinks'
-import { TextField } from '@mui/material'
+import Notifications from '@/components/Notifications'
 
 const Navigation = ({ user }) => {
     const { logout } = useAuth()
+    const pathname = usePathname()
 
     const [open, setOpen] = useState(false)
-    const [searchValue, setSearchValue] = useState('')
 
     return (
         <nav className="bg-white border-b border-gray-100">
@@ -48,7 +48,7 @@ const Navigation = ({ user }) => {
                         <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                             <NavLink
                                 href="/events"
-                                active={usePathname() === '/events'}>
+                                active={pathname === '/events'}>
                                 Events
                             </NavLink>
                         </div>
@@ -56,7 +56,7 @@ const Navigation = ({ user }) => {
                         <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                             <NavLink
                                 href="/map"
-                                active={usePathname() === '/map'}>
+                                active={pathname === '/map'}>
                                 Map View
                             </NavLink>
                         </div>
@@ -75,7 +75,9 @@ const Navigation = ({ user }) => {
                         {/* Settings Dropdown */}
                         {
                             user ? (
-                                <div className="hidden sm:flex sm:items-center">
+                                <div className="hidden sm:flex sm:items-center gap-3">
+                                    <Notifications user={user} />
+
                                     <Dropdown
                                         align="right"
                                         width={48}
@@ -156,7 +158,7 @@ const Navigation = ({ user }) => {
                     <div className="pt-2 pb-3 space-y-1">
                         <ResponsiveNavLink
                             href="/map"
-                            active={usePathname() === '/map'}>
+                            active={pathname === '/map'}>
                             Map view
                         </ResponsiveNavLink>
                     </div>
@@ -194,7 +196,7 @@ const Navigation = ({ user }) => {
                                 {/* Profile Link */}
                                 <ResponsiveNavLink
                                     href={`/profile?id=${user?.id}`}
-                                    active={usePathname() === '/profile'}>
+                                    active={pathname === '/profile'}>
                                     Profile
                                 </ResponsiveNavLink>
 

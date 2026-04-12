@@ -7,6 +7,7 @@ use App\Models\Address;
 use App\Models\Comment;
 use App\Models\Event;
 use App\Models\User;
+use App\Notifications\CommentReceivedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -46,6 +47,20 @@ class CommentsController extends Controller
 
         try {
             $comment = Comment::create($fields);
+
+            $event = Event::query()->find($fields['event_id']);
+
+            if ($event && $event->user_id !== Auth::id()) {
+                $eventOwner = User::query()->find($event->user_id);
+
+                if ($eventOwner) {
+                    $eventOwner->notify(new CommentReceivedNotification(
+                        Auth::user(),
+                        $event->id,
+                        $event->title,
+                    ));
+                }
+            }
         } catch (\Exception $exception) {
             Log::info('Error'. $exception->getMessage());
 

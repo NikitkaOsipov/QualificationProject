@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\UserController;
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users/{targetUser}/follow', [UserController::class, 'follow']);
     Route::post('/users/{targetUser}/friend-request', [UserController::class, 'sendFriendRequest']);
     Route::post('/users/{targetUser}/friend-request/respond', [UserController::class, 'respondFriendRequest']);

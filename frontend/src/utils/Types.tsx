@@ -28,6 +28,7 @@ export interface Category {
     id: number;
     name: string;
 }
+
 export interface User {
     id: number;
     name: string;
@@ -41,17 +42,18 @@ export interface User {
         events: number;
         followers: number;
         friends: number;
-    }
+    };
 }
+
 export type FriendshipStatus = 'none' | 'pending_sent' | 'pending_received' | 'friends';
 
 export interface UserProfile {
     user: User;
     meta: {
-        isFollowing: boolean,
-        isOwner: boolean,
-        friendshipStatus: FriendshipStatus,
-    }
+        isFollowing: boolean;
+        isOwner: boolean;
+        friendshipStatus: FriendshipStatus;
+    };
 }
 
 export interface Post {
@@ -66,23 +68,23 @@ export interface Address {
 }
 
 export interface EventType {
-    id: number
-    title: string
-    description?: string
-    start_date?: string
-    end_date?: string
-    price?: number
-    address: Address
-    backgroundImage?: string
+    id: number;
+    title: string;
+    description?: string;
+    start_date?: string;
+    end_date?: string;
+    price?: number;
+    address: Address;
+    backgroundImage?: string;
 }
 
 // Result of the event request (Details page for event)
 export interface EventResponse {
-    event: EventType
+    event: EventType;
     meta: {
-        isInterested: boolean
-        isGoing: boolean
-    }
+        isInterested: boolean;
+        isGoing: boolean;
+    };
 }
 
 export interface MarkerType {
@@ -108,7 +110,7 @@ export interface ValidationErrors {
 }
 
 export interface CreateResponse {
-    status: "ok" | "error";
+    status: 'ok' | 'error';
     message?: string;
     errors?: ValidationErrors;
 }
@@ -119,11 +121,41 @@ export interface Category {
 }
 
 // Profile
-export const TABS = ["events", "comments", "likes", "following", "friends"] as const;
+export const TABS = ['events', 'comments', 'likes', 'following', 'friends'] as const;
 export type TabState = typeof TABS[number];
 
 export interface ProfileTabResponse {
     data: any[];
     current_page: number;
     last_page: number;
+}
+
+export type NotificationType =
+    | 'friend_request_received'
+    | 'friend_request_accepted'
+    | 'comment_received';
+
+export interface AppNotification {
+    id: string;
+    read_at: string | null;
+    created_at: string;
+    data: {
+        notification_type: NotificationType;
+        title: string;
+        body: string;
+        actor?: {
+            id: number;
+            name: string;
+            avatar?: string | null;
+        };
+        resource?: {
+            type: 'user' | 'event';
+            id: number;
+        };
+    };
+}
+
+export interface NotificationPreference {
+    type: NotificationType;
+    is_enabled: boolean;
 }

@@ -6,6 +6,8 @@ use App\Models\Follower;
 use App\Models\Friend;
 use App\Models\FriendshipRequest;
 use App\Models\User;
+use App\Notifications\FriendRequestAcceptedNotification;
+use App\Notifications\FriendRequestReceivedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
@@ -91,6 +93,8 @@ class UserController extends Controller
                 'status'      => 'pending',
             ]);
 
+            $targetUser->notify(new FriendRequestReceivedNotification($authUser));
+
             return response()->json(['status' => 'ok', 'message' => 'Friend request sent']);
         } catch (Throwable $e) {
             \Log::error('sendFriendRequest failed', ['error' => $e->getMessage()]);
@@ -116,6 +120,9 @@ class UserController extends Controller
             if ($request->action === 'accept') {
                 $friendRequest->update(['status' => 'accepted']);
                 Friend::create(['user1_id' => $targetUser->id, 'user2_id' => $authUser->id]);
+
+                $targetUser->notify(new FriendRequestAcceptedNotification($authUser));
+
                 return response()->json(['status' => 'ok', 'message' => 'Friend request accepted']);
             } else {
                 $friendRequest->update(['status' => 'declined']);
