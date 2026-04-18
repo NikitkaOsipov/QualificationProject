@@ -26,7 +26,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'avatar_path',
-        'read_at'
+        'read_at',
+        'type',
+        'in_app_enabled',
+        'email_enabled'
     ];
 
     /**
@@ -112,16 +115,43 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function notificationTypeEnabled(string $type): bool
     {
-        if ($this->relationLoaded('notificationPreferences')) {
-            $preference = $this->notificationPreferences->firstWhere('type', $type);
+        return count($this->notificationChannelsForType($type)) > 0;
+    }
 
-            return $preference?->is_enabled ?? true;
+    /**
+     * Returns all channels that are enabled for the notification type.
+     *
+     * @return array<int, string>
+     */
+    public function notificationChannelsForType(string $type): array
+    {
+        $preference = $this->getNotificationPreferenceForType($type);
+
+        $inAppEnabled = $preference?->in_app_enabled ?? true;
+        $emailEnabled = $preference?->email_enabled ?? false;
+
+        $channels = [];
+
+        if ($inAppEnabled) {
+            $channels[] = 'database';
+            $channels[] = 'broadcast';
         }
 
-        $preference = $this->notificationPreferences()
+        if ($emailEnabled) {
+            $channels[] = 'mail';
+        }
+
+        return $channels;
+    }
+
+    private function getNotificationPreferenceForType(string $type): ?NotificationPreference
+    {
+        if ($this->relationLoaded('notificationPreferences')) {
+            return $this->notificationPreferences->firstWhere('type', $type);
+        }
+
+        return $this->notificationPreferences()
             ->where('type', $type)
             ->first();
-
-        return $preference?->is_enabled ?? true;
     }
 }

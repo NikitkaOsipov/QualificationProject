@@ -8,6 +8,7 @@ use App\Support\NotificationMapper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class FriendRequestReceivedNotification extends Notification implements ShouldQueue
@@ -27,11 +28,16 @@ class FriendRequestReceivedNotification extends Notification implements ShouldQu
             return [];
         }
 
-        if (! $notifiable->notificationTypeEnabled(NotificationType::FriendRequestReceived->value)) {
-            return [];
-        }
+        return $notifiable->notificationChannelsForType(NotificationType::FriendRequestReceived->value);
+    }
 
-        return ['database', 'broadcast'];
+    public function toMail(object $notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('New friend request')
+            ->greeting('Hello!')
+            ->line("{$this->sender->name} sent you a friend request.")
+            ->line('Open the app to accept or decline the request.');
     }
 
     public function toBroadcast(object $notifiable): BroadcastMessage

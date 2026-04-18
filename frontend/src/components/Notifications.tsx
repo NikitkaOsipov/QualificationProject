@@ -185,6 +185,7 @@ const Notifications = ({ user }: Props) => {
         }
     };
 
+
     return (
         <div ref={dropdownRef} className="relative">
             <button

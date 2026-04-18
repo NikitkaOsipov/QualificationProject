@@ -23,6 +23,11 @@ interface NotificationStatusResponse {
     message?: string;
 }
 
+interface NotificationPreferenceUpdatePayload {
+    in_app_enabled?: boolean;
+    email_enabled?: boolean;
+}
+
 export const getNotifications = (page = 1, perPage = 10): Promise<NotificationListResponse> =>
     axios.get('/api/notifications', {
         params: {
@@ -42,3 +47,13 @@ export const deleteNotification = (notificationId: string) =>
 
 export const deleteAllNotifications = () =>
     axios.delete('/api/notifications').then((r) => r.data as NotificationStatusResponse);
+
+export const getNotificationPreferences = () =>
+    axios.get('/api/notification-preferences').then((r) => r.data as NotificationPreferencesResponse);
+
+export const updateNotificationPreference = (
+    type: NotificationType,
+    payload: NotificationPreferenceUpdatePayload,
+) =>
+    axios.put(`/api/notification-preferences/${type}`, payload).then((r) => r.data as NotificationStatusResponse);
+

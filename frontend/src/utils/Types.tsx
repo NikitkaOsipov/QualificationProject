@@ -157,5 +157,6 @@ export interface AppNotification {
 
 export interface NotificationPreference {
     type: NotificationType;
-    is_enabled: boolean;
+    in_app_enabled: boolean;
+    email_enabled: boolean;
 }

@@ -106,6 +106,12 @@ const Navigation = ({ user }) => {
                                             </DropdownButton>
                                         </Link>
 
+                                        <Link href="/settings">
+                                            <DropdownButton>
+                                                Settings
+                                            </DropdownButton>
+                                        </Link>
+
                                         {/* Authentication */}
                                         <DropdownButton onClick={logout}>
                                             Logout
@@ -198,6 +204,12 @@ const Navigation = ({ user }) => {
                                     href={`/profile?id=${user?.id}`}
                                     active={pathname === '/profile'}>
                                     Profile
+                                </ResponsiveNavLink>
+
+                                <ResponsiveNavLink
+                                    href="/settings"
+                                    active={pathname === '/settings'}>
+                                    Settings
                                 </ResponsiveNavLink>
 
                                 {/* Authentication */}

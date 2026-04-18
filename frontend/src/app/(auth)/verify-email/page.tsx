@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/auth'
 import { useState } from 'react'
 
 const Page = () => {
-    const { logout, resendEmailVerification, exceptEmailVerification } = useAuth({
+    const { logout, resendEmailVerification } = useAuth({
         middleware: 'auth',
         redirectIfAuthenticated: '/',
     })

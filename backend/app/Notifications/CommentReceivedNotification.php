@@ -8,6 +8,7 @@ use App\Support\NotificationMapper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class CommentReceivedNotification extends Notification implements ShouldQueue
@@ -26,18 +27,20 @@ class CommentReceivedNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        // if not user return nothing
         if (! $notifiable instanceof User) {
             return [];
         }
 
-        // If user chose preference to not receive notification return nothing
-        if (! $notifiable->notificationTypeEnabled(NotificationType::CommentReceived->value)) {
-            return [];
-        }
+        return $notifiable->notificationChannelsForType(NotificationType::CommentReceived->value);
+    }
 
-        // Otherwise send through database and broadcast
-        return ['database', 'broadcast'];
+    public function toMail(object $notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('New comment on your event')
+            ->greeting('Hello!')
+            ->line("{$this->commenter->name} commented on your event \"{$this->eventTitle}\".")
+            ->line('Open the app to read and reply.');
     }
 
     /**

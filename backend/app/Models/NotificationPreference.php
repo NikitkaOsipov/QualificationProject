@@ -10,13 +10,15 @@ class NotificationPreference extends Model
     protected $fillable = [
         'user_id',
         'type',
-        'is_enabled',
+        'in_app_enabled',
+        'email_enabled',
     ];
 
     protected function casts()
     {
         return [
-            'is_enabled' => 'boolean',
+            'in_app_enabled' => 'boolean',
+            'email_enabled' => 'boolean',
         ];
     }
 
