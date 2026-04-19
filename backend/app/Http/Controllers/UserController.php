@@ -10,17 +10,13 @@ use App\Notifications\FriendRequestAcceptedNotification;
 use App\Notifications\FriendRequestReceivedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
+    // How long will online indicator will live in cash
+    private const ONLINE_TTL_SECONDS = 90;
 
     public function follow(User $targetUser)
     {
@@ -158,42 +154,85 @@ class UserController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Return authenticated user friends with computed online state.
      */
-    public function store(Request $request)
+    public function friends(Request $request)
     {
-        //
+        $authUser = Auth::user();
+
+        $search = trim((string) $request->query('search', ''));
+        $limit = (int) $request->query('limit', 200);
+        $limit = max(1, min($limit, 500));
+
+        $query = $authUser->friends()->select(['users.id', 'users.name', 'users.email', 'users.avatar_path']);
+
+        if ($search !== '') {
+            $query->where(function ($builder) use ($search) {
+                $builder
+                    ->where('users.name', 'like', "%{$search}%")
+                    ->orWhere('users.email', 'like', "%{$search}%");
+            });
+        }
+
+        $friends = $query
+            ->orderBy('users.name')
+            ->limit($limit)
+            ->get();
+
+        $now = now();
+
+        $friendsPayload = $friends->map(function (User $friend) use ($now) {
+                $lastSeenAt = Cache::get($this->onlineCacheKey($friend->id));
+                $isOnline = false;
+
+                if ($lastSeenAt) {
+                    try {
+                        $isOnline = $now->diffInSeconds(\Carbon\Carbon::parse($lastSeenAt)) <= self::ONLINE_TTL_SECONDS;
+                    } catch (\Throwable $exception) {
+                        $isOnline = false;
+                    }
+                }
+
+                return [
+                    'id' => $friend->id,
+                    'name' => $friend->name,
+                    'email' => $friend->email,
+                    'avatar_path' => $friend->avatar_path,
+                    'is_online' => $isOnline,
+                ];
+            }) // Sort that online friends are on top, and then by name
+            ->sort(function (array $left, array $right) {
+                if ($left['is_online'] !== $right['is_online']) {
+                    return $left['is_online'] ? -1 : 1;
+                }
+
+                return strcasecmp($left['name'], $right['name']);
+            })
+            ->values();
+
+        return response()->json([
+            'data' => $friendsPayload,
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(user $targetUser)
-    {
-        //
-    }
+    // Help functions
 
     /**
-     * Show the form for editing the specified resource.
+     * Update authenticated user online status timestamp
      */
-    public function edit(user $targetUser)
+    public function updateOnlineStatus()
     {
-        //
+        $authUser = Auth::user();
+        Cache::put($this->onlineCacheKey($authUser->id), now()->toIso8601String(), now()->addSeconds(self::ONLINE_TTL_SECONDS * 2));
+
+        return response()->json([
+            'status' => 'ok',
+            'is_online' => true,
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, user $targetUser)
+    private function onlineCacheKey(int $userId): string
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(user $targetUser)
-    {
-        //
+        return "user-online:{$userId}";
     }
 }

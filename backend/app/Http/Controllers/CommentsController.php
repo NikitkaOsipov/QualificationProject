@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\CommentResource;
-use App\Models\Address;
 use App\Models\Comment;
 use App\Models\Event;
 use App\Models\User;
 use App\Notifications\CommentReceivedNotification;
+use App\Support\EventHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -17,23 +17,7 @@ use Illuminate\Support\Facades\Storage;
 class CommentsController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Store a newly created comment in storage.
      */
     public function store(Request $request)
     {
@@ -42,13 +26,24 @@ class CommentsController extends Controller
             'event_id' => 'required|integer|exists:events,id',
         ]);
 
+        $event = Event::query()->find($fields['event_id']);
+        if (! $event) {
+            return response()->json([
+                'error' => 'Event not found.',
+            ], 404);
+        }
+
+        if (! EventHelper::canUserAccessEvent(Auth::user(), $event)) {
+            return response()->json([
+                'error' => 'You do not have access to this event.',
+            ], 403);
+        }
+
         Log::info(Auth::id());
         $fields['user_id'] = Auth::id();
 
         try {
             $comment = Comment::create($fields);
-
-            $event = Event::query()->find($fields['event_id']);
 
             if ($event && $event->user_id !== Auth::id()) {
                 $eventOwner = User::query()->find($event->user_id);
@@ -80,6 +75,12 @@ class CommentsController extends Controller
      */
     public function eventComments(Event $event)
     {
+        if (! EventHelper::canUserAccessEvent(Auth::user(), $event)) {
+            return response()->json([
+                'error' => 'You do not have access to this event.',
+            ], 403);
+        }
+
         Log::info("---------------------------------Comments");
 //        Log::info(CommentResource::collection($event->comments));
         Log::info("---------------------------------Comments");
@@ -93,27 +94,4 @@ class CommentsController extends Controller
         return response()->json($user->comments());
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Comment $comment)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Comment $comment)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Comment $comment)
-    {
-        //
-    }
 }

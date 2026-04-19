@@ -12,6 +12,9 @@ import UserAvatar from '@/components/User/UserAvatar';
 const DefaultTab = "events";
 
 export default function ProfilePage() {
+    const [profileId, setProfileId] = useState<string | null>(null);
+    const [profileError, setProfileError] = useState<string | null | undefined>(undefined);
+
     const [profileUser, setProfileUser] = useState<User | null>(null)
     const [isFollowing, setIsFollowing] = useState(false)
     const [isOwner, setIsOwner] = useState(false)
@@ -21,22 +24,96 @@ export default function ProfilePage() {
 
     const { user } = useAuth();
 
+    // As page files are statically generated I can't use useSearchParams to easily check id.
+    // So when user changes id in search params it should update page. This is what this useEffect for.
     useEffect(() => {
-        const id = typeof window !== "undefined"
-            ? new URLSearchParams(window.location.search).get("id")
-            : null
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        const readProfileId = () => new URLSearchParams(window.location.search).get('id');
+
+        const onUrlChange = () => {
+            const id = readProfileId();
+            setProfileId(id);
+            setProfileError(id ? null : 'Lietotajs nav atrasts. Parbaudiet profila saiti.');
+        };
+
+        const emitUrlChangeAsync = () => {
+            // Defer to next tick to avoid scheduling React updates in sensitive render/effect phases.
+            setTimeout(() => {
+                window.dispatchEvent(new Event('app:url-change'));
+            }, 0);
+        };
+
+        onUrlChange();
+
+        const originalPushState = window.history.pushState;
+        const originalReplaceState = window.history.replaceState;
+
+        window.history.pushState = function (...args) {
+            originalPushState.apply(this, args as Parameters<History['pushState']>);
+            emitUrlChangeAsync();
+        };
+
+        window.history.replaceState = function (...args) {
+            originalReplaceState.apply(this, args as Parameters<History['replaceState']>);
+            emitUrlChangeAsync();
+        };
+
+        window.addEventListener('popstate', onUrlChange);
+        window.addEventListener('app:url-change', onUrlChange);
+
+        return () => {
+            window.history.pushState = originalPushState;
+            window.history.replaceState = originalReplaceState;
+            window.removeEventListener('popstate', onUrlChange);
+            window.removeEventListener('app:url-change', onUrlChange);
+        };
+    }, []);
+
+    useEffect(() => {
+        let isCancelled = false;
 
         async function fetchUser() {
-            if (!id) return
-            const data = await getUserProfile(id);
-            setProfileUser(data.user)
-            setIsFollowing(data.meta.isFollowing)
-            setIsOwner(data.meta.isOwner)
-            setFriendshipStatus(data.meta.friendshipStatus)
+            if (profileError !== null) {
+                return;
+            }
+
+            if (!profileId) {
+                setProfileUser(null);
+                return;
+            }
+
+            setProfileUser(null);
+
+            try {
+                const data = await getUserProfile(profileId);
+                if (isCancelled) {
+                    return;
+                }
+
+                setProfileUser(data.user)
+                setIsFollowing(data.meta.isFollowing)
+                setIsOwner(data.meta.isOwner)
+                setFriendshipStatus(data.meta.friendshipStatus)
+                setActiveTab(DefaultTab)
+            } catch {
+                if (isCancelled) {
+                    return;
+                }
+
+                setProfileUser(null);
+                setProfileError('Lietotajs nav atrasts. Iespejams profils neeksiste vai nav pieejams.');
+            }
         }
 
         fetchUser()
-    }, [])
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [profileId, profileError])
 
     const toggleFollow = async () => {
         if (actionLoading) return;
@@ -70,6 +147,16 @@ export default function ProfilePage() {
         setActionLoading(false);
     }
 
+    if (profileError === undefined) return <Loading />;
+    if (profileError) {
+        return (
+            <div className="max-w-3xl mx-auto py-12 px-4">
+                <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+                    {profileError}
+                </div>
+            </div>
+        );
+    }
     if (!profileUser) return <Loading />;
 
     return (

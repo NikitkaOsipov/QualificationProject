@@ -11,12 +11,16 @@ const NOTIFICATION_TYPES: NotificationType[] = [
     'friend_request_received',
     'friend_request_accepted',
     'comment_received',
+    'event_participation_request',
+    'followed_user_event_created',
 ];
 
 const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
     friend_request_received: 'Friend request received',
     friend_request_accepted: 'Friend request accepted',
     comment_received: 'Comment received',
+    event_participation_request: 'Event participation request',
+    followed_user_event_created: 'Event created by followed user',
 }
 
 const NotificationSettingsPanel = () => {

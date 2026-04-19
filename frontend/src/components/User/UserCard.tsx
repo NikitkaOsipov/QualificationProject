@@ -1,25 +1,35 @@
+"use client";
+
 import { User } from '@/utils/Types';
 import Link from 'next/link';
-import UserAvatar from '@/components/User/UserAvatar';
+import UserCardContent from '@/components/User/UserCardContent';
 
 interface UserCardProps {
     user: User;
+    showEmail?: boolean;
+    showOnlineState?: boolean;
+    showFriendBadge?: boolean;
+    onClick?: () => void;
+    className?: string;
 }
 
-function UserCard({ user }: UserCardProps) {
+function UserCard({
+    user,
+    showEmail = true,
+    showOnlineState = false,
+    showFriendBadge = false,
+    onClick,
+    className = '',
+}: UserCardProps) {
     return (
-        <Link href={`/profile?id=${user.id}`}>
-            <div className="border rounded-lg p-4 hover:bg-gray-50 transition cursor-pointer">
-                <div className="flex items-center gap-4">
-                    <div className="flex-shrink-0">
-                            <UserAvatar src={user.avatar_path} name={user.name} className="w-12 h-12" />
-                        </div>
-
-                    <div className="flex-1">
-                        <p className="font-semibold text-gray-900">{user.name}</p>
-                        <p className="text-sm text-gray-500">{user.email}</p>
-                    </div>
-                </div>
+        <Link href={`/profile?id=${user.id}`} onClick={onClick}>
+            <div className={`border rounded-lg p-4 transition hover:bg-gray-50 ${className}`.trim()}>
+                <UserCardContent
+                    user={user}
+                    showEmail={showEmail}
+                    showOnlineState={showOnlineState}
+                    showFriendBadge={showFriendBadge}
+                />
             </div>
         </Link>
     );

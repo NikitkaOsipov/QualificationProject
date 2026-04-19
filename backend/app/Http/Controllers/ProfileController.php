@@ -4,30 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\EventResource;
 use App\Http\Resources\UserResource;
+use App\Models\Event;
 use App\Models\Friend;
 use App\Models\FriendshipRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Support\EventHelper;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
     /**
      * Display the specified resource.
      */
@@ -35,7 +21,11 @@ class ProfileController extends Controller
     {
         $authUser = Auth::user();
 
-        $eventsCount    = $user->events()->count();
+        $eventsCount    = $user->events()
+            ->with('visibility')
+            ->get()
+            ->filter(fn (Event $event) => EventHelper::canUserSeeEventInProfile($authUser, $event))
+            ->count();
         $followersCount = $user->followers()->count();
         $friendsCount   = $user->friendsCount();
 
@@ -81,21 +71,33 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, User $user)
-    {
-        //
-    }
-
-    /**
      * Remove the specified resource from storage.
      */
     public function events(User $user)
     {
-        return EventResource::collection(
-            $user->events()->latest()->paginate(9)
+        $viewer = Auth::user();
+        $perPage = 9;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+
+        $events = $user->events()
+            ->with('visibility')
+            ->latest()
+            ->get()
+            ->filter(fn (Event $event) => EventHelper::canUserSeeEventInProfile($viewer, $event))
+            ->values();
+
+        $paginator = new LengthAwarePaginator(
+            $events->forPage($currentPage, $perPage)->values(),
+            $events->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => request()->url(),
+                'query' => request()->query(),
+            ]
         );
+
+        return EventResource::collection($paginator);
     }
 
     /**

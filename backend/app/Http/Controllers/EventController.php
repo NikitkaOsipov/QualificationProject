@@ -8,13 +8,16 @@ use App\Models\EventGoing;
 use App\Models\EventInterested;
 use App\Models\EventVisibility;
 use App\Models\User;
+use App\Notifications\EventParticipationRequestNotification;
+use App\Notifications\FollowedUserEventCreatedNotification;
+use App\Support\EventHelper;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Ramsey\Uuid\Type\Integer;
 use Throwable;
 
 class EventController extends Controller
@@ -24,7 +27,18 @@ class EventController extends Controller
      */
     public function index()
     {
-        return Event::all()->toResourceCollection();
+        $viewer = Auth::user();
+
+        $events = Event::query()
+            ->with('visibility')
+            ->get()
+            ->filter(fn (Event $event) => EventHelper::canUserSeeEventInAllEvents($viewer, $event))
+            ->values();
+//        $eventsQuery = Event::query()->with('visibility');
+//        EventHelper::applyListingVisibilityToQuery($eventsQuery, $viewer);
+//        $events = $eventsQuery->get();
+
+        return $events->toResourceCollection();
     }
 
     /**
@@ -36,6 +50,7 @@ class EventController extends Controller
         $fields = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'address_name' => 'required|string|max:255',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date',
             'price' => 'nullable|numeric',
@@ -45,6 +60,8 @@ class EventController extends Controller
             'categories' => 'nullable|array',
             'categories.*' => 'exists:event_categories,id',
             'visibility' => 'nullable|string|in:public,friends_only,private',
+            'invitee_ids' => 'nullable|array',
+            'invitee_ids.*' => 'integer|exists:users,id',
         ]);
 
         $fields['price'] = $fields['price'] ?? 0;
@@ -52,8 +69,12 @@ class EventController extends Controller
         // Extract categories and visibility before creating event
         $categories = $fields['categories'] ?? [];
         $visibility = $fields['visibility'] ?? 'public';
+        $inviteeIds = $fields['invitee_ids'] ?? [];
+        $addressName = trim((string) $fields['address_name']);
         unset($fields['categories']);
         unset($fields['visibility']);
+        unset($fields['invitee_ids']);
+        unset($fields['address_name']);
 
         // Get visibility id
         $visibilityModel = EventVisibility::where('name', $visibility)->first();
@@ -70,7 +91,7 @@ class EventController extends Controller
         $address = Address::create([
             'lat' => $fields['lat'],
             'lng' => $fields['lng'],
-            'name' => 'Event Location',
+            'name' => $addressName,
         ]);
 
         $imagePath = null;
@@ -86,10 +107,8 @@ class EventController extends Controller
 
         $fields['address_id'] = $address->id;
 
-        Log::info("Post ----------------------------------------------");
-        Log::info(Auth::id());
-        Log::info("Post ----------------------------------------------");
-        $fields['user_id'] = Auth::id();
+        $creator = Auth::user();
+        $fields['user_id'] = $creator->id;
 
         try {
             $event = Event::create($fields);
@@ -98,6 +117,12 @@ class EventController extends Controller
             if (!empty($categories)) {
                 $event->categories()->attach($categories);
             }
+
+            if (!empty($inviteeIds)) {
+                $this->sendParticipationRequests($event, $creator, $inviteeIds);
+            }
+
+            $this->notifyFollowersAboutNewEvent($event, $creator);
         } catch (\Exception $exception) {
             Log::info('Error'. $exception->getMessage());
 
@@ -125,6 +150,14 @@ class EventController extends Controller
     public function show(Event $event)
     {
         $user = Auth::user();
+        $event->loadMissing(['user', 'visibility']);
+
+        if (! EventHelper::canUserAccessEvent($user, $event)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You do not have access to this event.',
+            ], 403);
+        }
 
         $isInterested = false;
         $isGoing = false;
@@ -139,54 +172,73 @@ class EventController extends Controller
                 ->exists();
         }
 
+        $friendIds = $user
+            ? $user->friends()->pluck('users.id')->map(static fn ($id) => (int) $id)->all()
+            : [];
+
+        $goingUsers = $event->goingUsers()
+            ->with('user')
+            ->get()
+            ->pluck('user')
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        $interestedUsers = $event->interestedUsers()
+            ->with('user')
+            ->get()
+            ->pluck('user')
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        $sortedGoingUsers = $this->sortUsersByFriendship($goingUsers, $friendIds);
+        $sortedInterestedUsers = $this->sortUsersByFriendship($interestedUsers, $friendIds);
+
+        $host = $event->user;
+
         return response()->json([
             'event' => $event->toResource(),
             'meta' => [
                 'isInterested' => $isInterested,
                 'isGoing' => $isGoing,
+                'host' => $host ? $this->mapUserDto($host, $friendIds) : null,
+                'goingCount' => $goingUsers->count(),
+                'interestedCount' => $interestedUsers->count(),
+                'goingUsers' => $sortedGoingUsers->map(fn (User $target) => $this->mapUserDto($target, $friendIds))->values(),
+                'interestedUsers' => $sortedInterestedUsers->map(fn (User $target) => $this->mapUserDto($target, $friendIds))->values(),
             ]
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Event $event)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Event $event)
-    {
-        //
-    }
-
     public function interested(Event $event, Request $request) {
         try {
+            $viewer = Auth::user();
+            if (! EventHelper::canUserAccessEvent($viewer, $event)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You do not have access to this event.',
+                ], 403);
+            }
+
             $request->validate([
                 'interested' => 'required|boolean',
             ]);
 
-            $user = Auth::user();
-
             if ($request->interested) {
                 EventInterested::firstOrCreate([
                     'event_id' => $event->id,
-                    'user_id' => $user->id,
+                    'user_id' => $viewer->id,
                 ]);
             } else {
                 EventInterested::where([
                     'event_id' => $event->id,
-                    'user_id' => $user->id,
+                    'user_id' => $viewer->id,
                 ])->delete();
             }
 
             return response()->json([
                 'status' => 'ok',
-                'interested' => $request->interested,
             ]);
         } catch (Throwable $e) {
             \Log::error('Interested toggle failed', [
@@ -203,27 +255,32 @@ class EventController extends Controller
     }
     public function going(Event $event, Request $request) {
         try {
+            $viewer = Auth::user();
+            if (! EventHelper::canUserAccessEvent($viewer, $event)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You do not have access to this event.',
+                ], 403);
+            }
+
             $request->validate([
                 'going' => 'required|boolean',
             ]);
 
-            $user = Auth::user();
-
             if ($request->going) {
                 EventGoing::firstOrCreate([
                     'event_id' => $event->id,
-                    'user_id' => $user->id,
+                    'user_id' => $viewer->id,
                 ]);
             } else {
                 EventGoing::where([
                     'event_id' => $event->id,
-                    'user_id' => $user->id,
+                    'user_id' => $viewer->id,
                 ])->delete();
             }
 
             return response()->json([
                 'status' => 'ok',
-                'interested' => $request->interested,
             ]);
 
         } catch (Throwable $e) {
@@ -239,4 +296,99 @@ class EventController extends Controller
             ], 500);
         }
     }
+
+    public function requestParticipation(Event $event, Request $request): JsonResponse
+    {
+        try {
+            $sender = Auth::user();
+            if (! EventHelper::canUserAccessEvent($sender, $event)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You do not have access to this event.',
+                ], 403);
+            }
+
+            $validated = $request->validate([
+                'friend_ids' => 'required|array|min:1',
+                'friend_ids.*' => 'integer|exists:users,id',
+            ]);
+
+            $this->sendParticipationRequests($event, $sender, $validated['friend_ids']);
+
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Participation requests sent.',
+            ]);
+        } catch (Throwable $e) {
+            \Log::error('Participation request sending failed', [
+                'error' => $e->getMessage(),
+                'event_id' => $event->id,
+                'user_id' => Auth::id(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong while sending requests.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Sends participation notifications only to users who are friends with sender
+     */
+    private function sendParticipationRequests(Event $event, User $sender, array $friendIds)
+    {
+        $validFriendIds = collect($friendIds)
+            ->map(static fn ($id) => (int) $id)
+            ->filter(static fn ($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($validFriendIds->isEmpty()) {
+            return;
+        }
+
+        $receivers = User::query()->whereIn('id', $validFriendIds->all())->get();
+
+        foreach ($receivers as $receiver) {
+            $receiver->notify(new EventParticipationRequestNotification($sender, $event));
+        }
+    }
+
+    private function notifyFollowersAboutNewEvent(Event $event, User $creator): void
+    {
+        $followers = $creator->followers()
+            ->where('users.id', '!=', $creator->id)
+            ->get();
+
+        foreach ($followers as $follower) {
+            $follower->notify(new FollowedUserEventCreatedNotification($creator, $event));
+        }
+    }
+
+    private function sortUsersByFriendship(Collection $users, array $friendIds): Collection
+    {
+        return $users->sort(function (User $left, User $right) use ($friendIds) {
+            $leftIsFriend = in_array((int) $left->id, $friendIds, true);
+            $rightIsFriend = in_array((int) $right->id, $friendIds, true);
+
+            if ($leftIsFriend !== $rightIsFriend) {
+                return $leftIsFriend ? -1 : 1;
+            }
+
+            return strcasecmp($left->name, $right->name);
+        })->values();
+    }
+
+    private function mapUserDto(User $user, array $friendIds): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar_path' => $user->avatar_path,
+            'is_friend' => in_array((int) $user->id, $friendIds, true),
+        ];
+    }
+
 }

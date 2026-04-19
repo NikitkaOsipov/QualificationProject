@@ -11,5 +11,4 @@ Route::delete('/event/{event}', [EventController::class, 'destroy']);
 Route::patch('/event/{event}', [EventController::class, 'update']);
 Route::post('/event/{event}/interested', [EventController::class, 'interested'])->middleware('auth:sanctum');
 Route::post('/event/{event}/going', [EventController::class, 'going'])->middleware('auth:sanctum');
-
-
+Route::post('/event/{event}/request-participation', [EventController::class, 'requestParticipation'])->middleware('auth:sanctum');

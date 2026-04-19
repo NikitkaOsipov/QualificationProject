@@ -11,6 +11,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import LoginLinks from '@/app/LoginLinks'
 import Notifications from '@/components/Notifications'
+import OnlineFriendsWindow from '@/components/OnlineFriendsWindow'
 
 const Navigation = ({ user }) => {
     const { logout } = useAuth()
@@ -72,12 +73,13 @@ const Navigation = ({ user }) => {
                                 </Link>
                             </div>
                         )}
-                        {/* Settings Dropdown */}
                         {
                             user ? (
                                 <div className="hidden sm:flex sm:items-center gap-3">
+                                    <OnlineFriendsWindow user={user} />
                                     <Notifications user={user} />
 
+                                    {/* Settings Dropdown */}
                                     <Dropdown
                                         align="right"
                                         width={48}

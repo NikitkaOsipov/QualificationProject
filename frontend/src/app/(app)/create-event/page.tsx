@@ -13,6 +13,7 @@ import ConfirmationStage from './Stage5Confirmation';
 import { EventFormData, Category } from '@/utils/Types';
 import { useAuth } from '@/hooks/auth';
 import Loading from '@/components/Loading';
+import FriendSelector from '@/components/User/FriendSelector';
 
 export default function CreateEventPage() {
     const router = useRouter();
@@ -58,6 +59,7 @@ export default function CreateEventPage() {
         categories: [],
         // Stage 4
         visibility: 'public',
+        inviteeIds: [],
         // Meta
         errors: {},
     });
@@ -66,9 +68,9 @@ export default function CreateEventPage() {
     const validateStage1 = useCallback((): boolean => {
         const errors: Record<string, string> = {};
 
-        // if (!formData.address.trim()) {
-        //     errors.address = 'Address is required';
-        // }
+        if (!formData.address.trim()) {
+            errors.address = 'Address is required';
+        }
         if (formData.latitude === null || formData.longitude === null) {
             errors.location = 'Location coordinates are required. Click on the map or search for an address.';
         }
@@ -136,17 +138,11 @@ export default function CreateEventPage() {
 
         if (isValid) {
             setCurrentStage((prev) => Math.min(prev + 1, 5));
-            if (typeof window !== 'undefined') {
-                window.scrollTo(0, 0);
-            }
         }
     }, [currentStage, validateStage1, validateStage2, validateStage3, validateStage4]);
 
     const handlePreviousStage = useCallback(() => {
         setCurrentStage((prev) => Math.max(prev - 1, 1));
-        if (typeof window !== 'undefined') {
-            window.scrollTo(0, 0);
-        }
     }, []);
 
     const handleSubmit = useCallback(async () => {
@@ -157,6 +153,7 @@ export default function CreateEventPage() {
             const data = new FormData();
             data.append('title', formData.title);
             data.append('description', formData.description);
+            data.append('address_name', formData.address.trim());
             data.append('start_date', new Date(formData.startDate).toISOString());
             if (formData.endDate) {
                 data.append('end_date', new Date(formData.endDate).toISOString());
@@ -177,12 +174,11 @@ export default function CreateEventPage() {
             }
             // Add visibility
             data.append('visibility', formData.visibility);
-
-            // TODO:
-            // Add viability and error checks on backend
-            // Make addresses work
-            // Make good map component
-            // Remove window reference from this component as it gives errors on build
+            if (formData.inviteeIds.length > 0) {
+                formData.inviteeIds.forEach((friendId) => {
+                    data.append('invitee_ids[]', friendId.toString());
+                });
+            }
 
             const response = await createPost(data);
 
@@ -294,6 +290,17 @@ export default function CreateEventPage() {
                             imagePreview={imagePreview}
                             categoryList={categories}
                         />
+                    )}
+
+                    {currentStage === 5 && (
+                        <div className="mt-6">
+                            <FriendSelector
+                                selectedIds={formData.inviteeIds}
+                                onChange={(inviteeIds) => setFormData((prev) => ({ ...prev, inviteeIds }))}
+                                title="Invite your friends"
+                                description="Pick friends to notify right after event is published."
+                            />
+                        </div>
                     )}
                 </div>
 

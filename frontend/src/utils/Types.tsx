@@ -20,6 +20,9 @@ export interface EventFormData {
     // Stage 4: Visibility
     visibility: Visibility;
 
+    // Optional invites during event creation
+    inviteeIds: number[];
+
     // Meta
     errors: Record<string, string>;
 }
@@ -34,6 +37,8 @@ export interface User {
     name: string;
     email: string;
     avatar_path?: string | null;
+    is_online?: boolean;
+    is_friend?: boolean;
     email_verified_at?: string;
     created_at?: string;
     updated_at?: string;
@@ -84,6 +89,11 @@ export interface EventResponse {
     meta: {
         isInterested: boolean;
         isGoing: boolean;
+        host?: User | null;
+        goingCount?: number;
+        interestedCount?: number;
+        goingUsers?: User[];
+        interestedUsers?: User[];
     };
 }
 
@@ -133,7 +143,9 @@ export interface ProfileTabResponse {
 export type NotificationType =
     | 'friend_request_received'
     | 'friend_request_accepted'
-    | 'comment_received';
+    | 'comment_received'
+    | 'event_participation_request'
+    | 'followed_user_event_created';
 
 export interface AppNotification {
     id: string;

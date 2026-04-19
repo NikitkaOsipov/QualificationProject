@@ -155,25 +155,6 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
                 </div>
             </div>
 
-            {/* Checklist */}
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h3 className="font-semibold text-green-900 mb-3">Ready to publish? ✓</h3>
-                <ul className="text-sm text-green-800 space-y-2">
-                    <li className={`flex items-center gap-2 ${formData.title ? 'opacity-100' : 'opacity-50'}`}>
-                        <span>{formData.title ? '✓' : '○'}</span>
-                        Event title
-                    </li>
-                    <li className={`flex items-center gap-2 ${formData.latitude && formData.longitude ? 'opacity-100' : 'opacity-50'}`}>
-                        <span>{formData.latitude && formData.longitude ? '✓' : '○'}</span>
-                        Location selected
-                    </li>
-                    <li className={`flex items-center gap-2 ${formData.startDate ? 'opacity-100' : 'opacity-50'}`}>
-                        <span>{formData.startDate ? '✓' : '○'}</span>
-                        Start date set
-                    </li>
-                </ul>
-            </div>
-
             {/* Note */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800">

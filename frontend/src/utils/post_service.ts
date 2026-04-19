@@ -15,3 +15,6 @@ export const setInterestedPost = async (eventId: string | number, interestedValu
 
 export const setGoingPost = async (eventId: string | number, goingValue: boolean) =>
     axios.post(`/api/event/${eventId}/going`, { going: goingValue }).then(r => r.data as CreateResponse);
+
+export const requestEventParticipation = async (eventId: string | number, friendIds: number[]) =>
+    axios.post(`/api/event/${eventId}/request-participation`, { friend_ids: friendIds }).then(r => r.data as CreateResponse);

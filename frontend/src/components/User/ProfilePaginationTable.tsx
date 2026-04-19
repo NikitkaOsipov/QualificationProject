@@ -3,7 +3,6 @@
 import { getProfileTab } from '@/utils/user_service';
 import { useEffect, useState } from 'react';
 import { TabState } from '@/utils/Types';
-import CommentCard from '@/components/User/CommentCard';
 import UserCard from '@/components/User/UserCard';
 import EventCard from '@/components/Event/EventCard';
 import Loading from '@/components/Loading'
@@ -26,7 +25,7 @@ function ProfileTable({
         setCurrentTab(tab);
 
         try {
-            const res = await  getProfileTab(userId, tab, page);
+            const res = await  getProfileTab(userId, tab, pageNumber);
             console.log(res);
             setTabData(res.data);
             setPage(res.current_page || 1);

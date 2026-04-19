@@ -7,4 +7,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users/{targetUser}/friend-request', [UserController::class, 'sendFriendRequest']);
     Route::post('/users/{targetUser}/friend-request/respond', [UserController::class, 'respondFriendRequest']);
     Route::delete('/users/{targetUser}/friend', [UserController::class, 'removeFriend']);
+    Route::get('/friends', [UserController::class, 'friends']);
+    Route::post('/users/update-online-status', [UserController::class, 'updateOnlineStatus']);
 });
