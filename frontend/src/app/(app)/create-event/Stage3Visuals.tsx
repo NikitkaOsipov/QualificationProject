@@ -126,25 +126,27 @@ const VisualsStage = ({
                         />
 
                         {/* Category Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            {filteredCategories.map((category) => (
-                                <button
-                                    key={category.id}
-                                    type="button"
-                                    onClick={() => handleCategoryToggle(category.id)}
-                                    className={`p-3 rounded-lg border-2 transition text-sm font-medium ${
-                                        categories.includes(category.id)
-                                            ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                            : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300'
-                                    } ${categories.length >= 5 && !categories.includes(category.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-                                    disabled={categories.length >= 5 && !categories.includes(category.id)}
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <span>{category.name}</span>
-                                        {categories.includes(category.id) && <span className="ml-1">✓</span>}
-                                    </div>
-                                </button>
-                            ))}
+                        <div className="max-h-56 overflow-y-auto pr-1">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                {filteredCategories.map((category) => (
+                                    <button
+                                        key={category.id}
+                                        type="button"
+                                        onClick={() => handleCategoryToggle(category.id)}
+                                        className={`p-3 rounded-lg border-2 transition text-sm font-medium ${
+                                            categories.includes(category.id)
+                                                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                                : 'border-gray-300 bg-white text-gray-700 hover:border-blue-300'
+                                        } ${categories.length >= 5 && !categories.includes(category.id) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                                        disabled={categories.length >= 5 && !categories.includes(category.id)}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span>{category.name}</span>
+                                            {categories.includes(category.id) && <span className="ml-1">✓</span>}
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         {categories.length >= 5 && (

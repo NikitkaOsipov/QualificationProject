@@ -1,6 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
+import dynamic from 'next/dynamic';
+
+const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false });
 
 interface DetailsStageProps {
     title: string;
@@ -29,8 +32,6 @@ const DetailsStage = ({
     onPriceChange,
     errors = {},
 }: DetailsStageProps) => {
-    const [showDescriptionPreview, setShowDescriptionPreview] = useState(false);
-
     return (
         <div className="space-y-6">
             <div>
@@ -48,7 +49,7 @@ const DetailsStage = ({
                     maxLength={255}
                     value={title}
                     onChange={(e) => onTitleChange(e.target.value)}
-                    placeholder="Event title (e.g., Summer Tech Conference 2024)"
+                    placeholder="Event title ..."
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                         errors.title ? 'border-red-500' : 'border-gray-300'
                     }`}
@@ -57,124 +58,25 @@ const DetailsStage = ({
                 <div className="text-xs text-gray-500 mt-1">{title.length}/255 characters</div>
             </div>
 
-            {/* Description - Simple Rich Text */}
-            <div>
+            {/* Description - Markdown Editor */}
+            <div data-color-mode="light">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                     Description
                 </label>
-                <div className="border border-gray-300 rounded-lg overflow-hidden">
-                    {/* Toolbar */}
-                    <div className="flex items-center gap-1 p-2 bg-gray-50 border-b border-gray-300 flex-wrap">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const textarea = document.querySelector('textarea[data-type="description"]') as HTMLTextAreaElement;
-                                const start = textarea.selectionStart;
-                                const end = textarea.selectionEnd;
-                                const selected = description.substring(start, end);
-                                if (selected) {
-                                    const newText =
-                                        description.substring(0, start) +
-                                        `**${selected}**` +
-                                        description.substring(end);
-                                    onDescriptionChange(newText);
-                                }
-                            }}
-                            title="Bold"
-                            className="px-3 py-1 rounded hover:bg-gray-200 text-sm font-bold"
-                        >
-                            B
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const textarea = document.querySelector('textarea[data-type="description"]') as HTMLTextAreaElement;
-                                const start = textarea.selectionStart;
-                                const end = textarea.selectionEnd;
-                                const selected = description.substring(start, end);
-                                if (selected) {
-                                    const newText =
-                                        description.substring(0, start) +
-                                        `*${selected}*` +
-                                        description.substring(end);
-                                    onDescriptionChange(newText);
-                                }
-                            }}
-                            title="Italic"
-                            className="px-3 py-1 rounded hover:bg-gray-200 text-sm italic"
-                        >
-                            I
-                        </button>
-                        <div className="w-px h-6 bg-gray-300 mx-1" />
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const textarea = document.querySelector('textarea[data-type="description"]') as HTMLTextAreaElement;
-                                const start = textarea.selectionStart;
-                                onDescriptionChange(
-                                    description.substring(0, start) + '• ' + description.substring(start)
-                                );
-                            }}
-                            title="Bullet list"
-                            className="px-3 py-1 rounded hover:bg-gray-200 text-sm"
-                        >
-                            ◦
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const textarea = document.querySelector('textarea[data-type="description"]') as HTMLTextAreaElement;
-                                const start = textarea.selectionStart;
-                                onDescriptionChange(
-                                    description.substring(0, start) + '1. ' + description.substring(start)
-                                );
-                            }}
-                            title="Numbered list"
-                            className="px-3 py-1 rounded hover:bg-gray-200 text-sm"
-                        >
-                            1.
-                        </button>
-                        <div className="w-px h-6 bg-gray-300 mx-1" />
-                        <button
-                            type="button"
-                            onClick={() => setShowDescriptionPreview(!showDescriptionPreview)}
-                            className="px-3 py-1 rounded hover:bg-gray-200 text-sm"
-                        >
-                            {showDescriptionPreview ? '✎ Edit' : '👁 Preview'}
-                        </button>
-                    </div>
-
-                    {/* Text Area / Preview */}
-                    {!showDescriptionPreview ? (
-                        <textarea
-                            data-type="description"
-                            value={description}
-                            onChange={(e) => onDescriptionChange(e.target.value)}
-                            placeholder="Describe your event in detail..."
-                            rows={6}
-                            className="w-full px-4 py-3 focus:outline-none resize-none"
-                        />
-                    ) : (
-                        <div className="p-4 min-h-24 bg-white prose prose-sm max-w-none">
-                            <div className="whitespace-pre-wrap text-gray-700">
-                                {description.split('\n').map((line, i) => {
-                                    // Simple markdown preview
-                                    let content = line;
-                                    content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                                    content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-                                    if (line.startsWith('• ')) {
-                                        return <li key={i}>{content.substring(2)}</li>;
-                                    }
-                                    if (line.match(/^\d+\. /)) {
-                                        return <li key={i}>{content.replace(/^\d+\. /, '')}</li>;
-                                    }
-                                    return <p key={i} dangerouslySetInnerHTML={{ __html: content }} />;
-                                })}
-                            </div>
-                        </div>
-                    )}
-                </div>
+                <MDEditor
+                    value={description}
+                    onChange={(value) => onDescriptionChange(value ?? '')}
+                    preview="edit"
+                    height={320}
+                    textareaProps={{ placeholder: 'Describe your event in detail...' }}
+                    commandsFilter={(cmd) => {
+                        const excluded = new Set(['fullscreen', 'help']);
+                        return excluded.has(cmd.name) ? false : cmd;
+                    }}
+                />
+                <p className="mt-2 text-xs text-gray-500">
+                    Use toolbar options for headings, bold, italic, lists, links, quotes and more.
+                </p>
                 {errors.description && <div className="text-sm text-red-600 mt-1">{errors.description}</div>}
             </div>
 

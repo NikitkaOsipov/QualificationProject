@@ -81,6 +81,8 @@ export interface EventType {
     price?: number;
     address: Address;
     backgroundImage?: string;
+    visibility?: Visibility;
+    categories?: Category[];
 }
 
 // Result of the event request (Details page for event)
@@ -125,10 +127,6 @@ export interface CreateResponse {
     errors?: ValidationErrors;
 }
 
-export interface Category {
-    id: number;
-    name: string;
-}
 
 // Profile
 export const TABS = ['events', 'comments', 'likes', 'following', 'friends'] as const;

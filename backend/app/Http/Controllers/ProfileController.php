@@ -22,7 +22,7 @@ class ProfileController extends Controller
         $authUser = Auth::user();
 
         $eventsCount    = $user->events()
-            ->with('visibility')
+            ->with(['visibility', 'categories'])
             ->get()
             ->filter(fn (Event $event) => EventHelper::canUserSeeEventInProfile($authUser, $event))
             ->count();
@@ -80,7 +80,7 @@ class ProfileController extends Controller
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
 
         $events = $user->events()
-            ->with('visibility')
+            ->with(['visibility', 'categories'])
             ->latest()
             ->get()
             ->filter(fn (Event $event) => EventHelper::canUserSeeEventInProfile($viewer, $event))

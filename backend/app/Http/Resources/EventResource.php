@@ -34,6 +34,12 @@ class EventResource extends JsonResource
             'event_type_id' => $this->event_type_id,
             'event_visibility_id' => $this->event_visibility_id,
             'visibility' => $this->visibility?->name,
+            'categories' => $this->categories
+                ->map(fn ($category) => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                ])
+                ->values(),
             'holiday_id' => $this->holiday_id,
             'updated_at' => $this->updated_at,
         ];

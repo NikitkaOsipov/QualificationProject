@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { EventFormData, Category } from '@/utils/Types';
+import EventDescriptionMarkdown from '@/components/Event/EventDescriptionMarkdown';
 interface ConfirmationStageProps {
     formData: EventFormData;
     imagePreview: string | null;
@@ -99,36 +100,10 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
                     {formData.description && (
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900 mb-3">About the Event</h3>
-                            <div className="prose prose-sm max-w-none whitespace-pre-wrap text-gray-700">
-                                {formData.description.split('\n').map((line, i) => {
-                                    let content = line;
-                                    content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                                    content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-                                    if (line.startsWith('• ')) {
-                                        return (
-                                            <div key={i} className="flex gap-2">
-                                                <span>•</span>
-                                                <span dangerouslySetInnerHTML={{ __html: content.substring(2) }} />
-                                            </div>
-                                        );
-                                    }
-                                    if (line.match(/^\d+\. /)) {
-                                        const num = line.match(/^\d+/)?.[0];
-                                        return (
-                                            <div key={i} className="flex gap-2">
-                                                <span>{num}.</span>
-                                                <span dangerouslySetInnerHTML={{ __html: content.replace(/^\d+\. /, '') }} />
-                                            </div>
-                                        );
-                                    }
-                                    return (
-                                        line && (
-                                            <p key={i} dangerouslySetInnerHTML={{ __html: content }} />
-                                        )
-                                    );
-                                })}
-                            </div>
+                            <EventDescriptionMarkdown
+                                content={formData.description}
+                                className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-5"
+                            />
                         </div>
                     )}
 
@@ -166,6 +141,3 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
 };
 
 export default ConfirmationStage;
-
-
-

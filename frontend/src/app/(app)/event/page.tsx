@@ -1,11 +1,12 @@
 "use client"
 
-import { getPost, requestEventParticipation, setGoingPost, setInterestedPost } from '@/utils/post_service'
-import { useEffect, useState } from 'react';
+import { deletePost, getPost, requestEventParticipation, setGoingPost, setInterestedPost } from '@/utils/post_service'
+import { useEffect, useRef, useState } from 'react';
 import { EventResponse, EventType, MarkerType, User } from '@/utils/Types'
 import { API_BASE_URL} from '@/Config/api';
 import Map from '@/components/Map/DynamicMarkerMap';
 import Image from "next/image";
+import { useRouter } from 'next/navigation';
 import Loading from '@/components/Loading';
 import { useAuth } from '@/hooks/auth';
 import CommentsSection from '@/components/Event/CommentsSection';
@@ -14,8 +15,10 @@ import FriendSelector from '@/components/User/FriendSelector';
 import UserCard from '@/components/User/UserCard';
 import InterestedUsersDisplay from '@/components/Event/InterestedUsersDisplay';
 import GoingUsersPanel from '@/components/Event/GoingUsersPanel';
+import EventDescriptionMarkdown from '@/components/Event/EventDescriptionMarkdown';
 
 export default function EventPage() {
+    const router = useRouter();
     const { user } = useAuth();
 
     const [eventId, setEventId] = useState<string>();
@@ -33,7 +36,20 @@ export default function EventPage() {
     const [interestedCount, setInterestedCount] = useState(0);
     const [isGoingModalOpen, setIsGoingModalOpen] = useState(false);
     const [isInterestedModalOpen, setIsInterestedModalOpen] = useState(false);
+    const [isDeletingEvent, setIsDeletingEvent] = useState(false);
+    const [isOwnerMenuOpen, setIsOwnerMenuOpen] = useState(false);
+    const ownerMenuRef = useRef<HTMLDivElement>(null);
     const isEventAuthor = Boolean(user && host && user.id === host.id);
+
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (ownerMenuRef.current && !ownerMenuRef.current.contains(e.target as Node)) {
+                setIsOwnerMenuOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const setEventDetails = (eventResponse: EventResponse) => {
         setEvent(eventResponse.event);
@@ -59,7 +75,11 @@ export default function EventPage() {
                 setEventDetails(event);
                 setError(null);
             } catch (error: any) {
-                const message = error?.response?.data?.message ?? 'You do not have access to this event.';
+                const status = error?.response?.status;
+                const backendMessage = error?.response?.data?.message;
+                const message = status === 404 || /not found/i.test(backendMessage ?? '')
+                    ? 'Pasākums nav atrasts.'
+                    : (backendMessage ?? 'You do not have access to this event.');
                 setError(message);
             }
         }
@@ -108,6 +128,32 @@ export default function EventPage() {
         }
     }
 
+    async function handleDeleteEvent() {
+        if (!eventId || isDeletingEvent) {
+            return;
+        }
+
+        const confirmed = window.confirm('Vai tiešām vēlaties dzēst šo pasākumu?');
+        if (!confirmed) {
+            return;
+        }
+
+        setIsDeletingEvent(true);
+        try {
+            const response = await deletePost(eventId);
+            if (response.status === 'ok') {
+                router.push('/events');
+                return;
+            }
+            console.error(response.message ?? 'Neizdevās izdzēst pasākumu.');
+        } catch (error: any) {
+            const message = error?.response?.data?.message ?? 'Neizdevās izdzēst pasākumu.';
+            console.error(message);
+        } finally {
+            setIsDeletingEvent(false);
+        }
+    }
+
     if (error) {
         return (
             <div className="max-w-3xl mx-auto py-12 px-4">
@@ -119,7 +165,8 @@ export default function EventPage() {
     }
 
     return (
-        event ?
+        event ? (
+            <>
                 <div className="max-w-6xl mx-auto pb-16">
 
                     <div className="relative w-full h-72 md:h-96 rounded-xl overflow-hidden mb-8">
@@ -139,35 +186,75 @@ export default function EventPage() {
                                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
                                     {event.title}
                                 </h1>
+                                {event.categories && event.categories.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-3">
+                                        {event.categories.map((category) => (
+                                            <span
+                                                key={category.id}
+                                                className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700"
+                                            >
+                                                {category.name}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
 
                             <div className="flex gap-3 flex-wrap">
 
-                                {/*<button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">*/}
-                                {/*    Add to Calendar*/}
-                                {/*</button>*/}
+                                {user ? (
+                                    <>
+                                        <InterestedUsersDisplay
+                                            isInterested={interested}
+                                            onInterestedChangeAction={handleInterested}
+                                            interestedCount={interestedCount}
+                                            interestedUsers={interestedUsers}
+                                            onModalOpenChangeAction={setIsInterestedModalOpen}
+                                        />
 
-                                {
-                                    user ? (
-                                        <>
-                                            <InterestedUsersDisplay
-                                                isInterested={interested}
-                                                onInterestedChangeAction={handleInterested}
-                                                interestedCount={interestedCount}
-                                                interestedUsers={interestedUsers}
-                                                onModalOpenChangeAction={setIsInterestedModalOpen}
-                                            />
-
-                                            <GoingButton isGoing={going} onClick={handleGoing} />
-                                        </>
-                                    ) : <></>
-                                }
+                                        <GoingButton isGoing={going} onClick={handleGoing} />
+                                    </>
+                                ) : null}
 
 
                                 <button className="px-4 py-2 border rounded-lg hover:bg-gray-100">
-                                    Share
+                                    Dalīties
                                 </button>
+
+                                {isEventAuthor && (
+                                    <div className="relative" ref={ownerMenuRef}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsOwnerMenuOpen(prev => !prev)}
+                                            className="p-2 rounded-lg border hover:bg-gray-100 flex items-center justify-center"
+                                            aria-label="Rīkotāja izvēlne"
+                                        >
+                                            <span className="text-xl leading-none tracking-widest select-none">⋯</span>
+                                        </button>
+
+                                        {isOwnerMenuOpen && (
+                                            <div className="absolute right-0 mt-2 w-52 rounded-xl border border-gray-200 bg-white shadow-lg z-50 overflow-hidden">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setIsOwnerMenuOpen(false); router.push(`/event/edit?id=${eventId}`); }}
+                                                    className="w-full text-left px-4 py-3 text-sm text-indigo-700 hover:bg-indigo-50 flex items-center gap-2"
+                                                >
+                                                    ✏️ Rediģēt pasākumu
+                                                </button>
+                                                <hr className="border-gray-100"/>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setIsOwnerMenuOpen(false); handleDeleteEvent(); }}
+                                                    disabled={isDeletingEvent}
+                                                    className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 disabled:opacity-60"
+                                                >
+                                                    🗑️ {isDeletingEvent ? 'Dzēšu...' : 'Dzēst pasākumu'}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                             </div>
 
@@ -199,7 +286,7 @@ export default function EventPage() {
 
                                 {(isGoingModalOpen || isInterestedModalOpen) && (
                                     <div className="h-64 rounded-xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-sm text-gray-500">
-                                        Karte ir paslepta, kamer atverts lietotaju saraksts.
+                                        Karte ir paslēpta, kamēr atvērts lietotāju saraksts.
                                     </div>
                                 )}
 
@@ -208,12 +295,13 @@ export default function EventPage() {
 
                             <div>
                                 <h2 className="text-xl font-semibold mb-3">
-                                    Par pasakumu
+                                    Par pasākumu
                                 </h2>
 
-                                <p className="text-gray-700 leading-relaxed">
-                                    {event.description ?? "This event will bring together developers and technology enthusiasts to discuss AI, startups and the future of technology. Join us for networking, talks and great conversations."}
-                                </p>
+                                <EventDescriptionMarkdown
+                                    content={event.description ?? "Nav aprakstu"}
+                                    className="prose prose-sm max-w-none text-gray-700"
+                                />
                             </div>
 
 
@@ -229,7 +317,7 @@ export default function EventPage() {
                                 </p>
 
                                 <p className="text-2xl font-bold">
-                                    {event.price ? `€${event.price}` : "Free"}
+                                    {event.price ? `€${event.price}` : "Bezmaksas"}
                                 </p>
                             </div>
 
@@ -239,7 +327,7 @@ export default function EventPage() {
                                         selectedIds={selectedFriendIds}
                                         onChange={setSelectedFriendIds}
                                         title="Uzaicini draugus"
-                                        description="Nosuti dalibas uzaicinajumus draugiem."
+                                        description="Nosūti dalības uzaicinājumus draugiem."
                                         maxHeightClassName="max-h-60"
                                     />
 
@@ -249,18 +337,18 @@ export default function EventPage() {
                                         onClick={handleSendParticipationRequests}
                                         className="w-full rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
-                                        {sendingRequests ? 'Suta...' : 'Sutit dalibas pieprasijumu'}
+                                        {sendingRequests ? 'Sūta...' : 'Sūtīt dalības pieprasījumu'}
                                     </button>
                                 </div>
                             )}
 
                             <div className="border rounded-xl p-5 shadow-sm">
-                                <h3 className="font-semibold mb-3">Rikotajs</h3>
+                                <h3 className="font-semibold mb-3">Rīkotājs</h3>
 
                                 {host ? (
                                     <UserCard user={host} showFriendBadge />
                                 ) : (
-                                    <p className="text-sm text-gray-500">Rikotaja informacija nav pieejama.</p>
+                                    <p className="text-sm text-gray-500">Rīkotāja informācija nav pieejama.</p>
                                 )}
                             </div>
 
@@ -272,7 +360,8 @@ export default function EventPage() {
                         </div>
                     </div>
                 </div>
-        : <Loading/>
 
+            </>
+        ) : <Loading/>
     )
 }

@@ -14,6 +14,8 @@ import { EventFormData, Category } from '@/utils/Types';
 import { useAuth } from '@/hooks/auth';
 import Loading from '@/components/Loading';
 import FriendSelector from '@/components/User/FriendSelector';
+import { validateEventData, type EventValidationSection } from '@/utils/eventValidation';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 
 export default function CreateEventPage() {
     const router = useRouter();
@@ -23,9 +25,10 @@ export default function CreateEventPage() {
     const [serverError, setServerError] = useState<string | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
+    const [isDirty, setIsDirty] = useState(false);
 
     const { user } = useAuth({middleware: 'auth'});
-    if (!user) return <Loading />
+    useUnsavedChanges(isDirty);
 
     // Fetch categories once on mount
     useEffect(() => {
@@ -64,82 +67,34 @@ export default function CreateEventPage() {
         errors: {},
     });
 
-    // Validation functions
-    const validateStage1 = useCallback((): boolean => {
-        const errors: Record<string, string> = {};
-
-        if (!formData.address.trim()) {
-            errors.address = 'Address is required';
-        }
-        if (formData.latitude === null || formData.longitude === null) {
-            errors.location = 'Location coordinates are required. Click on the map or search for an address.';
-        }
-
-        setFormData((prev) => ({ ...prev, errors }));
-        return Object.keys(errors).length === 0;
-    }, [formData.address, formData.latitude, formData.longitude]);
-
-    const validateStage2 = useCallback((): boolean => {
-        const errors: Record<string, string> = {};
-
-        if (!formData.title.trim()) {
-            errors.title = 'Title is required';
-        }
-        if (formData.title.length > 255) {
-            errors.title = 'Title must be 255 characters or less';
-        }
-        if (!formData.startDate) {
-            errors.startDate = 'Start date is required';
-        }
-        if (formData.price && isNaN(Number(formData.price))) {
-            errors.price = 'Price must be a valid number';
-        }
-        if (formData.endDate && formData.startDate && new Date(formData.endDate) < new Date(formData.startDate)) {
-            errors.endDate = 'End date cannot be earlier than start date';
-        }
-
-        setFormData((prev) => ({ ...prev, errors }));
-        return Object.keys(errors).length === 0;
-    }, [formData.title, formData.startDate, formData.endDate, formData.price]);
-
-    const validateStage3 = useCallback((): boolean => {
-        const errors: Record<string, string> = {};
-
-        if (formData.backgroundImage) {
-            const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'image/svg+xml', 'image/webp'];
-            if (!allowed.includes(formData.backgroundImage.type)) {
-                errors.backgroundImage = 'Invalid image type. Please use PNG, JPG, JPEG, SVG, or WebP';
-            }
-            if (formData.backgroundImage.size > 2 * 1024 * 1024) {
-                errors.backgroundImage = 'Image is too large. Maximum size is 2MB';
-            }
-        }
-
-        setFormData((prev) => ({ ...prev, errors }));
-        return Object.keys(errors).length === 0;
-    }, [formData.backgroundImage]);
-
-    const validateStage4 = useCallback((): boolean => {
-        return true; // No validation needed
+    const updateForm = useCallback((partial: Partial<EventFormData>) => {
+        setIsDirty(true);
+        setFormData((prev) => ({ ...prev, ...partial }));
     }, []);
+
+    const validateStage = useCallback((section: EventValidationSection): boolean => {
+        const errors = validateEventData(formData, section);
+        setFormData((prev) => ({ ...prev, errors }));
+        return Object.keys(errors).length === 0;
+    }, [formData]);
 
     const handleNextStage = useCallback(async () => {
         let isValid = false;
 
         if (currentStage === 1) {
-            isValid = validateStage1();
+            isValid = validateStage('location');
         } else if (currentStage === 2) {
-            isValid = validateStage2();
+            isValid = validateStage('details');
         } else if (currentStage === 3) {
-            isValid = validateStage3();
+            isValid = validateStage('visuals');
         } else if (currentStage === 4) {
-            isValid = validateStage4();
+            isValid = true;
         }
 
         if (isValid) {
             setCurrentStage((prev) => Math.min(prev + 1, 5));
         }
-    }, [currentStage, validateStage1, validateStage2, validateStage3, validateStage4]);
+    }, [currentStage, validateStage]);
 
     const handlePreviousStage = useCallback(() => {
         setCurrentStage((prev) => Math.max(prev - 1, 1));
@@ -183,6 +138,7 @@ export default function CreateEventPage() {
             const response = await createPost(data);
 
             if (response.status == "ok") {
+                setIsDirty(false);
                 // Success
                 router.push(`/`);
             } else {
@@ -195,6 +151,8 @@ export default function CreateEventPage() {
             setIsSubmitting(false);
         }
     }, [formData, router]);
+
+    if (!user) return <Loading />;
 
     return (
         <main className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -215,12 +173,8 @@ export default function CreateEventPage() {
                             address={formData.address}
                             latitude={formData.latitude}
                             longitude={formData.longitude}
-                            onAddressChange={(address) =>
-                                setFormData((prev) => ({ ...prev, address }))
-                            }
-                            onCoordinatesChange={(lat, lng) =>
-                                setFormData((prev) => ({ ...prev, latitude: lat, longitude: lng }))
-                            }
+                            onAddressChange={(address) => updateForm({ address })}
+                            onCoordinatesChange={(lat, lng) => updateForm({ latitude: lat, longitude: lng })}
                             error={formData.errors.location || formData.errors.address}
                         />
                     )}
@@ -232,21 +186,11 @@ export default function CreateEventPage() {
                             startDate={formData.startDate}
                             endDate={formData.endDate}
                             price={formData.price}
-                            onTitleChange={(title) =>
-                                setFormData((prev) => ({ ...prev, title }))
-                            }
-                            onDescriptionChange={(description) =>
-                                setFormData((prev) => ({ ...prev, description }))
-                            }
-                            onStartDateChange={(startDate) =>
-                                setFormData((prev) => ({ ...prev, startDate }))
-                            }
-                            onEndDateChange={(endDate) =>
-                                setFormData((prev) => ({ ...prev, endDate }))
-                            }
-                            onPriceChange={(price) =>
-                                setFormData((prev) => ({ ...prev, price }))
-                            }
+                            onTitleChange={(title) => updateForm({ title })}
+                            onDescriptionChange={(description) => updateForm({ description })}
+                            onStartDateChange={(startDate) => updateForm({ startDate })}
+                            onEndDateChange={(endDate) => updateForm({ endDate })}
+                            onPriceChange={(price) => updateForm({ price })}
                             errors={formData.errors}
                         />
                     )}
@@ -257,20 +201,16 @@ export default function CreateEventPage() {
                             categoryList={categories}
                             loadingCategories={loadingCategories}
                             onBackgroundImageChange={(backgroundImage) => {
-                                setFormData((prev) => ({ ...prev, backgroundImage }));
+                                updateForm({ backgroundImage });
                                 if (backgroundImage) {
                                     const reader = new FileReader();
-                                    reader.onload = (e) => {
-                                        setImagePreview(e.target?.result as string);
-                                    };
+                                    reader.onload = (e) => setImagePreview(e.target?.result as string);
                                     reader.readAsDataURL(backgroundImage);
                                 } else {
                                     setImagePreview(null);
                                 }
                             }}
-                            onCategoriesChange={(categories) =>
-                                setFormData((prev) => ({ ...prev, categories }))
-                            }
+                            onCategoriesChange={(categories) => updateForm({ categories })}
                             errors={formData.errors}
                         />
                     )}
@@ -278,9 +218,7 @@ export default function CreateEventPage() {
                     {currentStage === 4 && (
                         <VisibilityStage
                             visibility={formData.visibility}
-                            onVisibilityChange={(visibility) =>
-                                setFormData((prev) => ({ ...prev, visibility }))
-                            }
+                            onVisibilityChange={(visibility) => updateForm({ visibility })}
                         />
                     )}
 
@@ -296,7 +234,7 @@ export default function CreateEventPage() {
                         <div className="mt-6">
                             <FriendSelector
                                 selectedIds={formData.inviteeIds}
-                                onChange={(inviteeIds) => setFormData((prev) => ({ ...prev, inviteeIds }))}
+                                onChange={(inviteeIds) => updateForm({ inviteeIds })}
                                 title="Invite your friends"
                                 description="Pick friends to notify right after event is published."
                             />

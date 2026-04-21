@@ -30,13 +30,10 @@ class EventController extends Controller
         $viewer = Auth::user();
 
         $events = Event::query()
-            ->with('visibility')
+            ->with(['visibility', 'categories'])
             ->get()
             ->filter(fn (Event $event) => EventHelper::canUserSeeEventInAllEvents($viewer, $event))
             ->values();
-//        $eventsQuery = Event::query()->with('visibility');
-//        EventHelper::applyListingVisibilityToQuery($eventsQuery, $viewer);
-//        $events = $eventsQuery->get();
 
         return $events->toResourceCollection();
     }
@@ -150,7 +147,7 @@ class EventController extends Controller
     public function show(Event $event)
     {
         $user = Auth::user();
-        $event->loadMissing(['user', 'visibility']);
+        $event->loadMissing(['user', 'visibility', 'categories']);
 
         if (! EventHelper::canUserAccessEvent($user, $event)) {
             return response()->json([
@@ -209,6 +206,123 @@ class EventController extends Controller
                 'interestedUsers' => $sortedInterestedUsers->map(fn (User $target) => $this->mapUserDto($target, $friendIds))->values(),
             ]
         ]);
+    }
+
+    /**
+     * Update the specified event in storage.
+     */
+    public function update(Request $request, Event $event): JsonResponse
+    {
+        $editor = Auth::user();
+
+        if (! $editor || (int) $editor->id !== (int) $event->user_id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Only event author can edit this event.',
+            ], 403);
+        }
+
+        $fields = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'address_name' => 'required|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date',
+            'price' => 'nullable|numeric',
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+            'visibility' => 'nullable|string|in:public,friends_only,private',
+        ]);
+
+        try {
+            $event->title = $fields['title'];
+            $event->description = $fields['description'] ?? null;
+            $event->start_date = Carbon::parse($fields['start_date'])->toDateTimeString();
+            $event->end_date = isset($fields['end_date']) && $fields['end_date'] !== null
+                ? Carbon::parse($fields['end_date'])->toDateTimeString()
+                : null;
+            $event->price = $fields['price'] ?? 0;
+
+            if (! empty($fields['visibility'])) {
+                $visibilityModel = EventVisibility::query()
+                    ->where('name', $fields['visibility'])
+                    ->first();
+
+                if ($visibilityModel) {
+                    $event->event_visibility_id = $visibilityModel->id;
+                }
+            }
+
+            $event->save();
+
+            if ($event->address) {
+                $event->address->update([
+                    'name' => trim((string) $fields['address_name']),
+                    'lat' => $fields['lat'],
+                    'lng' => $fields['lng'],
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Event updated successfully.',
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Event update failed', [
+                'error' => $e->getMessage(),
+                'event_id' => $event->id,
+                'user_id' => Auth::id(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong while updating event.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove the specified event from storage.
+     */
+    public function destroy(Event $event): JsonResponse
+    {
+        $editor = Auth::user();
+
+        if (! $editor || (int) $editor->id !== (int) $event->user_id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Only event author can delete this event.',
+            ], 403);
+        }
+
+        try {
+            if ($event->background_image_path && Storage::disk('public')->exists($event->background_image_path)) {
+                Storage::disk('public')->delete($event->background_image_path);
+            }
+
+            $address = $event->address;
+            $event->delete();
+
+            if ($address) {
+                $address->delete();
+            }
+
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Event deleted successfully.',
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Event delete failed', [
+                'error' => $e->getMessage(),
+                'event_id' => $event->id,
+                'user_id' => Auth::id(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Something went wrong while deleting event.',
+            ], 500);
+        }
     }
 
     public function interested(Event $event, Request $request) {

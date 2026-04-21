@@ -70,21 +70,17 @@ const VisibilityStage = ({
                         <>
                             <li>✓ Anyone can discover your event through search</li>
                             <li>✓ Event appears on the public map</li>
-                            <li>✓ Can be shared freely</li>
                         </>
                     )}
                     {visibility === 'friends_only' && (
                         <>
                             <li>✓ Only your friends can see this event</li>
                             <li>✓ Event won't appear in public search</li>
-                            <li>✓ Friends can share it with their friends</li>
                         </>
                     )}
                     {visibility === 'private' && (
                         <>
                             <li>✓ Only people with the link can see it</li>
-                            <li>✓ Maximum privacy and control</li>
-                            <li>✓ You decide who gets invited</li>
                         </>
                     )}
                 </ul>

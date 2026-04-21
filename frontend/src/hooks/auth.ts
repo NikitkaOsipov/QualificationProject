@@ -15,16 +15,44 @@ export const useAuth = ({
     const router = useRouter()
     const params = useParams()
 
+    const readCachedUser = () => {
+        if (typeof window === 'undefined') return undefined;
+        try {
+            const raw = localStorage.getItem('auth_user');
+            return raw ? JSON.parse(raw) : undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
     const { data: user, error, mutate } = useSWR('/api/user', () =>
         axios
             .get('/api/user')
-            .then(res => res.data)
+            .then(res => {
+                try {
+                    localStorage.setItem('auth_user', JSON.stringify(res.data));
+                } catch (e) {
+                    console.error(e);
+                }
+                return res.data;
+            })
             .catch(error => {
                 if (error.response.status !== 409) throw error
 
                 router.push('/verify-email')
             }),
     )
+
+    // After mount get cashed user while waiting for user request after reload.
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (user !== undefined) return;
+
+        const cachedUser = readCachedUser();
+        if (cachedUser) {
+            mutate(cachedUser, false);
+        }
+    }, [mutate, user]);
 
     const csrf = () => !isNative ? axios.get('/sanctum/csrf-cookie', {withCredentials: true}) : null;
 
@@ -116,10 +144,20 @@ export const useAuth = ({
         if (!error) {
             await axios.post('/api/logout').then(() => mutate())
         }
+        try {
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('auth_user');
+            }
+        } catch (e){
+            console.log(e);
+        }
         window.location.pathname = '/login';
     }
 
     useEffect(() => {
+        // Still loading — don't redirect yet
+        if (user === undefined && !error) return;
+
         if (middleware === 'guest' && redirectIfAuthenticated && user){
             console.log("Redirect if authenticated");
             router.push(redirectIfAuthenticated);
