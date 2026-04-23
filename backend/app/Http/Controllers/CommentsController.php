@@ -9,10 +9,8 @@ use App\Models\User;
 use App\Notifications\CommentReceivedNotification;
 use App\Support\EventHelper;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class CommentsController extends Controller
 {
@@ -22,30 +20,25 @@ class CommentsController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'text' => 'required|string|max:255|min:3',
+            'text' => 'required|string|max:500|min:3',
             'event_id' => 'required|integer|exists:events,id',
         ]);
 
         $event = Event::query()->find($fields['event_id']);
         if (! $event) {
-            return response()->json([
-                'error' => 'Event not found.',
-            ], 404);
+            return EventHelper::errorResponse('Event not found.', 404);
         }
 
         if (! EventHelper::canUserAccessEvent(Auth::user(), $event)) {
-            return response()->json([
-                'error' => 'You do not have access to this event.',
-            ], 403);
+            return EventHelper::errorResponse('You do not have access to this event.', 403);
         }
 
-        Log::info(Auth::id());
         $fields['user_id'] = Auth::id();
 
         try {
-            $comment = Comment::create($fields);
+            $comment = Comment::query()->create($fields)->load('user');
 
-            if ($event && $event->user_id !== Auth::id()) {
+            if ($event->user_id !== Auth::id()) {
                 $eventOwner = User::query()->find($event->user_id);
 
                 if ($eventOwner) {
@@ -59,15 +52,39 @@ class CommentsController extends Controller
         } catch (\Exception $exception) {
             Log::info('Error'. $exception->getMessage());
 
-            return response()->json([
-                'error' => 'Failed to create comment. Please try again later.' . $exception->getMessage(),
-            ], 500);
+            return EventHelper::errorResponse('Failed to create comment. Please try again later.' . $exception->getMessage(), 500);
         }
 
-        return response()->json([
-            'success' => 'Comment created successfully',
-            'comment' => $comment,
+        return EventHelper::successResponse('Comment created successfully', [
+            'comment' => new CommentResource($comment),
         ], 201);
+    }
+
+    public function update(Request $request, Comment $comment)
+    {
+        if ((int) $comment->user_id !== (int) Auth::id()) {
+            return EventHelper::errorResponse('You can only edit your own comments.', 403);
+        }
+
+        $fields = $request->validate([
+            'text' => 'required|string|max:500|min:3',
+        ]);
+
+        $comment->text = $fields['text'];
+        $comment->save();
+
+        return EventHelper::successResponse('Comment updated successfully');
+    }
+
+    public function destroy(Comment $comment)
+    {
+        if ((int) $comment->user_id !== (int) Auth::id()) {
+            return EventHelper::errorResponse('You can only delete your own comments.', 403);
+        }
+
+        $comment->delete();
+
+        return EventHelper::successResponse('Comment deleted successfully');
     }
 
     /**
@@ -76,16 +93,14 @@ class CommentsController extends Controller
     public function eventComments(Event $event)
     {
         if (! EventHelper::canUserAccessEvent(Auth::user(), $event)) {
-            return response()->json([
-                'error' => 'You do not have access to this event.',
-            ], 403);
+            return EventHelper::errorResponse('You do not have access to this event.', 403);
         }
 
-        Log::info("---------------------------------Comments");
-//        Log::info(CommentResource::collection($event->comments));
-        Log::info("---------------------------------Comments");
-        return CommentResource::collection($event->comments);
+        $comments = $event->comments()->with('user')->latest()->get();
+
+        return CommentResource::collection($comments);
     }
+
     /**
      * Display the specified resource.
      */

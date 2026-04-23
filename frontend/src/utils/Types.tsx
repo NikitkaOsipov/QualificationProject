@@ -115,6 +115,7 @@ export interface Comment {
     text: string;
     user: User;
     created_at: string;
+    updated_at?: string;
 }
 
 export interface ValidationErrors {
@@ -124,7 +125,7 @@ export interface ValidationErrors {
 export interface CreateResponse {
     status: 'ok' | 'error';
     message?: string;
-    errors?: ValidationErrors;
+    data?: any;
 }
 
 

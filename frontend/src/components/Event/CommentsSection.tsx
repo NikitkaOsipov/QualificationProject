@@ -1,58 +1,105 @@
-import { useEffect, useState } from 'react'
-import { createComment, getEventComments } from '@/utils/comment_service';
+'use client';
+
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link';
+import { createComment, deleteComment, getEventComments, updateComment } from '@/utils/comment_service';
 import { Comment } from '@/utils/Types';
 import Loading from '@/components/Loading';
 import UserAvatar from '@/components/User/UserAvatar';
+import { useAuth } from '@/hooks/auth';
 
 const MIN_LENGTH = 3;
-const MAX_LENGTH = 300;
+const MAX_LENGTH = 500;
 
 interface Params {
     eventId: number | string;
 }
 
 function CommentsSection({ eventId }: Params) {
-    const [comments, setComments] = useState<Comment[] | null>();
+    const { user } = useAuth();
 
-    const [newComment, setNewComment] = useState("");
-    const [error, setError] = useState("");
+    const [comments, setComments] = useState<Comment[] | null>(null);
+    const [newComment, setNewComment] = useState('');
+    const [error, setError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editingText, setEditingText] = useState('');
+    const [editingError, setEditingError] = useState('');
+    const [actionCommentId, setActionCommentId] = useState<number | null>(null);
+    const [nowMs, setNowMs] = useState<number | null>(null);
 
     useEffect(() => {
         const getComments = async () => {
             if (!eventId) return;
             const res = await getEventComments(eventId);
-            console.log(res);
 
             setComments(res);
         }
         getComments();
+    }, [eventId]);
+
+    useEffect(() => {
+        setNowMs(Date.now());
+        const intervalId = window.setInterval(() => {
+            setNowMs(Date.now());
+        }, 60_000);
+
+        return () => window.clearInterval(intervalId);
     }, []);
 
     const validate = (text: string) => {
         const trimmedText = text.trim();
-        if (trimmedText.length != 0 && trimmedText.length < MIN_LENGTH) {
-            return `Comment must be at least ${MIN_LENGTH} characters`;
+        if (trimmedText.length !== 0 && trimmedText.length < MIN_LENGTH) {
+            return `Komentāram jābūt vismaz ${MIN_LENGTH} rakstzīmes garam`;
         }
-        if (trimmedText.length > MAX_LENGTH) {
-            return `Comment must be less than ${MAX_LENGTH} characters`;
-        }
-        return ""
+        return "";
     }
 
-    const formatDate = (dateString: string) => {
+    const canSubmit = useMemo(() => !error && !!newComment.trim() && !isSubmitting, [error, newComment, isSubmitting]);
+
+    const formatRelativeTime = (dateString: string) => {
+        if (!nowMs) return '';
+
         const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = now.getTime() - date.getTime();
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
 
-        if (diffMins < 1) return "just now";
-        if (diffMins < 60) return `${diffMins}m ago`;
-        if (diffHours < 24) return `${diffHours}h ago`;
-        if (diffDays < 7) return `${diffDays}d ago`;
+        if (Number.isNaN(date.getTime())) return '';
 
-        return date.toLocaleDateString();
+        const diffSeconds = Math.round((date.getTime() - nowMs) / 1000);
+        const absSeconds = Math.abs(diffSeconds);
+        const rtf = new Intl.RelativeTimeFormat('lv-LV', { numeric: 'auto' });
+
+        if (absSeconds < 60) {
+            return rtf.format(diffSeconds, 'second');
+        }
+
+        const diffMinutes = Math.round(diffSeconds / 60);
+        if (Math.abs(diffMinutes) < 60) {
+            return rtf.format(diffMinutes, 'minute');
+        }
+
+        const diffHours = Math.round(diffMinutes / 60);
+        if (Math.abs(diffHours) < 24) {
+            return rtf.format(diffHours, 'hour');
+        }
+
+        const diffDays = Math.round(diffHours / 24);
+        if (Math.abs(diffDays) < 30) {
+            return rtf.format(diffDays, 'day');
+        }
+
+        const diffMonths = Math.round(diffDays / 30);
+        if (Math.abs(diffMonths) < 12) {
+            return rtf.format(diffMonths, 'month');
+        }
+
+        const diffYears = Math.round(diffMonths / 12);
+        return rtf.format(diffYears, 'year');
+    }
+
+    const isEdited = (comment: Comment) => {
+        if (!comment.updated_at) return false;
+        return comment.updated_at !== comment.created_at;
     }
 
     const handleSubmit = async () => {
@@ -63,96 +110,213 @@ function CommentsSection({ eventId }: Params) {
             return;
         }
 
-        const result = await createComment(
-            newComment.trim(),
-            eventId
-        );
+        setIsSubmitting(true);
+        try {
+            const response = await createComment(newComment.trim(), eventId);
 
-        console.log(result);
+            if (response.status === 'ok') {
+                const createdComment = response.data?.comment as Comment | undefined;
+                if (createdComment) {
+                    setComments((prev) => (prev ? [createdComment, ...prev] : [createdComment]));
+                }
+            }
 
-        // Refresh comments after posting
-        const updatedComments = await getEventComments(eventId);
-        setComments(updatedComments);
-
-        setNewComment("")
-        setError("")
+            setNewComment('');
+            setError('');
+        } catch (e) {
+            console.error(e);
+            setError('Neizdevās publicēt komentāru. Mēģini vēlreiz.');
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     const handleChange = (value: string) => {
-        setNewComment(value)
-        setError(validate(value))
+        setNewComment(value);
+        setError(validate(value));
     }
 
+    const startEditing = (comment: Comment) => {
+        setEditingId(comment.id);
+        setEditingText(comment.text);
+        setEditingError('');
+    }
+
+    const cancelEditing = () => {
+        setEditingId(null);
+        setEditingText('');
+        setEditingError('');
+    }
+
+    const saveEditing = async (commentId: number) => {
+        const validationError = validate(editingText);
+        if (validationError) {
+            setEditingError(validationError);
+            return;
+        }
+
+        setActionCommentId(commentId);
+        try {
+            const newText = editingText.trim();
+            await updateComment(commentId, newText);
+            setComments((prev) => prev?.map((comment) => {
+                if (comment.id !== commentId) {
+                    return comment;
+                }
+
+                return {
+                    ...comment,
+                    text: newText,
+                    updated_at: new Date().toISOString(),
+                };
+            }) ?? []);
+            cancelEditing();
+        } finally {
+            setActionCommentId(null);
+        }
+    }
+
+    const removeComment = async (commentId: number) => {
+        setActionCommentId(commentId);
+        try {
+            await deleteComment(commentId);
+            setComments((prev) => prev?.filter((comment) => comment.id !== commentId) ?? []);
+            if (editingId === commentId) {
+                cancelEditing();
+            }
+        } finally {
+            setActionCommentId(null);
+        }
+    }
 
     if (comments == null) return <Loading />
 
     return (
-        <div>
-            <h2 className="text-xl font-semibold mb-4">
-                Comments
-            </h2>
+        <section className="py-2">
+            <h2 className="mb-4 text-xl font-semibold text-gray-900">Komentāri</h2>
 
-            {/* Input */}
-            <div className="mb-6 flex flex-col gap-2">
+            {user ? (
+                <div className="mb-6 flex flex-col gap-2">
+                    <textarea
+                        value={newComment}
+                        onChange={(e) => handleChange(e.target.value.slice(0, MAX_LENGTH))}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                if (canSubmit) handleSubmit();
+                            }
+                        }}
+                        placeholder="Uzraksti komentāru..."
+                        className={`w-full rounded-lg border p-3 text-sm text-gray-800 resize-none focus:outline-none focus:ring-2 ${error ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-400'}`}
+                        rows={3}
+                    />
 
-                <textarea
-                    value={newComment}
-                    onChange={(e) => handleChange(e.target.value)}
-                    placeholder="Write a comment..."
-                    className={`w-full border rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 
-                        ${error ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"}`}
-                    rows={3}
-                />
+                    <div className="flex items-center justify-between text-xs">
+                        <span className="text-red-500">{error}</span>
+                        <span className="text-gray-400">{newComment.length}/{MAX_LENGTH}</span>
+                    </div>
 
-                {/* Error + counter */}
-                <div className="flex justify-between items-center text-xs">
-                    <span className="text-red-500">
-                        {error}
-                    </span>
-
-                    <span className="text-gray-400">
-                        {newComment.length}/{MAX_LENGTH}
-                    </span>
+                    <div className="flex justify-end">
+                        <button
+                            onClick={handleSubmit}
+                            disabled={!canSubmit}
+                            className={`rounded-lg px-4 py-2 text-sm font-medium text-white transition ${canSubmit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                        >
+                            {isSubmitting ? 'Publicē...' : 'Publicēt'}
+                        </button>
+                    </div>
                 </div>
-
-                <div className="flex justify-end">
-                    <button
-                        onClick={handleSubmit}
-                        disabled={!!error || !newComment.trim()}
-                        className={`px-4 py-2 rounded-lg text-white transition
-                            ${error || !newComment.trim()
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-blue-600 hover:bg-blue-700"}`}
-                    >
-                        Post
-                    </button>
+            ) : (
+                <div className="mb-6 rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm text-blue-900">
+                    Lai atstātu komentāru, <Link href="/login" className="font-semibold underline hover:text-blue-700">ielogojies</Link>.
                 </div>
+            )}
 
-            </div>
+            <div className="flex flex-col divide-y divide-gray-100">
+                {comments.map((comment) => {
+                    const isOwner = user?.id === comment.user.id;
+                    const isEditing = editingId === comment.id;
+                    const isBusy = actionCommentId === comment.id;
 
-            {/* Comments */}
-            <div className="flex flex-col gap-4">
-                {comments.map((c) => {
                     return (
-                        <div key={c.id} className="border rounded-lg p-4 hover:bg-gray-50 transition">
-                            <div className="flex gap-3 mb-2">
-                                <div className="flex-shrink-0">
-                                    <UserAvatar src={c.user.avatar} name={c.user.name} className="w-8 h-8" />
+                        <article key={comment.id} className="py-4 first:pt-0">
+                            <div className="flex items-start gap-3">
+                                <UserAvatar src={comment.user.avatar} name={comment.user.name} className="h-8 w-8 flex-shrink-0" />
+
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                                        <p className="text-sm font-semibold text-gray-900">{comment.user.name}</p>
+                                        <span className="text-xs text-gray-400">{formatRelativeTime(comment.created_at)}</span>
+                                        {isEdited(comment) && (
+                                            <span className="text-xs text-amber-500">(rediģēts)</span>
+                                        )}
+                                    </div>
+
+                                    {!isEditing && (
+                                        <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-gray-700">
+                                            {comment.text}
+                                        </p>
+                                    )}
+
+                                    {isEditing && (
+                                        <div className="mt-2">
+                                            <textarea
+                                                value={editingText}
+                                                onChange={(e) => {
+                                                    setEditingText(e.target.value);
+                                                    setEditingError(validate(e.target.value));
+                                                }}
+                                                className={`w-full rounded-lg border p-3 text-sm resize-none focus:outline-none focus:ring-2 ${editingError ? 'border-red-400 focus:ring-red-300' : 'border-gray-300 focus:ring-blue-400'}`}
+                                                rows={3}
+                                            />
+                                            {editingError && <div className="mt-1 text-xs text-red-500">{editingError}</div>}
+
+                                            <div className="mt-2 flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    disabled={!!editingError || !editingText.trim() || isBusy}
+                                                    onClick={() => saveEditing(comment.id)}
+                                                    className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                                >
+                                                    {isBusy ? 'Saglabā...' : 'Saglabāt'}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={cancelEditing}
+                                                    className="rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                                                >
+                                                    Atcelt
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-sm font-medium">{c.user.name}</p>
-                                        <p className="text-xs text-gray-500">{formatDate(c.created_at)}</p>
+                                {isOwner && !isEditing && (
+                                    <div className="flex items-center gap-1 shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={() => startEditing(comment)}
+                                            className="rounded px-2 py-1 text-xs text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
+                                        >
+                                            Rediģēt
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeComment(comment.id)}
+                                            disabled={isBusy}
+                                            className="rounded px-2 py-1 text-xs text-gray-400 hover:text-red-600 hover:bg-red-50 transition disabled:opacity-60"
+                                        >
+                                            Dzēst
+                                        </button>
                                     </div>
-                                    <p className="text-gray-700 text-sm mt-1">{c.text}</p>
-                                </div>
+                                )}
                             </div>
-                        </div>
+                        </article>
                     );
                 })}
             </div>
-        </div>
+        </section>
     )
 }
 

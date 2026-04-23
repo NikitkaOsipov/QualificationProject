@@ -5,9 +5,33 @@ namespace App\Support;
 use App\Models\Event;
 use App\Models\Friend;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 
 class EventHelper
 {
+    /**
+     * Return a standardised JSON error response with given message and HTTP status code.
+     */
+    public static function errorResponse(string $message, int $status = 400): JsonResponse
+    {
+        return response()->json([
+            'status' => 'error',
+            'message'  => $message,
+        ], $status);
+    }
+
+    /**
+     * Return a standardised JSON success response
+     */
+    public static function successResponse(string $message, array $data = [], int $status = 200): JsonResponse
+    {
+        return response()->json([
+            'status'  => 'ok',
+            'message' => $message,
+            'data'    => $data,
+        ], $status);
+    }
+
     /**
      * Direct event access (details/actions).
      * "private" means link-only: if user has link, allow opening details.

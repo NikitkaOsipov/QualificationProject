@@ -14,10 +14,14 @@ class CommentResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $createdAt = $this->created_at?->toIso8601String();
+        $updatedAt = $this->updated_at?->toIso8601String();
+
         return [
             'id' => $this->id,
             'text' => $this->text,
-            'created_at' => $this->created_at->toDateTimeString(),
+            'created_at' => $createdAt,
+            'updated_at' => $updatedAt !== $createdAt ? $updatedAt : null,
             'user' => new UserResource($this->user),
         ];
     }
