@@ -24,6 +24,10 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User 2',
             'email' => 'test2@example.com',
         ]);
+        User::factory()->create([
+            'name' => 'Nikita',
+            'email' => 'no.accenture.bootcamp@gmail.com',
+        ]);
 
         $this->call(CategorySeeder::class);
         $this->call(EventVisibilitySeeder::class);

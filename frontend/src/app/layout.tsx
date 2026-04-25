@@ -20,7 +20,7 @@ const RootLayout = ({
 
     return (
         <html lang="en" className={nunitoFont.className}>
-            <body className="min-h-screen bg-gray-100">
+            <body className="min-h-screen bg-white">
                 <div className="flex flex-col h-screen">
                     <Navigation user={user} />
 

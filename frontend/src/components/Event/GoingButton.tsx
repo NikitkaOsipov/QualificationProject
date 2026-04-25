@@ -24,7 +24,7 @@ export default function GoingButton({
                 disabled:opacity-50
             `}
         >
-            {isGoing ? "Going ✓" : "I'm going"}
+            {isGoing ? "Piedalos ✓" : "Es piedalos"}
         </button>
     )
 }

@@ -25,13 +25,13 @@ export default function UsersListModal({ isOpen, title, users, onCloseAction }: 
                         onClick={onCloseAction}
                         className="rounded-md px-2 py-1 text-gray-500 hover:bg-gray-100"
                     >
-                        Aizvert
+                        Aizvērt
                     </button>
                 </div>
 
                 <div className="max-h-[70vh] overflow-y-auto p-4 space-y-2">
                     {users.length === 0 && (
-                        <p className="text-sm text-gray-500">Saraksts ir tukss.</p>
+                        <p className="text-sm text-gray-500">Saraksts ir tukšs.</p>
                     )}
 
                     {users.map((person) => (

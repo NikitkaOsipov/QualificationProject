@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import UserAvatar from '@/components/User/UserAvatar';
 import UsersListModal from '@/components/Event/UsersListModal';
 import { User } from '@/utils/Types';
@@ -8,20 +8,15 @@ import { User } from '@/utils/Types';
 type GoingUsersPanelProps = {
     goingCount: number;
     goingUsers: User[];
-    onModalOpenChangeAction?: (isOpen: boolean) => void;
 };
 
-export default function GoingUsersPanel({ goingCount, goingUsers, onModalOpenChangeAction }: GoingUsersPanelProps) {
+export default function GoingUsersPanel({ goingCount, goingUsers }: GoingUsersPanelProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const goingFriendUsers = useMemo(
         () => goingUsers.filter((person) => person.is_friend === true),
         [goingUsers],
     );
-
-    useEffect(() => {
-        onModalOpenChangeAction?.(isModalOpen);
-    }, [isModalOpen, onModalOpenChangeAction]);
 
     return (
         <>
@@ -40,7 +35,7 @@ export default function GoingUsersPanel({ goingCount, goingUsers, onModalOpenCha
                 }`}
             >
                 <h3 className="font-semibold mb-3">
-                    Draugi, kas piedalas
+                    Draugi, kas piedalās
                 </h3>
 
                 {goingFriendUsers.length > 0 && (
@@ -54,13 +49,13 @@ export default function GoingUsersPanel({ goingCount, goingUsers, onModalOpenCha
                 )}
 
                 <p className="text-sm text-gray-500 mt-2">
-                    {goingCount === 0 ? '0 lietotaji atzimeja piedalas' : `Kopa piedalas: ${goingCount}`}
+                    {goingCount === 0 ? '0 lietotāji atzīmēja, ka piedalās' : `Kopā piedalās: ${goingCount}`}
                 </p>
             </button>
 
             <UsersListModal
                 isOpen={isModalOpen}
-                title="Cilveki, kas piedalas"
+                title="Cilvēki, kas piedalās"
                 users={goingUsers}
                 onCloseAction={() => setIsModalOpen(false)}
             />

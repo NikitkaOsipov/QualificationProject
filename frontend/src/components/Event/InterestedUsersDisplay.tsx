@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import InterestedButton from '@/components/Event/InterestedButton';
 import UsersListModal from '@/components/Event/UsersListModal';
 import { User } from '@/utils/Types';
@@ -10,7 +10,6 @@ type InterestedUsersDisplayProps = {
     onInterestedChangeAction: (value: boolean) => void | Promise<void>;
     interestedCount: number;
     interestedUsers: User[];
-    onModalOpenChangeAction?: (isOpen: boolean) => void;
 };
 
 export default function InterestedUsersDisplay({
@@ -18,13 +17,8 @@ export default function InterestedUsersDisplay({
     onInterestedChangeAction,
     interestedCount,
     interestedUsers,
-    onModalOpenChangeAction,
 }: InterestedUsersDisplayProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    useEffect(() => {
-        onModalOpenChangeAction?.(isModalOpen);
-    }, [isModalOpen, onModalOpenChangeAction]);
 
     return (
         <>
@@ -44,12 +38,12 @@ export default function InterestedUsersDisplay({
                         : 'text-gray-400 cursor-default pointer-events-none'
                 }`}
             >
-                {interestedCount} interesejas
+                {interestedCount} interesējas
             </button>
 
             <UsersListModal
                 isOpen={isModalOpen}
-                title="Cilveki, kas interesejas"
+                title="Cilvēki, kas interesējas"
                 users={interestedUsers}
                 onCloseAction={() => setIsModalOpen(false)}
             />

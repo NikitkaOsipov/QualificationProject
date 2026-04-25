@@ -15,8 +15,8 @@ interface FriendSelectorProps {
 const FriendSelector = ({
     selectedIds,
     onChange,
-    title = 'Choose friends',
-    description = 'Select friends to send participation requests.',
+    title = 'Izvēlies draugus',
+    description = 'Izvēlies draugus, kuriem nosūtīt ielūgumu.',
     maxHeightClassName = 'max-h-80',
 }: FriendSelectorProps) => {
     const [search, setSearch] = useState('');
@@ -45,15 +45,15 @@ const FriendSelector = ({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search friends by name or email"
+                placeholder="Meklēt draugus pēc vārda vai e-pasta"
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
             />
 
             <div className={`mt-3 overflow-y-auto ${maxHeightClassName} space-y-2 pr-1`}>
-                {loading && <p className="text-sm text-gray-500">Loading friends...</p>}
+                {loading && <p className="text-sm text-gray-500">Ielādē draugus...</p>}
 
                 {!loading && visibleFriends.length === 0 && (
-                    <p className="text-sm text-gray-500">No friends found.</p>
+                    <p className="text-sm text-gray-500">Draugi netika atrasti.</p>
                 )}
 
                 {!loading && visibleFriends.map((friend) => (
@@ -68,7 +68,7 @@ const FriendSelector = ({
             </div>
 
             {selectedIds.length > 0 && (
-                <p className="mt-3 text-sm text-blue-700">Selected: {selectedIds.length}</p>
+                <p className="mt-3 text-sm text-blue-700">Izvēlēti: {selectedIds.length}</p>
             )}
         </div>
     );
