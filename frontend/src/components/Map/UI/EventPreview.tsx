@@ -1,22 +1,17 @@
 'use client'
 
-import type { MarkerType } from '@/utils/Types'
-import Map from '@/components/Map/DynamicMarkerMap'
+import type { EventType } from '@/utils/Types'
 import SideModal from '@/components/SideModal'
-import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-
-import { getPosts } from '@/utils/post_service'
-import Loading from '@/components/Loading'
 
 
 type EventPreviewProps = {
     isOpen: boolean;
     toggleModal: (value: boolean) => void;
-    event: MarkerType | null
+    event: EventType | null
 };
 
-function formatEventDate(start?: Date, end?: Date) {
+function formatEventDate(start?: string | Date, end?: string | Date) {
     if (!start) return "";
 
     const startDate = new Date(start);

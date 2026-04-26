@@ -80,34 +80,58 @@ export interface EventType {
     end_date?: string;
     price?: number;
     address: Address;
-    backgroundImage?: string;
+    background_image_path?: string | null;
     visibility?: Visibility;
     categories?: Category[];
+    user?: {
+        id?: number;
+        name?: string;
+    };
+    going_count?: number;
+    interested_count?: number;
 }
 
 // Result of the event request (Details page for event)
 export interface EventResponse {
     event: EventType;
     meta: {
-        isInterested: boolean;
-        isGoing: boolean;
+        is_interested: boolean;
+        is_going: boolean;
         host?: User | null;
-        goingCount?: number;
-        interestedCount?: number;
-        goingUsers?: User[];
-        interestedUsers?: User[];
+        going_count?: number;
+        interested_count?: number;
+        going_users?: User[];
+        interested_users?: User[];
     };
 }
 
-export interface MarkerType {
-    id: number;
-    title: string;
-    description?: string;
-    start_date?: Date;
-    end_date?: Date;
-    price?: number;
-    address: Address;
-    backgroundImage: string;
+export type EventSortBy = 'default' | 'soonest' | 'interested' | 'going' | 'cost';
+export type SortDirection = 'asc' | 'desc';
+
+export interface EventFilters {
+    search?: string;
+    categories?: number[];
+    friends_only?: boolean;
+    following_only?: boolean;
+    sort_by?: EventSortBy;
+    sort_direction?: SortDirection;
+    page?: number;
+    per_page?: number;
+}
+
+export interface PaginatedEventsMeta {
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
+    has_more: boolean;
+    applied_sort_by: EventSortBy;
+    applied_sort_direction: SortDirection;
+}
+
+export interface PaginatedEventsResponse {
+    data: EventType[];
+    meta: PaginatedEventsMeta;
 }
 
 export interface Comment {
@@ -118,14 +142,9 @@ export interface Comment {
     updated_at?: string;
 }
 
-export interface ValidationErrors {
-    [field: string]: string[];
-}
-
 export interface CreateResponse {
     status: 'ok' | 'error';
     message?: string;
-    data?: any;
 }
 
 

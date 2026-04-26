@@ -23,7 +23,8 @@ class EventResource extends JsonResource
                 'lng' => $this->address?->lng,
             ],
             'user' => [
-                'username' => $this->user->name
+                'id' => $this->user?->id,
+                'name' => $this->user?->name,
             ],
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
@@ -34,6 +35,8 @@ class EventResource extends JsonResource
             'event_type_id' => $this->event_type_id,
             'event_visibility_id' => $this->event_visibility_id,
             'visibility' => $this->visibility?->name,
+            'going_count' => $this->going_users_count ?? 0,
+            'interested_count' => $this->interested_users_count ?? 0,
             'categories' => $this->categories
                 ->map(fn ($category) => [
                     'id' => $category->id,

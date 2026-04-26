@@ -2,7 +2,7 @@
 
 import { deletePost, getPost, setGoingPost, setInterestedPost } from '@/utils/post_service'
 import { useEffect, useState } from 'react';
-import { EventResponse, EventType, MarkerType, User } from '@/utils/Types'
+import type { EventResponse, EventType, User } from '@/utils/Types'
 import { API_BASE_URL} from '@/Config/api';
 import Map from '@/components/Map/DynamicMarkerMap';
 import Image from "next/image";
@@ -41,16 +41,18 @@ export default function EventPage() {
         : event?.visibility === 'friends_only'
             ? 'Tikai draugiem'
             : 'Publisks pasākums';
+    const eventImageSrc = event?.background_image_path ? `${API_BASE_URL}/storage/${event.background_image_path}`
+        : `${API_BASE_URL}/storage/BackgroundImages/default.jpg`;
 
     const setEventDetails = (eventResponse: EventResponse) => {
         setEvent(eventResponse.event);
-        setGoing(eventResponse.meta.isGoing);
-        setInterested(eventResponse.meta.isInterested);
+        setGoing(eventResponse.meta.is_going);
+        setInterested(eventResponse.meta.is_interested);
         setHost(eventResponse.meta.host ?? null);
-        setGoingUsers(eventResponse.meta.goingUsers ?? []);
-        setInterestedUsers(eventResponse.meta.interestedUsers ?? []);
-        setGoingCount(eventResponse.meta.goingCount ?? (eventResponse.meta.goingUsers?.length ?? 0));
-        setInterestedCount(eventResponse.meta.interestedCount ?? (eventResponse.meta.interestedUsers?.length ?? 0));
+        setGoingUsers(eventResponse.meta.going_users ?? []);
+        setInterestedUsers(eventResponse.meta.interested_users ?? []);
+        setGoingCount(eventResponse.meta.going_count ?? (eventResponse.meta.going_users?.length ?? 0));
+        setInterestedCount(eventResponse.meta.interested_count ?? (eventResponse.meta.interested_users?.length ?? 0));
     };
     // const searchParams = useSearchParams();
     useEffect(()  => {
@@ -146,7 +148,7 @@ export default function EventPage() {
 
                     <div className="relative w-full h-72 md:h-96 rounded-xl overflow-hidden mb-8">
                         <Image
-                            src={event.backgroundImage ?? `${API_BASE_URL}/storage/BackgroundImages/default.jpg`}
+                            src={eventImageSrc}
                             alt={event.title}
                             fill
                             className="object-cover"
@@ -226,7 +228,7 @@ export default function EventPage() {
                                     <Map
                                         center={[event.address.lat, event.address.lng]}
                                         zoom={14}
-                                        markers={[event as unknown as MarkerType]}
+                                        markers={[event]}
                                         onMarkerClick={() => {}}
                                         className="w-full h-full"
                                     />

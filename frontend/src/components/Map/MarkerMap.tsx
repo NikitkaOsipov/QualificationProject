@@ -2,11 +2,11 @@
 
 import Map from '@/components/Map/Map'
 import { Marker, MapContainerProps, Popup } from 'react-leaflet'
-import type { MarkerType } from '@/utils/Types'
+import type { EventType } from '@/utils/Types'
 
 export type MarkerMapProps = MapContainerProps & {
-    markers: MarkerType[];
-    onMarkerClick: (event: MarkerType) => void;
+    markers: EventType[];
+    onMarkerClick: (event: EventType) => void;
 
 }
 

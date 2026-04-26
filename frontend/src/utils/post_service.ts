@@ -1,5 +1,5 @@
 import axios from '@/lib/axios';
-import type { CreateResponse, EventResponse, MarkerType } from './Types'
+import type { CreateResponse, EventFilters, EventResponse, PaginatedEventsResponse } from './Types'
 
 export type UpdatePostData = {
     title: string;
@@ -13,8 +13,15 @@ export type UpdatePostData = {
     visibility?: 'public' | 'friends_only' | 'private';
 };
 
-export const getPosts = async (params?: { page?: number; search?:string }) =>
-    axios.get('/api/all-events', { params }).then(r => r.data.data as MarkerType[]);
+// As get can use only query params, I have to map bool to numbers 1 or 0
+type EventQueryParams = Omit<EventFilters, 'friends_only' | 'following_only'> & {
+    friends_only?: 0 | 1;
+    following_only?: 0 | 1;
+};
+
+export const getPosts = async (filters?: EventQueryParams) => {
+    return axios.get('/api/all-events', { params: filters }).then(r => r.data as PaginatedEventsResponse);
+}
 
 export const getPost = async (id: string | number) =>
     axios.get(`/api/event/${id}`).then(r => r.data as EventResponse);

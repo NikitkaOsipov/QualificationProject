@@ -17,6 +17,7 @@ const Map = (props: MapContainerProps) => {
         <MapContainer
             {...props}
             scrollWheelZoom={true}
+            zoomControl={props.zoomControl ?? false}
             maxBounds={props.maxBounds ?? LATVIA_BOUNDS}
             maxBoundsViscosity={props.maxBoundsViscosity ?? 1.0}
             minZoom={props.minZoom ?? 7}

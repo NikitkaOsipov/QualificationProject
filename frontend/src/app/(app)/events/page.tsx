@@ -1,36 +1,134 @@
 "use client";
 import { useEffect, useState } from 'react'
 import "@/css/SideModal.css";
-import { MarkerType } from '@/utils/Types'
+import EventSearchAndFilters from '@/components/Event/EventSearchAndFilters'
+import { useAuth } from '@/hooks/auth'
+import type { EventFilters, EventType, PaginatedEventsMeta } from '@/utils/Types'
 import { getPosts } from '@/utils/post_service'
 import Loading from '@/components/Loading'
 import EventCard from '@/components/Event/EventCard'
 
-export default function EventsPage() {
-    const [events, setEvents] = useState<MarkerType[] | null>(null);
 
-    useEffect(() => {
-        const fetchEvents = async () => {
-            const result = await getPosts();
-            setEvents(result);
+const DEFAULT_FILTERS: EventFilters = {
+    search: '',
+    categories: [],
+    friends_only: false,
+    following_only: false,
+    sort_by: 'default',
+    sort_direction: 'desc',
+}
+
+export default function EventsPage() {
+    const { user } = useAuth();
+    const [events, setEvents] = useState<EventType[]>([]);
+    // Filters that weren't applied yet (user didn't click on search)
+    const [draftFilters, setDraftFilters] = useState<EventFilters>({ ...DEFAULT_FILTERS });
+    // Filters that were applied.
+    const [currentFilters, setCurrentFilters] = useState<EventFilters>({ ...DEFAULT_FILTERS });
+    const [meta, setMeta] = useState<PaginatedEventsMeta | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+    const fetchEvents = async (filters: EventFilters, page = 1, append = false) => {
+        if (append) {
+            setIsLoadingMore(true);
+        } else {
+            setIsLoading(true);
         }
 
-        fetchEvents();
-    }, [])
+        try {
+            const response = await getPosts({
+                ...filters,
+                friends_only: filters.friends_only ? 1 : 0,
+                following_only: filters.following_only ? 1 : 0,
+                page: page,
+                per_page: 12,
+            });
+
+            setEvents(current => append ? [...current, ...response.data] : response.data);
+            setMeta(response.meta);
+        } finally {
+            setIsLoading(false);
+            setIsLoadingMore(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchEvents(currentFilters);
+    }, [currentFilters])
+
+    const handleApplyFilters = () => {
+        setCurrentFilters({ ...draftFilters });
+    }
+
+    const handleResetFilters = () => {
+        setDraftFilters({ ...DEFAULT_FILTERS });
+        setCurrentFilters({ ...DEFAULT_FILTERS });
+    }
+
+    const handleLoadMore = async () => {
+        if (!meta?.has_more || isLoadingMore) {
+            return;
+        }
+
+        await fetchEvents(currentFilters, meta.current_page + 1, true);
+    }
 
     return (
         <div className="max-w-7xl mx-auto px-4 py-8">
 
-            <h1 className="text-2xl font-semibold mb-6">
-                Upcoming Events
-            </h1>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {events?.map((event, index) => (
-                    <EventCard key={index} event={event} />
-                ))}
+            <div className="mb-8">
+                <EventSearchAndFilters
+                    value={draftFilters}
+                    onChangeAction={(nextValue) => setDraftFilters(nextValue)}
+                    onSubmitAction={handleApplyFilters}
+                    onResetAction={handleResetFilters}
+                    showSort
+                    disableSocialFilters={!user}
+                    isLoading={isLoading}
+                />
             </div>
 
+            {currentFilters.search === '' && currentFilters.categories.length === 0 && !currentFilters.friends_only && !currentFilters.following_only && (
+                <div className="mb-6 flex flex-col gap-2">
+                    <h1 className="text-2xl font-semibold">Aktuālākie gaidāmie pasākumi</h1>
+                </div>
+            )}
+
+            {meta && (
+                <div className="mb-4 text-sm text-gray-500">
+                    Rāda {events.length} no {meta.total} pasākumiem
+                </div>
+            )}
+
+            {isLoading ? (
+                <Loading />
+            ) : events.length > 0 ? (
+                <>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {events.map((event) => (
+                            <EventCard key={event.id} event={event} />
+                        ))}
+                    </div>
+
+                    {meta?.has_more && (
+                        <div className="mt-8 flex justify-center">
+                            <button
+                                type="button"
+                                onClick={handleLoadMore}
+                                disabled={isLoadingMore}
+                                className="rounded-xl border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                                {isLoadingMore ? 'Ielādē vēl...' : 'Ielādēt vēl'}
+                            </button>
+                        </div>
+                    )}
+                </>
+            ) : (
+                <div className="rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center text-gray-600">
+                    Neviens pasākums neatbilda meklēšanai. Mēģiniet citu vietu, kategoriju vai sociālo filtru.
+                </div>
+            )}
         </div>
     );
 }

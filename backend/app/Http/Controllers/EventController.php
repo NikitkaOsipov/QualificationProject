@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\EventResource;
 use App\Models\Address;
 use App\Models\Event;
 use App\Models\EventGoing;
@@ -25,17 +26,78 @@ class EventController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $viewer = Auth::user();
 
+        Log::info('Event search request params', [
+            'params' => $request->all(),
+            'query' => $request->query(),
+        ]);
+
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'categories' => 'nullable|array',
+            'categories.*' => 'integer|exists:event_categories,id',
+            'friends_only' => 'nullable|boolean',
+            'following_only' => 'nullable|boolean',
+            'sort_by' => 'nullable|string|in:default,soonest,interested,going,cost',
+            'sort_direction' => 'nullable|string|in:asc,desc',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:1|max:100',
+        ]);
+
+        Log::info('Event search request params validated', [
+            'params' => $validated
+        ]);
+
+        $search = trim((string) ($validated['search'] ?? ''));
+        $categoryIds = collect($validated['categories'] ?? [])
+            ->filter(static fn (int $id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+        $friendsOnly = (bool) ($validated['friends_only'] ?? false);
+        $followingOnly = (bool) ($validated['following_only'] ?? false);
+        $sortBy = (string) ($validated['sort_by'] ?? 'default');
+        $sortDirection = (string) ($validated['sort_direction'] ?? 'desc');
+        $page = max(1, (int) ($validated['page'] ?? 1));
+        $perPage = max(1, min((int) ($validated['per_page'] ?? 12), 50));
+
+        $authorIds = $this->allowedAuthorIds($viewer, $friendsOnly, $followingOnly);
+
         $events = Event::query()
-            ->with(['visibility', 'categories'])
+            ->with(['visibility', 'categories', 'address', 'user'])
+            ->withCount(['goingUsers', 'interestedUsers'])
             ->get()
             ->filter(fn (Event $event) => EventHelper::canUserSeeEventInAllEvents($viewer, $event))
+            ->filter(fn (Event $event) => $this->isEventInTheFuture($event))
+            ->filter(fn (Event $event) => $this->matchesSearchQuery($event, $search))
+            ->filter(fn (Event $event) => $this->matchesCategories($event, $categoryIds))
+            ->filter(fn (Event $event) => $this->matchesAuthors($event, $authorIds))
             ->values();
 
-        return $events->toResourceCollection();
+
+        $events = $this->sortEvents($events, $sortBy, $sortDirection);
+
+        $total = $events->count();
+        $offset = ($page - 1) * $perPage;
+        $pageItems = $events
+            ->slice($offset, $perPage)
+            ->values();
+
+        return response()->json([
+            'data' => EventResource::collection($pageItems)->resolve(),
+            'meta' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'last_page' => $total === 0 ? 1 : (int) ceil($total / $perPage),
+                'has_more' => $offset + $pageItems->count() < $total,
+                'applied_sort_by' => $sortBy,
+                'applied_sort_direction' => $sortDirection,
+            ],
+        ]);
     }
 
     /**
@@ -197,13 +259,13 @@ class EventController extends Controller
         return response()->json([
             'event' => $event->toResource(),
             'meta' => [
-                'isInterested' => $isInterested,
-                'isGoing' => $isGoing,
+                'is_interested' => $isInterested,
+                'is_going' => $isGoing,
                 'host' => $host ? $this->mapUserDto($host, $friendIds) : null,
-                'goingCount' => $goingUsers->count(),
-                'interestedCount' => $interestedUsers->count(),
-                'goingUsers' => $sortedGoingUsers->map(fn (User $target) => $this->mapUserDto($target, $friendIds))->values(),
-                'interestedUsers' => $sortedInterestedUsers->map(fn (User $target) => $this->mapUserDto($target, $friendIds))->values(),
+                'going_count' => $goingUsers->count(),
+                'interested_count' => $interestedUsers->count(),
+                'going_users' => $sortedGoingUsers->map(fn (User $target) => $this->mapUserDto($target, $friendIds))->values(),
+                'interested_users' => $sortedInterestedUsers->map(fn (User $target) => $this->mapUserDto($target, $friendIds))->values(),
             ]
         ]);
     }
@@ -503,6 +565,205 @@ class EventController extends Controller
             'avatar_path' => $user->avatar_path,
             'is_friend' => in_array((int) $user->id, $friendIds, true),
         ];
+    }
+
+    /**
+     * Checks if event is not in the past
+     */
+    private function isEventInTheFuture(Event $event): bool
+    {
+        $now = now();
+        $eventEndsAt = $event->end_date
+            ? Carbon::parse($event->end_date)
+            : Carbon::parse($event->start_date);
+
+        return $eventEndsAt->greaterThanOrEqualTo($now);
+    }
+
+    private function matchesSearchQuery(Event $event, string $search): bool
+    {
+        if ($search === '') {
+            return true;
+        }
+
+        // mb_strtolower works for latvian chars
+        $lowerSearch = mb_strtolower($search);
+
+        if (str_contains(mb_strtolower($event->title), $lowerSearch)
+            || str_contains(mb_strtolower($event->address->name), $lowerSearch)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function matchesCategories(Event $event, array $categoryIds): bool
+    {
+        if ($categoryIds === []) {
+            return true;
+        }
+
+        return $event->categories
+            ->pluck('id')
+            ->intersect($categoryIds)
+            ->isNotEmpty();
+    }
+
+    private function matchesAuthors(Event $event, ?array $authorIds): bool
+    {
+        if ($authorIds === null) {
+            return true;
+        }
+
+        return in_array($event->user_id, $authorIds, true);
+    }
+
+    /**
+     * Finds all ids of allowed authors. Happens if user chose to show only friends or following people
+     */
+    private function allowedAuthorIds(?User $viewer, bool $friendsOnly, bool $followingOnly): ?array
+    {
+        // if none of the options is chosen or viewer is guest return null
+        if ((! $friendsOnly && ! $followingOnly) || ! $viewer) {
+            return null;
+        }
+
+        $authorIds = collect();
+
+        if ($friendsOnly) {
+            $friendIds = $viewer->friends()->pluck('users.id');
+            $authorIds = $authorIds->merge($friendIds);
+        }
+
+        if ($followingOnly) {
+            $followingIds = $viewer->following()->pluck('users.id');
+            $authorIds = $authorIds->merge($followingIds);
+        }
+
+        $authorIds = $authorIds
+            ->unique()
+            ->values();
+
+        return $authorIds->all();
+    }
+
+    private function sortEvents(Collection $events, string $sortBy, string $sortDirection): Collection
+    {
+        return $events->sort(function (Event $left, Event $right) use ($sortBy, $sortDirection) {
+            if ($sortBy === 'soonest') {
+                return $this->compareBySoonest($left, $right, $sortDirection);
+            }
+
+            if ($sortBy === 'interested') {
+                return $this->compareByCountAndSoonest($left, $right, 'interested_users_count', $sortDirection);
+            }
+
+            if ($sortBy === 'going') {
+                return $this->compareByCountAndSoonest($left, $right, 'going_users_count', $sortDirection);
+            }
+
+            if ($sortBy === 'cost') {
+                return $this->compareByCost($left, $right, $sortDirection);
+            }
+
+            // Default sorting by popularity and time
+            return $this->compareByDefault($left, $right, $sortDirection);
+        })->values();
+    }
+
+    /**
+     * Sorts on how hot are events by hotScore function. If they are the same
+     */
+    private function compareByDefault(Event $left, Event $right, string $sortDirection): int
+    {
+        $now = now();
+
+        $scoreComparison = $this->applySortDirection(
+            $this->hotScore($left, $now) <=> $this->hotScore($right, $now),
+            $sortDirection
+        );
+
+        if ($scoreComparison !== 0) {
+            return $scoreComparison;
+        }
+
+        return $this->compareBySoonest($left, $right, $sortDirection);
+    }
+
+    /**
+     * Sorts by soonest start date. If start dates are the same then by earliest end date
+     */
+    private function compareBySoonest(Event $left, Event $right, string $sortDirection): int
+    {
+        $leftStart = Carbon::parse($left->start_date)->timestamp;
+        $rightStart = Carbon::parse($right->start_date)->timestamp;
+
+        if ($leftStart !== $rightStart) {
+            return $this->applySortDirection($leftStart <=> $rightStart, $sortDirection);
+        }
+
+        $leftEnd = Carbon::parse($left->end_date)->timestamp;
+        $rightEnd = Carbon::parse($right->end_date)->timestamp;
+
+        return $this->applySortDirection($leftEnd <=> $rightEnd, $sortDirection);
+    }
+
+    /**
+     * Sorts by count field (interested or going) and if they are the same then by soonest
+     */
+    private function compareByCountAndSoonest(Event $left, Event $right, string $countField, string $sortDirection): int
+    {
+        $countComparison = $this->applySortDirection(
+            ((int) ($left->{$countField} ?? 0)) <=> ((int) ($right->{$countField} ?? 0)),
+            $sortDirection
+        );
+
+        if ($countComparison !== 0) {
+            return $countComparison;
+        }
+
+        return $this->compareBySoonest($left, $right, $sortDirection);
+    }
+
+    /**
+     * Sorts by price and if they are the same then by soonest
+     */
+    private function compareByCost(Event $left, Event $right, string $sortDirection): int
+    {
+        $leftPrice = (float) ($left->price ?? 0);
+        $rightPrice = (float) ($right->price ?? 0);
+        $comparison = $this->applySortDirection($leftPrice <=> $rightPrice, $sortDirection);
+
+        if ($comparison !== 0) {
+            return $comparison;
+        }
+
+        return $this->compareBySoonest($left, $right, $sortDirection);
+    }
+
+    /**
+     * Determines how "HOT" event is.
+     */
+    private function hotScore(Event $event, Carbon $now): float
+    {
+        $goingCount = $event->going_users_count ?? 0;
+        $interestedCount = $event->interested_users_count ?? 0;
+
+        $start = Carbon::parse($event->start_date);
+        $hoursUntilStart = max(0, $now->diffInHours($start));
+        // from 0 to 14, 1 day = 14 points, 14 days (2 weeks) = 0 points
+        $timeBoost = max(0, 14 - min($hoursUntilStart / 24, 14));
+
+        // Score calculates: 3 points for each going user, 2 for interested and how soon event is in next 2 weeks
+        return ($goingCount * 3) + ($interestedCount * 2) + $timeBoost;
+    }
+
+    /**
+     * Flips sign if sort direction is desc. 1 -> -1; -1 -> 1
+     */
+    private function applySortDirection(int $comparison, string $sortDirection): int
+    {
+        return $sortDirection === 'desc' ? -$comparison : $comparison;
     }
 
 }
