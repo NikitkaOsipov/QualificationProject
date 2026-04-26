@@ -18,6 +18,7 @@ import EventDescriptionMarkdown from '@/components/Event/EventDescriptionMarkdow
 import EventParticipationRequestButton from '@/components/Event/EventParticipationRequestButton';
 import EventShareButton from '@/components/Event/EventShareButton';
 import EventOwnerMenu from '@/components/Event/EventOwnerMenu';
+import EventAddToCalendarButton from '@/components/Event/EventAddToCalendarButton';
 
 export default function EventPage() {
     const router = useRouter();
@@ -198,6 +199,7 @@ export default function EventPage() {
                                     </>
                                 ) : null}
                                 <EventShareButton eventTitle={event.title} />
+                                <EventAddToCalendarButton event={event} />
 
                                 {isEventAuthor && (
                                     <EventOwnerMenu

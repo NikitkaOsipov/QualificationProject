@@ -23,6 +23,7 @@
     "@uiw/react-md-editor": "^4.0.8",
     "axios": "^0.21.1",
     "breeze-next": "file:",
+    "calendar-link": "^2.10.0",
     "laravel-echo": "^2.2.6",
     "leaflet": "^1.9.4",
     "leaflet-defaulticon-compatibility": "^0.1.2",

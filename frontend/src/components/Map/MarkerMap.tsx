@@ -1,7 +1,7 @@
 'use client'
 
 import Map from '@/components/Map/Map'
-import { Marker, MapContainerProps, Popup } from 'react-leaflet'
+import { Marker, MapContainerProps } from 'react-leaflet'
 import type { EventType } from '@/utils/Types'
 
 export type MarkerMapProps = MapContainerProps & {
