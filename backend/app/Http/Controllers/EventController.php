@@ -277,10 +277,12 @@ class EventController extends Controller
     {
         $editor = Auth::user();
 
-        if (! $editor || (int) $editor->id !== (int) $event->user_id) {
+        $canManageEvent = $editor && ($editor->isAdmin() || $editor->id === $event->user_id);
+
+        if (! $canManageEvent) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Only event author can edit this event.',
+                'message' => 'Only event author or admin can edit this event.',
             ], 403);
         }
 
@@ -350,10 +352,12 @@ class EventController extends Controller
     {
         $editor = Auth::user();
 
-        if (! $editor || (int) $editor->id !== (int) $event->user_id) {
+        $canManageEvent = $editor && ($editor->isAdmin() || $editor->id === $event->user_id);
+
+        if (! $canManageEvent) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Only event author can delete this event.',
+                'message' => 'Only event author or admin can delete this event.',
             ], 403);
         }
 

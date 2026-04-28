@@ -42,6 +42,8 @@ export interface User {
     email_verified_at?: string;
     created_at?: string;
     updated_at?: string;
+    role?: 'user' | 'admin';
+    events_count?: number;
     avatar?: string;
     stats?: {
         events: number;
@@ -59,11 +61,6 @@ export interface UserProfile {
         isOwner: boolean;
         friendshipStatus: FriendshipStatus;
     };
-}
-
-export interface Post {
-    title: string;
-    content: string;
 }
 
 export interface Address {
@@ -146,7 +143,6 @@ export interface CreateResponse {
     status: 'ok' | 'error';
     message?: string;
 }
-
 
 // Profile
 export const TABS = ['events', 'comments', 'likes', 'following', 'friends'] as const;

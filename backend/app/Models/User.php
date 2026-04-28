@@ -16,6 +16,9 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasApiTokens;
 
+    public const ROLE_USER = 'user';
+    public const ROLE_ADMIN = 'admin';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -27,7 +30,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'avatar_path',
         'read_at',
-        'type',
+        'role',
         'in_app_enabled',
         'email_enabled'
     ];
@@ -153,5 +156,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->notificationPreferences()
             ->where('type', $type)
             ->first();
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
     }
 }

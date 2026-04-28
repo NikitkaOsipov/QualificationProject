@@ -100,7 +100,9 @@ export default function EditEventPage() {
                 const event = response.event;
                 const host = response.meta.host;
 
-                if (!user || !host || user.id !== host.id) {
+                const canManageEvent = Boolean(user && (user.role === 'admin' || (host && user.id === host.id)));
+
+                if (!canManageEvent) {
                     setError('Jums nav tiesību rediģēt šo pasākumu.');
                     setLoading(false);
                     return;

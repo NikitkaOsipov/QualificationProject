@@ -61,6 +61,16 @@ const Navigation = ({ user }) => {
                                 Map View
                             </NavLink>
                         </div>
+
+                        {user?.role === 'admin' && (
+                            <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                                <NavLink
+                                    href="/admin/users"
+                                    active={pathname === '/admin/users'}>
+                                    Admin Lietotāji
+                                </NavLink>
+                            </div>
+                        )}
                     </div>
 
                     {/* Right Side */}
@@ -169,6 +179,14 @@ const Navigation = ({ user }) => {
                             active={pathname === '/map'}>
                             Map view
                         </ResponsiveNavLink>
+
+                        {user?.role === 'admin' && (
+                            <ResponsiveNavLink
+                                href="/admin/users"
+                                active={pathname === '/admin/users'}>
+                                Admin users
+                            </ResponsiveNavLink>
+                        )}
                     </div>
 
                     {user && (

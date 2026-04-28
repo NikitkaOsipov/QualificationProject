@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'role' => 'admin',
         ]);
 
         User::factory()->create([
@@ -25,8 +26,17 @@ class DatabaseSeeder extends Seeder
             'email' => 'test2@example.com',
         ]);
         User::factory()->create([
+            'name' => 'Test User 3',
+            'email' => 'test3@example.com',
+        ]);
+        User::factory()->create([
+            'name' => 'Test User 4',
+            'email' => 'test4@example.com',
+        ]);
+        User::factory()->create([
             'name' => 'Nikita',
             'email' => 'no.accenture.bootcamp@gmail.com',
+            'role' => 'admin',
         ]);
 
         $this->call(CategorySeeder::class);

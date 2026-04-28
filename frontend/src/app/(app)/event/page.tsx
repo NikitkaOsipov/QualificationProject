@@ -36,7 +36,7 @@ export default function EventPage() {
     const [goingCount, setGoingCount] = useState(0);
     const [interestedCount, setInterestedCount] = useState(0);
     const [isDeletingEvent, setIsDeletingEvent] = useState(false);
-    const isEventAuthor = Boolean(user && host && user.id === host.id);
+    const canManageEvent = Boolean(user && (user.role === 'admin' || (host && user.id === host.id)));
     const visibilityLabel = event?.visibility === 'private'
         ? 'Privāts pasākums'
         : event?.visibility === 'friends_only'
@@ -201,7 +201,7 @@ export default function EventPage() {
                                 <EventShareButton eventTitle={event.title} />
                                 <EventAddToCalendarButton event={event} />
 
-                                {isEventAuthor && (
+                                {canManageEvent && (
                                     <EventOwnerMenu
                                         eventId={eventId}
                                         isDeletingEvent={isDeletingEvent}
@@ -281,7 +281,7 @@ export default function EventPage() {
                                 goingUsers={goingUsers}
                             />
 
-                            {isEventAuthor && (
+                            {host && user && user.id === host.id && (
                                 <EventParticipationRequestButton eventId={eventId} />
                             )}
                         </div>

@@ -31,3 +31,4 @@ require __DIR__.'/profile.php';
 require __DIR__.'/user.php';
 require __DIR__.'/category.php';
 require __DIR__.'/notification.php';
+require __DIR__.'/admin.php';

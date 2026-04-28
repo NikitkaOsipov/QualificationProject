@@ -11,6 +11,7 @@ export interface SelectableUserCardProps {
     showOnlineState?: boolean;
     showFriendBadge?: boolean;
     selectAction?: (user: User) => void;
+    disabled?: boolean;
 }
 
 const SelectableUserCard= ({
@@ -20,6 +21,7 @@ const SelectableUserCard= ({
     showOnlineState = false,
     showFriendBadge = false,
     selectAction,
+    disabled = false,
 }: SelectableUserCardProps) => {
     return (
         <div className={`border rounded-lg p-4 transition ${selected ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50'}`}>
@@ -32,7 +34,8 @@ const SelectableUserCard= ({
                     <button
                         type="button"
                         onClick={() => selectAction?.(user)}
-                        className={`px-3 py-1.5 rounded-md text-sm font-medium ${selected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                        disabled={disabled}
+                        className={`px-3 py-1.5 rounded-md text-sm font-medium ${selected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} disabled:cursor-not-allowed disabled:opacity-60`}
                     >
                         {selected ? 'Selected' : 'Select'}
                     </button>
