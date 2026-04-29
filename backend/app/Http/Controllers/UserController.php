@@ -215,6 +215,47 @@ class UserController extends Controller
         ]);
     }
 
+    public function search(Request $request)
+    {
+        $authUser = Auth::user();
+
+        $validated = $request->validate([
+            'search' => 'nullable|string|max:255',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:1|max:50',
+        ]);
+
+        $search = trim($validated['search'] ?? '');
+        $perPage = (int) ($validated['per_page'] ?? 15);
+
+        $query = User::query()
+            ->select(['id', 'name', 'email', 'avatar_path'])
+            ->where('id', '!=', $authUser->id);
+
+
+        if ($search !== '') {
+            $query->where(function ($builder) use ($search) {
+                $builder
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query
+            ->orderBy('name')
+            ->paginate($perPage);
+
+        return response()->json([
+            'data' => $users->items(),
+            'meta' => [
+                'current_page' => $users->currentPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+                'last_page' => $users->lastPage(),
+            ],
+        ]);
+    }
+
     // Help functions
 
     /**

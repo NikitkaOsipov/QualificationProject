@@ -1,6 +1,16 @@
 import axios from '@/lib/axios'
 import type { CreateResponse, ProfileTabResponse, User, UserProfile } from '@/utils/Types'
 
+interface UserSearchResponse {
+    data: User[];
+    meta: {
+        current_page: number;
+        per_page: number;
+        total: number;
+        last_page: number;
+    };
+}
+
 export const getUserProfile = async (userId) =>
     axios.get(`/api/profile/${userId}`).then(r => r.data as UserProfile);
 
@@ -22,6 +32,9 @@ export const getProfileTab = async (userId: number | string, tab: string, pageNu
 export const getFriends = async (params?: { search?: string; limit?: number }) =>
     axios.get('/api/friends', { params }).then((r) => r.data.data as User[]);
 
-
 export const updateOnlineStatus = async () =>
     axios.post('/api/users/update-online-status').then((r) => r.data as CreateResponse);
+
+export const searchUsers = async (params?: { search?: string; page?: number; per_page?: number }) =>
+    axios.get('/api/users/search', { params }).then((r) => r.data as UserSearchResponse);
+

@@ -39,6 +39,13 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]);
 
+        collect(range(1, 20))->each(function (int $index) {
+            User::factory()->create([
+                'name' => sprintf('Demo User %02d', $index),
+                'email' => sprintf('demo.user%02d@example.com', $index),
+            ]);
+        });
+
         $this->call(CategorySeeder::class);
         $this->call(EventVisibilitySeeder::class);
         $this->call(EventSeeder::class);

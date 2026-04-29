@@ -62,6 +62,14 @@ const Navigation = ({ user }) => {
                             </NavLink>
                         </div>
 
+                        <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                            <NavLink
+                                href="/people"
+                                active={pathname === '/people'}>
+                                Cilvēki
+                            </NavLink>
+                        </div>
+
                         {user?.role === 'admin' && (
                             <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                                 <NavLink
@@ -174,6 +182,12 @@ const Navigation = ({ user }) => {
             {open && (
                 <div className="block sm:hidden">
                     <div className="pt-2 pb-3 space-y-1">
+                        <ResponsiveNavLink
+                            href="/people"
+                            active={pathname === '/people'}>
+                            People
+                        </ResponsiveNavLink>
+
                         <ResponsiveNavLink
                             href="/map"
                             active={pathname === '/map'}>

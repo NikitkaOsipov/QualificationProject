@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/auth';
 import Loading from '@/components/Loading';
+import PaginationControls from '@/components/PaginationControls';
 import SelectableUserCard from '@/components/User/SelectableUserCard';
 import type { User } from '@/utils/Types';
 import { deleteAdminUser, getAdminUsers, updateAdminUser } from '@/utils/admin_service';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 6;
 
 export default function AdminUsersPage() {
     const { user } = useAuth({ middleware: 'auth' });
@@ -199,25 +200,12 @@ export default function AdminUsersPage() {
                         ))
                     )}
 
-                    <div className="flex items-center justify-between pt-2">
-                        <button
-                            type="button"
-                            disabled={page <= 1}
-                            onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
-                            className="rounded-md border px-3 py-1.5 text-sm disabled:opacity-50"
-                        >
-                            Iepriekšējā
-                        </button>
-                        <span className="text-sm text-gray-500">Lapa {page} no {lastPage}</span>
-                        <button
-                            type="button"
-                            disabled={page >= lastPage}
-                            onClick={() => setPage((currentPage) => currentPage + 1)}
-                            className="rounded-md border px-3 py-1.5 text-sm disabled:opacity-50"
-                        >
-                            Nākamā
-                        </button>
-                    </div>
+                    <PaginationControls
+                        page={page}
+                        lastPage={lastPage}
+                        onPageChange={setPage}
+                        className="pt-2"
+                    />
                 </div>
 
                 <div className="rounded-xl border p-5 shadow-sm h-fit">
