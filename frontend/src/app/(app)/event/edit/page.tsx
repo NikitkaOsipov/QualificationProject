@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { getPost, updatePost } from '@/utils/post_service';
 import type { UpdatePostData } from '@/utils/post_service';
@@ -12,20 +12,8 @@ import LocationStage from '@/app/(app)/create-event/Stage1Location';
 import DetailsStage from '@/app/(app)/create-event/Stage2Details';
 import VisualsStage from '@/app/(app)/create-event/Stage3Visuals';
 import VisibilityStage from '@/app/(app)/create-event/Stage4Visibility';
-import { validateEventData, type EventValidationMessages } from '@/utils/eventValidation';
+import { validateEventData } from '@/utils/eventValidation';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
-
-const EDIT_EVENT_VALIDATION_MESSAGES: EventValidationMessages = {
-    addressRequired: 'Adrese ir obligāta',
-    locationRequired: 'Lūdzu izvēlieties atrašanās vietu kartē',
-    titleRequired: 'Nosaukums ir obligāts',
-    titleTooLong: 'Nosaukumam jābūt 255 rakstzīmes vai mazāk',
-    startDateRequired: 'Sākuma laiks ir obligāts',
-    priceInvalid: 'Cenai jābūt skaitlim',
-    endDateBeforeStart: 'Beigu laiks nevar būt pirms sākuma laika',
-    backgroundImageInvalidType: 'Nederīgs attēla formāts',
-    backgroundImageTooLarge: 'Attēls ir pārāk liels (maks. 2MB)',
-};
 
 export default function EditEventPage() {
     const router = useRouter();
@@ -36,7 +24,7 @@ export default function EditEventPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
     useUnsavedChanges(isDirty);
-    const [error, setError] = useState<string | null>(null);
+    const [pageError, setPageError] = useState<string | null>(null);
     const [saveError, setSaveError] = useState<string | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
@@ -81,7 +69,7 @@ export default function EditEventPage() {
         setEventId(id);
 
         if (!id) {
-            setError('Pasākuma ID nav nodots.');
+            setPageError('Pasākuma ID nav nodots.');
             setLoading(false);
             return;
         }
@@ -92,7 +80,7 @@ export default function EditEventPage() {
         }
 
         setLoading(true);
-        setError(null);
+        setPageError(null);
 
         async function fetchEvent() {
             try {
@@ -103,7 +91,7 @@ export default function EditEventPage() {
                 const canManageEvent = Boolean(user && (user.role === 'admin' || (host && user.id === host.id)));
 
                 if (!canManageEvent) {
-                    setError('Jums nav tiesību rediģēt šo pasākumu.');
+                    setPageError('Jums nav tiesību rediģēt šo pasākumu.');
                     setLoading(false);
                     return;
                 }
@@ -123,9 +111,9 @@ export default function EditEventPage() {
                     inviteeIds: [],
                     errors: {},
                 });
-                setError(null);
+                setPageError(null);
             } catch (e: any) {
-                setError(e?.response?.data?.message ?? 'Neizdevās ielādēt pasākumu.');
+                setPageError(e?.response?.data?.message ?? 'Neizdevās ielādēt pasākumu.');
             } finally {
                 setLoading(false);
             }
@@ -135,7 +123,7 @@ export default function EditEventPage() {
     }, [user]);
 
     const validate = useCallback((): boolean => {
-        const newErrors = validateEventData(formData, 'all', EDIT_EVENT_VALIDATION_MESSAGES);
+        const newErrors = validateEventData(formData, 'all');
         setFormData((prev) => ({ ...prev, errors: newErrors }));
         return Object.keys(newErrors).length === 0;
     }, [formData]);
@@ -186,10 +174,10 @@ export default function EditEventPage() {
 
     if (loading) return <Loading />;
 
-    if (error) {
+    if (pageError) {
         return (
             <div className="max-w-3xl mx-auto py-12 px-4">
-                <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">{error}</div>
+                <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">{pageError}</div>
             </div>
         );
     }

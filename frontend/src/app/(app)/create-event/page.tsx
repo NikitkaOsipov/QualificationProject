@@ -155,7 +155,7 @@ export default function CreateEventPage() {
     if (!user) return <Loading />;
 
     return (
-        <main className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
                 {/* Timeline */}
                 <Timeline currentStage={currentStage} totalStages={5} />
@@ -168,7 +168,7 @@ export default function CreateEventPage() {
                         </div>
                     )}
 
-                    {currentStage === 1 && (
+                   {currentStage === 1 && (
                         <LocationStage
                             address={formData.address}
                             latitude={formData.latitude}
@@ -270,6 +270,6 @@ export default function CreateEventPage() {
                     )}
                 </div>
             </div>
-        </main>
+        </div>
     );
 }

@@ -1,16 +1,11 @@
-'use client'
+'use client';
 
-import { MapContainer, MapContainerProps, TileLayer } from 'react-leaflet'
-import "leaflet/dist/leaflet.css"
-import "leaflet-defaulticon-compatibility"
-import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css"
-import type L from 'leaflet'
+import { MapContainer, MapContainerProps, TileLayer } from 'react-leaflet';
+import "leaflet/dist/leaflet.css";
+import "leaflet-defaulticon-compatibility";
+import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
+import { LATVIA_BOUNDS } from '@/utils/app_consts';
 
-// Approximate Latvia bounding box [southWest, northEast]
-export const LATVIA_BOUNDS: [L.LatLngTuple, L.LatLngTuple] = [
-    [55.67, 20.97],
-    [58.09, 28.24],
-]
 
 const Map = (props: MapContainerProps) => {
     return (

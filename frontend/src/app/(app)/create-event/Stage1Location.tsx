@@ -37,7 +37,6 @@ export default function LocationStage({
 
         if (!isNaN(latNum) && !isNaN(lngNum)) {
             onCoordinatesChange(latNum, lngNum);
-            // Optionally reverse geocode to update address
             reverseGeocode(latNum, lngNum).then((addr) => {
                 if (addr) onAddressChange(addr);
             });
@@ -127,7 +126,7 @@ export default function LocationStage({
                     setTempLng(lng.toString());
                     // Reverse geocode to update address
                     reverseGeocode(lat, lng).then((address) => {
-                        if (address && onAddressChange) onAddressChange(address);
+                        if (address) onAddressChange(address);
                     });
                 }}
             />
