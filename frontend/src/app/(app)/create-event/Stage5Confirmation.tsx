@@ -10,12 +10,18 @@ interface ConfirmationStageProps {
 }
 
 const ConfirmationStage = ({ formData, imagePreview, categoryList }: ConfirmationStageProps) => {
+    const visibilityLabels: Record<EventFormData['visibility'], string> = {
+        public: 'Publisks',
+        friends_only: 'Tikai draugiem',
+        private: 'Privāts',
+    };
+
     const categoryNames = formData.categories
         .map((id) => categoryList.find((c) => c.id === id)?.name)
         .filter(Boolean);
 
     const formatDate = (dateString: string) => {
-        if (!dateString) return 'Not set';
+        if (!dateString) return 'Nav norādīts';
         const date = new Date(dateString);
         return date.toLocaleDateString('en-LV', {
             weekday: 'long',
@@ -30,8 +36,8 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-semibold mb-2">Review Your Event</h2>
-                <p className="text-gray-600">Make sure everything looks good before publishing</p>
+                <h2 className="text-2xl font-semibold mb-2">Pārskatiet pasākumu</h2>
+                <p className="text-gray-600">Pirms publicēšanas pārliecinieties, ka viss ir pareizi</p>
             </div>
 
             {/* Event Preview Card */}
@@ -41,7 +47,7 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
                     <div className="relative w-full h-64 bg-gray-200">
                         <img
                             src={imagePreview}
-                            alt="Event preview"
+                            alt="Pasākuma priekšskats"
                             className="w-full h-full object-cover"
                         />
                     </div>
@@ -52,10 +58,10 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
                     {/* Title and Location */}
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                            {formData.title || 'Untitled Event'}
+                            {formData.title || 'Pasākums bez nosaukuma'}
                         </h1>
                         <p className="text-gray-600">
-                            📍 {formData.address || 'Location not set'}
+                            📍 {formData.address || 'Vieta nav norādīta'}
                         </p>
                     </div>
 
@@ -63,7 +69,7 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         {/* Start Date */}
                         <div className="p-3 bg-gray-50 rounded-lg">
-                            <p className="text-xs text-gray-600 font-semibold uppercase">Start Date</p>
+                            <p className="text-xs text-gray-600 font-semibold uppercase">Sākuma datums</p>
                             <p className="text-sm font-medium text-gray-900 mt-1">
                                 {formatDate(formData.startDate)}
                             </p>
@@ -72,7 +78,7 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
                         {/* End Date */}
                         {formData.endDate && (
                             <div className="p-3 bg-gray-50 rounded-lg">
-                                <p className="text-xs text-gray-600 font-semibold uppercase">End Date</p>
+                                <p className="text-xs text-gray-600 font-semibold uppercase">Beigu datums</p>
                                 <p className="text-sm font-medium text-gray-900 mt-1">
                                     {formatDate(formData.endDate)}
                                 </p>
@@ -81,17 +87,17 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
 
                         {/* Price */}
                         <div className="p-3 bg-gray-50 rounded-lg">
-                            <p className="text-xs text-gray-600 font-semibold uppercase">Price</p>
+                            <p className="text-xs text-gray-600 font-semibold uppercase">Cena</p>
                             <p className="text-sm font-medium text-gray-900 mt-1">
-                                {formData.price ? `€${formData.price}` : 'Free'}
+                                {formData.price ? `€${formData.price}` : 'Bezmaksas'}
                             </p>
                         </div>
 
                         {/* Visibility */}
                         <div className="p-3 bg-gray-50 rounded-lg">
-                            <p className="text-xs text-gray-600 font-semibold uppercase">Visibility</p>
+                            <p className="text-xs text-gray-600 font-semibold uppercase">Redzamība</p>
                             <p className="text-sm font-medium text-gray-900 mt-1 capitalize">
-                                {formData.visibility}
+                                {visibilityLabels[formData.visibility]}
                             </p>
                         </div>
                     </div>
@@ -99,7 +105,7 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
                     {/* Description */}
                     {formData.description && (
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-3">About the Event</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-3">Par pasākumu</h3>
                             <EventDescriptionMarkdown
                                 content={formData.description}
                                 className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-5"
@@ -110,7 +116,7 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
                     {/* Categories */}
                     {categoryNames.length > 0 && (
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-3">Categories</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-3">Kategorijas</h3>
                             <div className="flex flex-wrap gap-2">
                                 {categoryNames.map((name, i) => (
                                     <span key={i} className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full font-medium">
@@ -124,7 +130,7 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
                     {/* Coordinates */}
                     {formData.latitude && formData.longitude && (
                         <div className="text-xs text-gray-500 pt-4 border-t border-gray-200">
-                            <p>📍 Coordinates: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}</p>
+                            <p>📍 Koordinātas: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}</p>
                         </div>
                     )}
                 </div>
@@ -133,7 +139,7 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
             {/* Note */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800">
-                    <strong>Note:</strong> Once published, you can still edit most of the event details. The visibility setting can also be changed at any time.
+                    <strong>Piezīme:</strong> Pēc publicēšanas joprojām varēsiet rediģēt lielāko daļu pasākuma detaļu. Redzamību var mainīt jebkurā laikā.
                 </p>
             </div>
         </div>

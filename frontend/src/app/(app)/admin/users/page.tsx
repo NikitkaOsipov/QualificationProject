@@ -242,16 +242,12 @@ export default function AdminUsersPage() {
                                     disabled={isEditingOwnAccount}
                                     className="w-full rounded-lg border px-3 py-2 text-sm"
                                 >
-                                    <option value="user">User</option>
-                                    <option value="admin">Admin</option>
+                                    <option value="user">Lietotājs</option>
+                                    <option value="admin">Administrators</option>
                                 </select>
                                 {isEditingOwnAccount && (
                                     <p className="mt-1 text-xs text-gray-500">Jūs nevarat mainīt savu lomu.</p>
                                 )}
-                            </div>
-
-                            <div className="text-sm text-gray-500">
-                                Publicēto pasākumu skaits: {selectedUser.events_count ?? 0}
                             </div>
 
                             <button

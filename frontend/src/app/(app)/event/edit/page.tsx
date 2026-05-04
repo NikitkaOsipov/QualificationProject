@@ -205,7 +205,6 @@ export default function EditEventPage() {
             <div className="space-y-8">
                 {/* Location */}
                 <section className="bg-white rounded-xl border shadow-sm p-6">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4">📍 Atrašanās vieta</h2>
                     <LocationStage
                         address={formData.address}
                         latitude={formData.latitude}
@@ -218,7 +217,6 @@ export default function EditEventPage() {
 
                 {/* Details */}
                 <section className="bg-white rounded-xl border shadow-sm p-6">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4">📝 Pasākuma informācija</h2>
                     <DetailsStage
                         title={formData.title}
                         description={formData.description}
@@ -236,7 +234,6 @@ export default function EditEventPage() {
 
                 {/* Visuals & Categories */}
                 <section className="bg-white rounded-xl border shadow-sm p-6">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4">🖼️ Vizuālie elementi un kategorijas</h2>
                     <VisualsStage
                         categories={formData.categories}
                         categoryList={categories}
@@ -249,7 +246,6 @@ export default function EditEventPage() {
 
                 {/* Visibility */}
                 <section className="bg-white rounded-xl border shadow-sm p-6">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4">🔒 Redzamība</h2>
                     <VisibilityStage
                         visibility={formData.visibility}
                         onVisibilityChange={(visibility) => updateForm({ visibility })}

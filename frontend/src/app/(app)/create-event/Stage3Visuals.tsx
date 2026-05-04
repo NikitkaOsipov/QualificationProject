@@ -52,14 +52,14 @@ const VisualsStage = ({
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-semibold mb-2">Visuals & Categories</h2>
-                <p className="text-gray-600">Add a hero image and select categories for your event</p>
+                <h2 className="text-2xl font-semibold mb-2">Vizuālie elementi un kategorijas</h2>
+                <p className="text-gray-600">Pievienojiet fona attēlu un izvēlieties kategorijas pasākumam</p>
             </div>
 
             {/* Background Image Upload */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Hero Image (Optional)
+                    Fona attēls (neobligāti)
                 </label>
                 <div className="space-y-4">
                     {/* Image Preview */}
@@ -67,7 +67,7 @@ const VisualsStage = ({
                         <div className="relative w-full h-64 rounded-lg overflow-hidden border border-gray-300">
                             <img
                                 src={imagePreview}
-                                alt="Preview"
+                                alt="Priekšskats"
                                 className="w-full h-full object-cover"
                             />
                             <button
@@ -78,7 +78,7 @@ const VisualsStage = ({
                                 }}
                                 className="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700"
                             >
-                                Remove
+                                Noņemt
                             </button>
                         </div>
                     )}
@@ -94,8 +94,8 @@ const VisualsStage = ({
                         />
                         <label htmlFor="image-upload" className="cursor-pointer block">
                             <div className="text-4xl mb-2">📸</div>
-                            <p className="font-medium text-gray-900">Click to upload or drag and drop</p>
-                            <p className="text-xs text-gray-500 mt-1">PNG, JPG, JPEG, SVG, or WebP (Max 2MB)</p>
+                            <p className="font-medium text-gray-900">Klikšķiniet, lai augšupielādētu, vai ievelciet failu</p>
+                            <p className="text-xs text-gray-500 mt-1">PNG, JPG, JPEG, SVG vai WebP (maks. 2MB)</p>
                         </label>
                     </div>
                 </div>
@@ -107,7 +107,7 @@ const VisualsStage = ({
             {/* Categories */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Categories (Optional) - Select up to 5
+                    Kategorijas (neobligāti) - izvēlieties līdz 5
                 </label>
 
                 {loadingCategories ? (
@@ -119,7 +119,7 @@ const VisualsStage = ({
                         {/* Search */}
                         <input
                             type="text"
-                            placeholder="Search categories..."
+                            placeholder="Meklēt kategorijas..."
                             value={categorySearch}
                             onChange={(e) => setCategorySearch(e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -150,13 +150,13 @@ const VisualsStage = ({
                         </div>
 
                         {categories.length >= 5 && (
-                            <p className="text-xs text-blue-600 mt-2">Maximum 5 categories selected</p>
+                            <p className="text-xs text-blue-600 mt-2">Var izvēlēties ne vairāk kā 5 kategorijas</p>
                         )}
 
                         {/* Selected Categories Summary */}
                         {categories.length > 0 && (
                             <div className="mt-4">
-                                <p className="text-xs text-gray-600 mb-2">Selected categories:</p>
+                                <p className="text-xs text-gray-600 mb-2">Izvēlētās kategorijas:</p>
                                 <div className="flex flex-wrap gap-2">
                                     {categories.map((catId) => {
                                         const cat = categoryList.find((c) => c.id === catId);

@@ -3,9 +3,9 @@
 import React from 'react';
 
 const VISIBILITY_OPTIONS = [
-    { value: 'public', label: 'Public - Anyone can see this event' },
-    { value: 'friends_only', label: 'Friends Only - Only your friends can see' },
-    { value: 'private', label: 'Private - Invite only via link' },
+    { value: 'public', label: 'Publisks - Ikviens var redzēt šo pasākumu' },
+    { value: 'friends_only', label: 'Tikai draugiem - Redz tikai jūsu draugi' },
+    { value: 'private', label: 'Privāts - Pieejams tikai ar saiti' },
 ];
 
 interface VisibilityStageProps {
@@ -20,8 +20,8 @@ const VisibilityStage = ({
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-semibold mb-2">Event Visibility</h2>
-                <p className="text-gray-600">Control who can see and discover your event</p>
+                <h2 className="text-2xl font-semibold mb-2">Pasākuma redzamība</h2>
+                <p className="text-gray-600">Kontrolējiet, kas var redzēt un atrast jūsu pasākumu</p>
             </div>
 
             {/* Visibility Options */}
@@ -64,23 +64,23 @@ const VisibilityStage = ({
 
             {/* Visibility Details */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-900 mb-2">How it works:</h3>
+                <h3 className="font-semibold text-blue-900 mb-2">Kā tas darbojas:</h3>
                 <ul className="text-sm text-blue-800 space-y-2">
                     {visibility === 'public' && (
                         <>
-                            <li>✓ Anyone can discover your event through search</li>
-                            <li>✓ Event appears on the public map</li>
+                            <li>✓ Ikviens var atrast pasākumu meklēšanā</li>
+                            <li>✓ Pasākums parādīsies publiskajā kartē</li>
                         </>
                     )}
                     {visibility === 'friends_only' && (
                         <>
-                            <li>✓ Only your friends can see this event</li>
-                            <li>✓ Event won't appear in public search</li>
+                            <li>✓ Šo pasākumu redz tikai jūsu draugi</li>
+                            <li>✓ Pasākums neparādīsies publiskajā meklēšanā</li>
                         </>
                     )}
                     {visibility === 'private' && (
                         <>
-                            <li>✓ Only people with the link can see it</li>
+                            <li>✓ To var redzēt tikai cilvēki ar saiti</li>
                         </>
                     )}
                 </ul>
@@ -89,7 +89,7 @@ const VisibilityStage = ({
             {/* Security Note */}
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <p className="text-sm text-gray-700">
-                    <strong>Note:</strong> You can change the visibility settings anytime after creating the event.
+                    <strong>Piezīme:</strong> Redzamības iestatījumus varat mainīt jebkurā laikā pēc pasākuma izveides.
                 </p>
             </div>
         </div>

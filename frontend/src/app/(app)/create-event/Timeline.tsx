@@ -7,11 +7,11 @@ interface TimelineProps {
 
 const Timeline = ({ currentStage, totalStages }: TimelineProps) => {
     const stages = [
-        { number: 1, label: 'Location' },
-        { number: 2, label: 'Details' },
-        { number: 3, label: 'Visuals' },
-        { number: 4, label: 'Visibility' },
-        { number: 5, label: 'Confirm' },
+        { number: 1, label: 'Vieta' },
+        { number: 2, label: 'Detaļas' },
+        { number: 3, label: 'Vizuālais' },
+        { number: 4, label: 'Redzamība' },
+        { number: 5, label: 'Apstiprināt' },
     ];
 
     return (

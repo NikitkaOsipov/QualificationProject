@@ -66,7 +66,7 @@ const NotificationItem = ({ notification, onClick, onClose, onDelete }: Props) =
                 <button
                     onClick={handleDelete}
                     className="absolute right-2 top-2 rounded-full bg-white/80 p-1 text-gray-400 hover:text-red-500"
-                    title="Delete notification"
+                    title="Dzēst paziņojumu"
                 >
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>

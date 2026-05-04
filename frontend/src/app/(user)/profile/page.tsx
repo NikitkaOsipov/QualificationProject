@@ -36,7 +36,7 @@ export default function ProfilePage() {
         const onUrlChange = () => {
             const id = readProfileId();
             setProfileId(id);
-            setProfileError(id ? null : 'Lietotajs nav atrasts. Parbaudiet profila saiti.');
+            setProfileError(id ? null : 'Lietotājs nav atrasts. Pārbaudiet profila saiti.');
         };
 
         const emitUrlChangeAsync = () => {
@@ -104,7 +104,7 @@ export default function ProfilePage() {
                 }
 
                 setProfileUser(null);
-                setProfileError('Lietotajs nav atrasts. Iespejams profils neeksiste vai nav pieejams.');
+                setProfileError('Lietotājs nav atrasts. Iespējams, profils neeksistē vai nav pieejams.');
             }
         }
 
@@ -170,7 +170,7 @@ export default function ProfilePage() {
                         <h1 className="text-2xl font-bold text-gray-900">{profileUser.name}</h1>
                         {friendshipStatus === 'friends' && (
                             <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                                Friends
+                                Draugi
                             </span>
                         )}
                     </div>
@@ -189,7 +189,7 @@ export default function ProfilePage() {
                                     : "bg-blue-600 text-white hover:bg-blue-700"
                                 }`}
                         >
-                            {isFollowing ? "Following" : "Follow"}
+                            {isFollowing ? "Seko" : "Sekot"}
                         </button>
 
                         {/* Friend request button — state-driven */}
@@ -199,7 +199,7 @@ export default function ProfilePage() {
                                 disabled={actionLoading}
                                 className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-60"
                             >
-                                Add Friend
+                                Pievienot draugos
                             </button>
                         )}
 
@@ -209,7 +209,7 @@ export default function ProfilePage() {
                                 disabled={actionLoading}
                                 className="px-4 py-2 rounded-lg text-sm font-medium bg-yellow-50 text-yellow-700 border border-yellow-300 hover:bg-yellow-100 transition disabled:opacity-60"
                             >
-                                Request Sent — Cancel
+                                Pieprasījums nosūtīts - Atcelt
                             </button>
                         )}
 
@@ -220,14 +220,14 @@ export default function ProfilePage() {
                                     disabled={actionLoading}
                                     className="px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition disabled:opacity-60"
                                 >
-                                    Accept
+                                    Apstiprināt
                                 </button>
                                 <button
                                     onClick={() => handleRespondRequest('decline')}
                                     disabled={actionLoading}
                                     className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition disabled:opacity-60"
                                 >
-                                    Decline
+                                    Noraidīt
                                 </button>
                             </div>
                         )}
@@ -238,7 +238,7 @@ export default function ProfilePage() {
                                 disabled={actionLoading}
                                 className="px-4 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition disabled:opacity-60"
                             >
-                                Unfriend
+                                Izņemt no draugiem
                             </button>
                         )}
                     </div>
@@ -249,25 +249,25 @@ export default function ProfilePage() {
             <div className="flex gap-8 text-sm text-gray-600">
                 <div className="flex flex-col items-center">
                     <span className="text-xl font-bold text-gray-900">{profileUser.stats.events}</span>
-                    <span>Events</span>
+                    <span>Pasākumi</span>
                 </div>
                 <div className="flex flex-col items-center">
                     <span className="text-xl font-bold text-gray-900">{profileUser.stats.followers}</span>
-                    <span>Followers</span>
+                    <span>Sekotāji</span>
                 </div>
                 <div className="flex flex-col items-center">
                     <span className="text-xl font-bold text-gray-900">{profileUser.stats.friends}</span>
-                    <span>Friends</span>
+                    <span>Draugi</span>
                 </div>
             </div>
 
             {/* Tabs */}
             <div className="flex gap-6 border-b border-gray-200">
-                <Tab label="Events" active={activeTab === "events"} onClick={() => setActiveTab("events")} />
-                <Tab label="Following" active={activeTab === "following"} onClick={() => setActiveTab("following")} />
-                <Tab label="Friends" active={activeTab === "friends"} onClick={() => setActiveTab("friends")} />
+                <Tab label="Pasākumi" active={activeTab === "events"} onClick={() => setActiveTab("events")} />
+                <Tab label="Seko" active={activeTab === "following"} onClick={() => setActiveTab("following")} />
+                <Tab label="Draugi" active={activeTab === "friends"} onClick={() => setActiveTab("friends")} />
                 {isOwner && (
-                    <Tab label="Comments" active={activeTab === "comments"} onClick={() => setActiveTab("comments")} />
+                    <Tab label="Komentāri" active={activeTab === "comments"} onClick={() => setActiveTab("comments")} />
                 )}
             </div>
 

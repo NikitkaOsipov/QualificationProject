@@ -37,7 +37,7 @@ const SelectableUserCard= ({
                         disabled={disabled}
                         className={`px-3 py-1.5 rounded-md text-sm font-medium ${selected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} disabled:cursor-not-allowed disabled:opacity-60`}
                     >
-                        {selected ? 'Selected' : 'Select'}
+                        {selected ? 'Izvelēts' : 'Izvelēties'}
                     </button>
                 }
             />

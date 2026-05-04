@@ -50,7 +50,7 @@ const Navigation = ({ user }) => {
                             <NavLink
                                 href="/events"
                                 active={pathname === '/events'}>
-                                Events
+                                Pasākumi
                             </NavLink>
                         </div>
 
@@ -58,7 +58,7 @@ const Navigation = ({ user }) => {
                             <NavLink
                                 href="/map"
                                 active={pathname === '/map'}>
-                                Map View
+                                Kartes skats
                             </NavLink>
                         </div>
 
@@ -87,7 +87,7 @@ const Navigation = ({ user }) => {
                         {user && (
                             <div className="hidden sm:flex sm:items-center mr-4">
                                 <Link href="/create-event" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm">
-                                    Create Event
+                                    Izveidot pasākumu
                                 </Link>
                             </div>
                         )}
@@ -122,19 +122,19 @@ const Navigation = ({ user }) => {
                                         {/* Profile Link */}
                                         <Link href={`/profile?id=${user?.id}`}>
                                             <DropdownButton>
-                                                Profile
+                                                Profils
                                             </DropdownButton>
                                         </Link>
 
                                         <Link href="/settings">
                                             <DropdownButton>
-                                                Settings
+                                                Iestatījumi
                                             </DropdownButton>
                                         </Link>
 
                                         {/* Authentication */}
                                         <DropdownButton onClick={logout}>
-                                            Logout
+                                            Iziet
                                         </DropdownButton>
                                     </Dropdown>
                                 </div>
@@ -185,20 +185,20 @@ const Navigation = ({ user }) => {
                         <ResponsiveNavLink
                             href="/people"
                             active={pathname === '/people'}>
-                            People
+                            Cilvēki
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink
                             href="/map"
                             active={pathname === '/map'}>
-                            Map view
+                            Kartes skats
                         </ResponsiveNavLink>
 
                         {user?.role === 'admin' && (
                             <ResponsiveNavLink
                                 href="/admin/users"
                                 active={pathname === '/admin/users'}>
-                                Admin users
+                                Admin lietotāji
                             </ResponsiveNavLink>
                         )}
                     </div>
@@ -237,18 +237,18 @@ const Navigation = ({ user }) => {
                                 <ResponsiveNavLink
                                     href={`/profile?id=${user?.id}`}
                                     active={pathname === '/profile'}>
-                                    Profile
+                                    Profils
                                 </ResponsiveNavLink>
 
                                 <ResponsiveNavLink
                                     href="/settings"
                                     active={pathname === '/settings'}>
-                                    Settings
+                                    Iestatījumi
                                 </ResponsiveNavLink>
 
                                 {/* Authentication */}
                                 <ResponsiveNavButton onClick={logout}>
-                                    Logout
+                                    Iziet
                                 </ResponsiveNavButton>
                             </div>
                         </div>

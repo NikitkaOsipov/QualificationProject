@@ -15,29 +15,28 @@ const Page = () => {
     return (
         <>
             <div className="mb-4 text-sm text-gray-600">
-                Thanks for signing up! Before getting started, could you verify
-                your email address by clicking on the link we just
-                emailed to you? If you didn't receive the email, we will gladly
-                send you another.
+                Paldies par reģistrāciju! Pirms turpināt, lūdzu apstipriniet
+                savu e-pasta adresi, uzspiežot uz saites, ko tikko nosūtījām.
+                Ja e-pastu nesaņemat, mēs ar prieku nosūtīsim vēlreiz.
             </div>
 
             {status === 'verification-link-sent' && (
                 <div className="mb-4 font-medium text-sm text-green-600">
-                    A new verification link has been sent to the email address
-                    you provided during registration.
+                    Jauna apstiprināšanas saite ir nosūtīta uz e-pasta adresi,
+                    kuru norādījāt reģistrācijas laikā.
                 </div>
             )}
 
             <div className="mt-4 flex items-center justify-between">
                 <Button onClick={() => resendEmailVerification({ setStatus })}>
-                    Resend Verification Email
+                    Nosūtīt apstiprināšanas e-pastu vēlreiz
                 </Button>
 
                 <button
                     type="button"
                     className="underline text-sm text-gray-600 hover:text-gray-900"
                     onClick={logout}>
-                    Logout
+                    Iziet
                 </button>
             </div>
         </>

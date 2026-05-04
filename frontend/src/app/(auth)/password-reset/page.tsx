@@ -40,7 +40,7 @@ const PasswordReset = () => {
     }, [searchParams.get('email')])
 
     if (!token) {
-        return <p>Invalid or expired reset link.</p>
+        return <p>Nederīga vai noilgusi paroles atjaunošanas saite.</p>
     }
 
     return (
@@ -51,7 +51,7 @@ const PasswordReset = () => {
             <form onSubmit={submitForm}>
                 {/* Email Address */}
                 <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">E-pasts</Label>
 
                     <Input
                         id="email"
@@ -68,7 +68,7 @@ const PasswordReset = () => {
 
                 {/* Password */}
                 <div className="mt-4">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">Parole</Label>
                     <Input
                         id="password"
                         type="password"
@@ -87,7 +87,7 @@ const PasswordReset = () => {
                 {/* Confirm Password */}
                 <div className="mt-4">
                     <Label htmlFor="passwordConfirmation">
-                        Confirm Password
+                        Atkārtot paroli
                     </Label>
 
                     <Input
@@ -108,7 +108,7 @@ const PasswordReset = () => {
                 </div>
 
                 <div className="flex items-center justify-end mt-4">
-                    <Button>Reset Password</Button>
+                    <Button>Atjaunot paroli</Button>
                 </div>
             </form>
         </>

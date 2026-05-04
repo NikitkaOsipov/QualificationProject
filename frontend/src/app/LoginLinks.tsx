@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { useAuth } from '@/hooks/auth'
 
 const LoginLinks = () => {
     return (
@@ -10,14 +9,14 @@ const LoginLinks = () => {
                 href="/login"
                 className="text-sm text-gray-700 underline"
             >
-                Login
+                Pieslēgties
             </Link>
 
             <Link
                 href="/register"
                 className="ml-4 text-sm text-gray-700 underline"
             >
-                Register
+                Reģistrēties
             </Link>
         </div>
     )

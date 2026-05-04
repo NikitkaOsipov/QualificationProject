@@ -61,7 +61,7 @@ function ProfileTable({
                                         {tabData.map(e => <EventCard key={e.id} event={e} />)}
                                     </div>
                                 ) : (
-                                    <p className="text-gray-500 text-center py-8">There are no events yet</p>
+                                     <p className="text-gray-500 text-center py-8">Vēl nav neviena pasākuma</p>
                                 )}
                             </>
                         )}
@@ -71,7 +71,7 @@ function ProfileTable({
                                 {tabData && tabData.length > 0 ? (
                                     <>{/*comment*/}</>
                                 ) : (
-                                    <p className="text-gray-500 text-center py-8">There are no comments yet</p>
+                                     <p className="text-gray-500 text-center py-8">Vēl nav neviena komentāra</p>
                                 )}
                             </div>
                         )}
@@ -83,7 +83,7 @@ function ProfileTable({
                                         {tabData.map(u => <UserCard key={u.id} user={u} />)}
                                     </div>
                                 ) : (
-                                    <p className="text-gray-500 text-center py-8">There are no {tab === "following" ? "following" : "friends"} yet</p>
+                                     <p className="text-gray-500 text-center py-8">Vēl nav {tab === "following" ? "sekoto lietotāju" : "draugu"}</p>
                                 )}
                             </>
                         )}
@@ -101,7 +101,7 @@ function ProfileTable({
                         onClick={() => fetchTabData(tab, String(userId), page - 1)}
                         className="px-3 py-1 border rounded disabled:opacity-50"
                     >
-                        Prev
+                        Iepr.
                     </button>
 
                     <span className="px-3 py-1 text-sm">
@@ -113,7 +113,7 @@ function ProfileTable({
                         onClick={() => fetchTabData(tab, String(userId), page + 1)}
                         className="px-3 py-1 border rounded disabled:opacity-50"
                     >
-                        Next
+                        Nāk.
                     </button>
                 </div>
             )}

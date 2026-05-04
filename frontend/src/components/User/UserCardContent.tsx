@@ -28,7 +28,7 @@ export default function UserCardContent({
                 {showOnlineState && (
                     <span
                         className={`absolute right-0 top-0 h-3 w-3 rounded-full ring-2 ring-white ${isOnline ? 'bg-green-500' : 'bg-gray-300'}`}
-                        title={isOnline ? 'Online' : 'Offline'}
+                        title={isOnline ? 'Tiesaistē' : 'Bezsaistē'}
                     />
                 )}
             </div>

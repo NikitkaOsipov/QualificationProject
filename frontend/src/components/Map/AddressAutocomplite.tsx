@@ -14,7 +14,7 @@ interface AddressAutocompleteProps {
 export default function AddressAutocomplete({
     value,
     onSelect,
-    placeholder = "Search for address...",
+    placeholder = "Meklēt adresi...",
     className = ""
 }: AddressAutocompleteProps) {
     const [inputValue, setInputValue] = useState(value);

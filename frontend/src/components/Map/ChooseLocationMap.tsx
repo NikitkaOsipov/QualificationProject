@@ -18,7 +18,7 @@ export default function ChooseLocationMap({
     return (
         <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-                Map Preview (Click to set location)
+                Kartes priekšskats (spiediet, lai izvēlētos vietu)
             </label>
             <div className="h-96 rounded-lg border border-gray-300 overflow-hidden">
                 <ChooseCoordinatesMap
@@ -28,7 +28,7 @@ export default function ChooseLocationMap({
                 />
             </div>
             <p className="text-xs text-gray-500 mt-2">
-                Use the address search field above or click anywhere on the map to set the exact location
+                Izmantojiet adreses meklēšanas lauku augstāk vai klikšķiniet kartē, lai iestatītu precīzu vietu
             </p>
         </div>
     );

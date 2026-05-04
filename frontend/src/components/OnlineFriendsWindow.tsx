@@ -24,7 +24,7 @@ const OnlineFriendsWindow = ({ user }: Props) => {
                 type="button"
                 onClick={() => setIsOpen((value) => !value)}
                 className="relative rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                aria-label="Online friends"
+                aria-label="Draugi tiešsaistē"
             >
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                     <circle cx="8" cy="9" r="3" />
@@ -40,14 +40,14 @@ const OnlineFriendsWindow = ({ user }: Props) => {
             {isOpen && (
                 <div className="absolute right-0 z-20 mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-lg">
                     <div className="border-b border-gray-100 px-4 py-2">
-                        <span className="text-sm font-semibold text-gray-900">Friends online now</span>
+                        <span className="text-sm font-semibold text-gray-900">Draugi tiešsaistē</span>
                     </div>
 
                     <div className="max-h-80 overflow-y-auto py-2">
-                        {loading && <div className="px-4 py-2 text-sm text-gray-500">Loading...</div>}
+                        {loading && <div className="px-4 py-2 text-sm text-gray-500">Ielādē...</div>}
 
                         {!loading && onlineFriends.length === 0 && (
-                            <div className="px-4 py-2 text-sm text-gray-500">No friends online right now.</div>
+                            <div className="px-4 py-2 text-sm text-gray-500">Pašlaik neviens draugs nav tiešsaistē.</div>
                         )}
 
                         {!loading && onlineFriends.map((friend) => (

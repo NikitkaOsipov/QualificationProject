@@ -27,9 +27,9 @@ const Page = () => {
     return (
         <>
             <div className="mb-4 text-sm text-gray-600">
-                Forgot your password? No problem. Just let us know your email
-                address and we will email you a password reset link that
-                will allow you to choose a new one.
+                Aizmirsāt paroli? Nekādu problēmu. Ievadiet savu e-pasta
+                adresi, un mēs nosūtīsim paroles atjaunošanas saiti,
+                kas ļaus izvēlēties jaunu paroli.
             </div>
 
             {/* Session Status */}
@@ -38,7 +38,7 @@ const Page = () => {
             <form onSubmit={submitForm}>
                 {/* Email Address */}
                 <div>
-                    <Label className="email" htmlFor="email">Email</Label>
+                    <Label className="email" htmlFor="email">E-pasts</Label>
                     <Input
                         id="email"
                         type="email"
@@ -54,7 +54,7 @@ const Page = () => {
                 </div>
 
                 <div className="flex items-center justify-end mt-4">
-                    <Button className="email reset">Email Password Reset Link</Button>
+                    <Button className="email reset">Nosūtīt paroles atjaunošanas saiti</Button>
                 </div>
             </form>
         </>

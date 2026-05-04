@@ -58,10 +58,10 @@ const EventPreview = ({isOpen, toggleModal, event}: EventPreviewProps) => {
 
                         <div className="flex items-center gap-3">
                             <span className="text-2xl font-bold text-blue-600">
-                                {event.price ? `€${event.price}` : "Free"}
+                                {event.price ? `€${event.price}` : "Bezmaksas"}
                             </span>
                             <span className="text-xs uppercase text-gray-500 tracking-wide">
-                                Price
+                                Cena
                             </span>
                         </div>
                     </div>
@@ -70,7 +70,7 @@ const EventPreview = ({isOpen, toggleModal, event}: EventPreviewProps) => {
                     <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
                         <div>
                             <p className="text-xs uppercase text-gray-500 tracking-wide mb-1 font-semibold">
-                                📅 Date
+                                Datums
                             </p>
                             <p className="text-sm text-gray-800 font-medium">
                                 {formatEventDate(event.start_date, event.end_date)}
@@ -79,7 +79,7 @@ const EventPreview = ({isOpen, toggleModal, event}: EventPreviewProps) => {
 
                         <div>
                             <p className="text-xs uppercase text-gray-500 tracking-wide mb-1 font-semibold">
-                                📍 Location
+                                Vieta
                             </p>
                             <p className="text-sm text-gray-800 font-medium">
                                 {event.address.name}
@@ -91,7 +91,7 @@ const EventPreview = ({isOpen, toggleModal, event}: EventPreviewProps) => {
                     {event.description && (
                         <div>
                             <p className="text-xs uppercase text-gray-500 tracking-wide mb-2 font-semibold">
-                                About
+                                Par pasākumu
                             </p>
                             <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
                                 {event.description}
@@ -102,7 +102,7 @@ const EventPreview = ({isOpen, toggleModal, event}: EventPreviewProps) => {
                     {/* Coordinates */}
                     <div className="border-t pt-3">
                         <p className="text-xs text-gray-500">
-                            📌 {event.address.lat.toFixed(4)}, {event.address.lng.toFixed(4)}
+                            {event.address.lat.toFixed(4)}, {event.address.lng.toFixed(4)}
                         </p>
                     </div>
 
@@ -112,7 +112,7 @@ const EventPreview = ({isOpen, toggleModal, event}: EventPreviewProps) => {
                             onClick={handleGoToEvent}
                             className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm"
                         >
-                            View Full Event
+                            Skatīt pilnu pasākumu
                         </button>
 
                         {/*<button className="w-full px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition font-medium text-sm">*/}

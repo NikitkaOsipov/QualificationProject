@@ -16,11 +16,11 @@ const NOTIFICATION_TYPES: NotificationType[] = [
 ];
 
 const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
-    friend_request_received: 'Friend request received',
-    friend_request_accepted: 'Friend request accepted',
-    comment_received: 'Comment received',
-    event_participation_request: 'Event participation request',
-    followed_user_event_created: 'Event created by followed user',
+    friend_request_received: 'Saņemts draudzības pieprasījums',
+    friend_request_accepted: 'Draudzības pieprasījums apstiprināts',
+    comment_received: 'Saņemts komentārs',
+    event_participation_request: 'Saņemts dalības pieprasījums pasākumam',
+    followed_user_event_created: 'Sekotais lietotājs izveidoja pasākumu',
 }
 
 const NotificationSettingsPanel = () => {
@@ -112,11 +112,11 @@ const NotificationSettingsPanel = () => {
 
     return (
         <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900">Notifications</h2>
-            <p className="mt-1 text-sm text-gray-600">Choose where each notification type is delivered.</p>
+            <h2 className="text-lg font-semibold text-gray-900">Paziņojumi</h2>
+            <p className="mt-1 text-sm text-gray-600">Izvēlieties, kur saņemt katra tipa paziņojumus.</p>
 
             {isLoading ? (
-                <p className="mt-4 text-sm text-gray-500">Loading preferences...</p>
+                <p className="mt-4 text-sm text-gray-500">Ielādē iestatījumus...</p>
             ) : (
                 <div className="mt-4 space-y-3">
                     {NOTIFICATION_TYPES.map((type) => {
@@ -137,7 +137,7 @@ const NotificationSettingsPanel = () => {
                                                 void handleToggle(type, 'in_app_enabled', event.target.checked)
                                             }
                                         />
-                                        In-app
+                                        Lietotne
                                     </label>
 
                                     <label className="inline-flex items-center gap-2">
@@ -149,7 +149,7 @@ const NotificationSettingsPanel = () => {
                                                 void handleToggle(type, 'email_enabled', event.target.checked)
                                             }
                                         />
-                                        Email
+                                        E-pasts
                                     </label>
                                 </div>
                             </div>

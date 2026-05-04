@@ -37,11 +37,11 @@ export default function CreateEventPage() {
                 const fetchedCategories = await getCategories();
                 setCategories(fetchedCategories);
             } catch (error) {
-                console.error('Failed to fetch categories:', error);
+                console.error('Neizdevās ielādēt kategorijas:', error);
             } finally {
                 setLoadingCategories(false);
             }
-        };
+        }
 
         fetchCategories();
     }, []);
@@ -142,10 +142,10 @@ export default function CreateEventPage() {
                 // Success
                 router.push(`/`);
             } else {
-                setServerError('Failed to create event. Please try again.');
+                setServerError('Neizdevās izveidot pasākumu. Lūdzu, mēģiniet vēlreiz.');
             }
         } catch (error: any) {
-            const errorMessage = error.response?.data?.message || 'An error occurred. Please try again.';
+            const errorMessage = error.response?.data?.message || 'Radusies kļūda. Lūdzu, mēģiniet vēlreiz.';
             setServerError(errorMessage);
         } finally {
             setIsSubmitting(false);
@@ -235,8 +235,8 @@ export default function CreateEventPage() {
                             <FriendSelector
                                 selectedIds={formData.inviteeIds}
                                 onChange={(inviteeIds) => updateForm({ inviteeIds })}
-                                title="Invite your friends"
-                                description="Pick friends to notify right after event is published."
+                                title="Uzaicini draugus"
+                                description="Izvēlies draugus, kuri saņems paziņojumu uzreiz pēc publicēšanas."
                             />
                         </div>
                     )}
@@ -249,7 +249,7 @@ export default function CreateEventPage() {
                         disabled={currentStage === 1}
                         className="px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
                     >
-                        ← Previous
+                        ← Iepriekšējais
                     </button>
 
                     {currentStage < 5 ? (
@@ -257,7 +257,7 @@ export default function CreateEventPage() {
                             onClick={handleNextStage}
                             className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
                         >
-                            Next →
+                            Nākamais →
                         </button>
                     ) : (
                         <button
@@ -265,7 +265,7 @@ export default function CreateEventPage() {
                             disabled={isSubmitting}
                             className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                         >
-                            {isSubmitting ? 'Publishing...' : 'Publish Event'}
+                            {isSubmitting ? 'Publicē...' : 'Publicēt pasākumu'}
                         </button>
                     )}
                 </div>

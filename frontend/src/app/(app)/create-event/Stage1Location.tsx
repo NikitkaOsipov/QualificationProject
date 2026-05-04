@@ -46,14 +46,14 @@ export default function LocationStage({
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-semibold mb-2">Select Event Location</h2>
-                <p className="text-gray-600">Choose a location on the map or search for an address in Latvia</p>
+                <h2 className="text-2xl font-semibold mb-2">Izvēlieties pasākuma vietu</h2>
+                <p className="text-gray-600">Izvēlieties vietu kartē vai meklējiet adresi Latvijā</p>
             </div>
 
             {/* Address Search */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Address *
+                    Adrese *
                 </label>
                 <AddressAutocomplete
                     value={address}
@@ -63,7 +63,7 @@ export default function LocationStage({
                         setTempLat(lat.toString());
                         setTempLng(lng.toString());
                     }}
-                    placeholder="Search for address..."
+                    placeholder="Meklēt adresi..."
                 />
                 {error && <div className="text-sm text-red-600 mt-1">{error}</div>}
             </div>
@@ -75,7 +75,7 @@ export default function LocationStage({
                     onClick={() => setShowCoordinates(!showCoordinates)}
                     className="flex items-center justify-between w-full text-left"
                 >
-                    <span className="font-medium text-gray-700">Coordinates</span>
+                    <span className="font-medium text-gray-700">Koordinātas</span>
                     {showCoordinates ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                 </button>
 
@@ -83,7 +83,7 @@ export default function LocationStage({
                     <div className="grid grid-cols-2 gap-4 mt-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Latitude
+                                Platums
                             </label>
                             <input
                                 type="number"
@@ -92,13 +92,13 @@ export default function LocationStage({
                                 max="90"
                                 value={tempLat}
                                 onChange={(e) => handleCoordinateChange(e.target.value, tempLng)}
-                                placeholder="e.g. 56.9496"
+                                placeholder="piem., 56.9496"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Longitude
+                                Garums
                             </label>
                             <input
                                 type="number"
@@ -107,7 +107,7 @@ export default function LocationStage({
                                 max="180"
                                 value={tempLng}
                                 onChange={(e) => handleCoordinateChange(tempLat, e.target.value)}
-                                placeholder="e.g. 24.1051"
+                                placeholder="piem., 24.1051"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>

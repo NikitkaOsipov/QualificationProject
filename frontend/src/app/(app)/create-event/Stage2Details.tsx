@@ -35,47 +35,47 @@ const DetailsStage = ({
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-semibold mb-2">Event Details</h2>
-                <p className="text-gray-600">Add the essential information about your event</p>
+                <h2 className="text-2xl font-semibold mb-2">Pasākuma detaļas</h2>
+                <p className="text-gray-600">Pievienojiet būtiskāko informāciju par savu pasākumu</p>
             </div>
 
             {/* Title */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Title *
+                    Nosaukums *
                 </label>
                 <input
                     type="text"
                     maxLength={255}
                     value={title}
                     onChange={(e) => onTitleChange(e.target.value)}
-                    placeholder="Event title ..."
+                    placeholder="Pasākuma nosaukums..."
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                         errors.title ? 'border-red-500' : 'border-gray-300'
                     }`}
                 />
                 {errors.title && <div className="text-sm text-red-600 mt-1">{errors.title}</div>}
-                <div className="text-xs text-gray-500 mt-1">{title.length}/255 characters</div>
+                <div className="text-xs text-gray-500 mt-1">{title.length}/255 rakstzīmes</div>
             </div>
 
             {/* Description - Markdown Editor */}
             <div data-color-mode="light">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description
+                    Apraksts
                 </label>
                 <MDEditor
                     value={description}
                     onChange={(value) => onDescriptionChange(value ?? '')}
                     preview="edit"
                     height={320}
-                    textareaProps={{ placeholder: 'Describe your event in detail...' }}
+                    textareaProps={{ placeholder: 'Aprakstiet pasākumu detalizēti...' }}
                     commandsFilter={(cmd) => {
                         const excluded = new Set(['fullscreen', 'help']);
                         return excluded.has(cmd.name) ? false : cmd;
                     }}
                 />
                 <p className="mt-2 text-xs text-gray-500">
-                    Use toolbar options for headings, bold, italic, lists, links, quotes and more.
+                    Izmantojiet rīku joslu virsrakstiem, treknrakstam, slīprakstam, sarakstiem, saitēm un citam.
                 </p>
                 {errors.description && <div className="text-sm text-red-600 mt-1">{errors.description}</div>}
             </div>
@@ -84,7 +84,7 @@ const DetailsStage = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Start Date & Time *
+                        Sākuma datums un laiks *
                     </label>
                     <input
                         type="datetime-local"
@@ -99,7 +99,7 @@ const DetailsStage = ({
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        End Date & Time
+                        Beigu datums un laiks
                     </label>
                     <input
                         type="datetime-local"
@@ -117,7 +117,7 @@ const DetailsStage = ({
             {/* Price */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price (Optional) - Leave empty for free event
+                    Cena (neobligāti) - atstājiet tukšu bezmaksas pasākumam
                 </label>
                 <div className="flex items-center">
                     <span className="text-gray-700 font-medium mr-2">€</span>

@@ -38,7 +38,7 @@ export default function InterestedButton({
                 <div className="absolute left-1/2 -translate-x-1/2 -top-8
                                 bg-black text-white text-xs px-2 py-1 rounded
                                 whitespace-nowrap shadow-md">
-                    I am interested
+                    Esmu ieinteresēts
                 </div>
             )}
         </div>
