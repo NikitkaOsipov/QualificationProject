@@ -6,10 +6,36 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rule;
 
 Route::get('/user', function (Request $request) {
     return $request->user('sanctum');
 });
+
+Route::patch('/user', function (Request $request) {
+    $user = $request->user('sanctum');
+
+    abort_unless($user, 401);
+
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => [
+            'required',
+            'string',
+            'email',
+            'max:255',
+            Rule::unique('users', 'email')->ignore($user->id),
+        ],
+    ]);
+
+    if (($validated['email'] ?? null) !== $user->email) {
+        $validated['email_verified_at'] = null;
+    }
+
+    $user->update($validated);
+
+    return $user->fresh();
+})->middleware('auth:sanctum');
 
 Route::get('/debug-user', function (Request $request) {
     Log::info('Headers:', $request->headers->all());

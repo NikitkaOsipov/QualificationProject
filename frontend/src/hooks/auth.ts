@@ -56,6 +56,23 @@ export const useAuth = ({
 
     const csrf = () => !isNative ? axios.get('/sanctum/csrf-cookie', {withCredentials: true}) : null;
 
+    const mutateUser = async (nextUser?: any) => {
+        if (nextUser !== undefined) {
+            try {
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('auth_user', JSON.stringify(nextUser));
+                }
+            } catch (e) {
+                console.error(e);
+            }
+
+            await mutate(nextUser, false);
+            return;
+        }
+
+        await mutate();
+    }
+
     const register = async ({ setErrors, ...props }) => {
         await csrf()
 
@@ -181,6 +198,7 @@ export const useAuth = ({
 
     return {
         user,
+        mutateUser,
         register,
         login,
         forgotPassword,

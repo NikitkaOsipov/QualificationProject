@@ -8,12 +8,12 @@ import NotificationSettingsPanel from '@/components/Settings/NotificationSetting
 import SettingsSidebar, { SettingsSectionId } from '@/components/Settings/SettingsSidebar';
 
 const SETTINGS_SECTIONS: { id: SettingsSectionId; label: string }[] = [
-    { id: 'account', label: 'Account' },
-    { id: 'notifications', label: 'Notifications' },
+    { id: 'account', label: 'Konts' },
+    { id: 'notifications', label: 'Paziņojumi' },
 ];
 
 const SettingsPage = () => {
-    const { user } = useAuth({ middleware: 'auth' });
+    const { user, mutateUser } = useAuth({ middleware: 'auth' });
     const [activeSection, setActiveSection] = useState<SettingsSectionId>('account');
 
     if (!user) {
@@ -22,7 +22,7 @@ const SettingsPage = () => {
 
     const renderActiveSection = () => {
         if (activeSection === 'account') {
-            return <AccountSettingsPanel user={user} />;
+            return <AccountSettingsPanel user={user} onUserUpdatedAction={mutateUser} />;
         }
 
         if (activeSection === 'notifications') {
@@ -32,7 +32,7 @@ const SettingsPage = () => {
 
     return (
         <main className="mx-auto w-full max-w-6xl p-4 sm:p-6 lg:p-8">
-            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Iestatījumi</h1>
 
             <div className="mt-6 grid gap-4 md:grid-cols-[220px_1fr] md:items-start">
                 <SettingsSidebar
