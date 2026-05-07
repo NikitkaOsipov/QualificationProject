@@ -22,7 +22,7 @@ const AccountSettingsPanel = ({ user, onUserUpdatedAction }: Props) => {
     }, [user.name, user.email]);
 
     const hasChanges = () => 
-        return name.trim() !== (user.name ?? '').trim() || email.trim() !== (user.email ?? '').trim();
+        name.trim() !== (user.name ?? '').trim() || email.trim() !== (user.email ?? '').trim();
 
     const handleSave = async () => {
         const nextErrors: { name?: string; email?: string; form?: string } = {};

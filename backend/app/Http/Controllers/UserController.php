@@ -11,12 +11,38 @@ use App\Notifications\FriendRequestReceivedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class UserController extends Controller
 {
     // How long will online indicator will live in cash
     private const ONLINE_TTL_SECONDS = 90;
+
+    public function update(Request $request) {
+        $user = Auth::user();
+
+        abort_unless($user, 401);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+        ]);
+
+        if (($validated['email'] ?? null) !== $user->email) {
+            $validated['email_verified_at'] = null;
+        }
+
+        $user->update($validated);
+
+        return $user->fresh();
+    }
 
     public function follow(User $targetUser)
     {

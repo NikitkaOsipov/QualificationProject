@@ -10,4 +10,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/friends', [UserController::class, 'friends']);
     Route::post('/users/update-online-status', [UserController::class, 'updateOnlineStatus']);
     Route::get('/users/search', [UserController::class, 'search']);
+    Route::patch('/users', [UserController::class, 'update']);
 });
