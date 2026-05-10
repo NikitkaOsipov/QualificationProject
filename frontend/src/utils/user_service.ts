@@ -41,3 +41,5 @@ export const searchUsers = async (params?: { search?: string; page?: number; per
 export const updateCurrentUser = async (params?: { name: string; email: string; }) =>
     axios.patch('/api/users', { ...params }).then((r) => r.data as User);
 
+export const getUser = async () =>
+    axios.get('/api/user').then((r) => r.data as User);

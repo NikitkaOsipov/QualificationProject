@@ -3,7 +3,11 @@ import axios from '@/lib/axios';
 import { useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { isNative } from '@/Config/api';
-import { Preferences } from '@capacitor/preferences'
+import { Preferences } from '@capacitor/preferences';
+import { getUser } from '@/utils/user_service';
+import { User } from '@/utils/Types';
+
+const UI_USER_TTL_MS = 120 * 60 * 1000;
 
 export const useAuth = ({
     middleware,
@@ -12,56 +16,81 @@ export const useAuth = ({
     middleware?: string,
     redirectIfAuthenticated?: string
 } = {}) => {
-    const router = useRouter()
-    const params = useParams()
+    const router = useRouter();
+    const params = useParams();
 
-    const readCachedUser = () => {
-        if (typeof window === 'undefined') return undefined;
+    const readCachedUser = async () => {
         try {
-            const raw = localStorage.getItem('auth_user');
-            return raw ? JSON.parse(raw) : undefined;
+            const raw = await Preferences.get({ key: 'ui-user' });
+            const uiUser = raw.value ? JSON.parse(raw.value) : undefined;
+
+            if (!uiUser) return undefined;
+
+            if (!uiUser.expiresAt || Date.now() > uiUser.expiresAt) {
+                void Preferences.remove({key: 'ui-user'});
+                return undefined;
+            }
+            return uiUser.user as User;
         } catch {
             return undefined;
         }
     }
 
     const { data: user, error, mutate } = useSWR('/api/user', () =>
-        axios
-            .get('/api/user')
-            .then(res => {
-                try {
-                    localStorage.setItem('auth_user', JSON.stringify(res.data));
-                } catch (e) {
-                    console.error(e);
-                }
-                return res.data;
-            })
-            .catch(error => {
-                if (error.response.status !== 409) throw error
+        getUser().then(res => {
+            try {
+                void Preferences.set({
+                    key: 'ui-user',
+                    value: JSON.stringify({
+                        user: res,
+                        expiresAt: Date.now() + UI_USER_TTL_MS
+                    })
+                });
+            } catch (e) {
+                console.error(e);
+            }
+            return res;
+        }).catch(error => {
+            if (error.response.status !== 409) throw error;
 
-                router.push('/verify-email')
-            }),
-    )
+            router.push('/verify-email');
+        })
+    );
 
     // After mount get cashed user while waiting for user request after reload.
     useEffect(() => {
-        if (typeof window === 'undefined') return;
         if (user !== undefined) return;
 
-        const cachedUser = readCachedUser();
-        if (cachedUser) {
-            mutate(cachedUser, false);
+        // Will become false if in any way component unmountes
+        let isActive = true;
+
+        const loadCashedUser = async () => {
+            const cashedUser =  await readCachedUser();
+
+            if (isActive && !user && cashedUser) {
+                await mutate(cashedUser, false);
+            }
         }
-    }, [mutate, user]);
+
+        void loadCashedUser();
+
+        return () => {
+            isActive = false;
+        }
+    }, [mutate]);
 
     const csrf = () => !isNative ? axios.get('/sanctum/csrf-cookie', {withCredentials: true}) : null;
 
     const mutateUser = async (nextUser?: any) => {
         if (nextUser !== undefined) {
             try {
-                if (typeof window !== 'undefined') {
-                    localStorage.setItem('auth_user', JSON.stringify(nextUser));
-                }
+                void Preferences.set({
+                    key: 'ui-user',
+                    value: JSON.stringify({
+                        user: nextUser,
+                        expiresAt: Date.now() + UI_USER_TTL_MS
+                    })
+                });
             } catch (e) {
                 console.error(e);
             }
@@ -85,7 +114,7 @@ export const useAuth = ({
                 if (error.response.status !== 422) throw error
 
                 setErrors(error.response.data.errors)
-            })
+            });
     }
 
     const login = async ({ setErrors, setStatus, ...props }) => {
@@ -103,9 +132,6 @@ export const useAuth = ({
             });
 
         if (isNative && response) {
-
-            console.log(response);
-
             const token = response.data.token;
 
             await Preferences.set({
@@ -162,11 +188,9 @@ export const useAuth = ({
             await axios.post('/api/logout').then(() => mutate())
         }
         try {
-            if (typeof window !== 'undefined') {
-                localStorage.removeItem('auth_user');
-            }
+            void Preferences.remove({key: 'ui-user'});
         } catch (e){
-            console.log(e);
+            console.error(e);
         }
         window.location.pathname = '/login';
     }
@@ -176,12 +200,10 @@ export const useAuth = ({
         if (user === undefined && !error) return;
 
         if (middleware === 'guest' && redirectIfAuthenticated && user){
-            console.log("Redirect if authenticated");
             router.push(redirectIfAuthenticated);
         }
 
         if (middleware === 'auth' && (user && !user.email_verified_at)) {
-            console.log("Auth and email verify");
             router.push('/verify-email');
         }
 
@@ -189,7 +211,7 @@ export const useAuth = ({
             window.location.pathname === '/verify-email' &&
             user?.email_verified_at
         ) {
-            router.push(redirectIfAuthenticated)
+            router.push(redirectIfAuthenticated);
         }
         if (middleware === 'auth' && error) logout();
         if (middleware === 'auth' && !user)
