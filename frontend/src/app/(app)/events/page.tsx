@@ -14,9 +14,13 @@ const DEFAULT_FILTERS: EventFilters = {
     categories: [],
     friends_only: false,
     following_only: false,
+    date_from: '',
+    date_to: '',
     sort_by: 'default',
     sort_direction: 'desc',
 }
+
+const PER_PAGE = 12;
 
 export default function EventsPage() {
     const { user } = useAuth();
@@ -42,7 +46,7 @@ export default function EventsPage() {
                 friends_only: filters.friends_only ? 1 : 0,
                 following_only: filters.following_only ? 1 : 0,
                 page: page,
-                per_page: 12,
+                per_page: PER_PAGE,
             });
 
             setEvents(current => append ? [...current, ...response.data] : response.data);
@@ -54,7 +58,7 @@ export default function EventsPage() {
     }
 
     useEffect(() => {
-        fetchEvents(currentFilters);
+        void fetchEvents(currentFilters);
     }, [currentFilters])
 
     const handleApplyFilters = () => {
@@ -79,7 +83,7 @@ export default function EventsPage() {
 
             <div className="mb-8">
                 <EventSearchAndFilters
-                    value={draftFilters}
+                    filters={draftFilters}
                     onChangeAction={(nextValue) => setDraftFilters(nextValue)}
                     onSubmitAction={handleApplyFilters}
                     onResetAction={handleResetFilters}
@@ -89,7 +93,12 @@ export default function EventsPage() {
                 />
             </div>
 
-            {currentFilters.search === '' && currentFilters.categories.length === 0 && !currentFilters.friends_only && !currentFilters.following_only && (
+            {currentFilters.search === ''
+                && currentFilters.categories.length === 0
+                && !currentFilters.friends_only
+                && !currentFilters.following_only
+                && !currentFilters.date_from
+                && !currentFilters.date_to && (
                 <div className="mb-6 flex flex-col gap-2">
                     <h1 className="text-2xl font-semibold">Aktuālākie gaidāmie pasākumi</h1>
                 </div>

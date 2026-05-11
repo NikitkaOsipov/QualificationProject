@@ -24,16 +24,12 @@ use Throwable;
 class EventController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Returns paginated list of events with applied filters.
+     * Only future events are returned.
      */
     public function index(Request $request)
     {
         $viewer = Auth::user();
-
-        Log::info('Event search request params', [
-            'params' => $request->all(),
-            'query' => $request->query(),
-        ]);
 
         $validated = $request->validate([
             'search' => 'nullable|string|max:255',
@@ -41,28 +37,29 @@ class EventController extends Controller
             'categories.*' => 'integer|exists:event_categories,id',
             'friends_only' => 'nullable|boolean',
             'following_only' => 'nullable|boolean',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date|after_or_equal:date_from',
             'sort_by' => 'nullable|string|in:default,soonest,interested,going,cost',
             'sort_direction' => 'nullable|string|in:asc,desc',
             'page' => 'nullable|integer|min:1',
             'per_page' => 'nullable|integer|min:1|max:100',
-        ]);
-
-        Log::info('Event search request params validated', [
-            'params' => $validated
+        ], [
+            'date_to.after_or_equal' => 'Beigu datumam jābūt tādam pašam vai vēlākam par sākuma datumu.',
         ]);
 
         $search = trim((string) ($validated['search'] ?? ''));
         $categoryIds = collect($validated['categories'] ?? [])
-            ->filter(static fn (int $id) => $id > 0)
             ->unique()
             ->values()
             ->all();
         $friendsOnly = (bool) ($validated['friends_only'] ?? false);
         $followingOnly = (bool) ($validated['following_only'] ?? false);
-        $sortBy = (string) ($validated['sort_by'] ?? 'default');
-        $sortDirection = (string) ($validated['sort_direction'] ?? 'desc');
+        $dateFrom = $validated['date_from'] ? Carbon::parse($validated['date_from'])->startOfDay() : null;
+        $dateTo = $validated['date_to'] ? Carbon::parse($validated['date_to'])->endOfDay() : null;
+        $sortBy = $validated['sort_by'] ?? 'default';
+        $sortDirection = $validated['sort_direction'] ?? 'desc';
         $page = max(1, (int) ($validated['page'] ?? 1));
-        $perPage = max(1, min((int) ($validated['per_page'] ?? 12), 50));
+        $perPage = max(1, min((int) ($validated['per_page'] ?? 12), 50)); // Per page value 1 - 50
 
         $authorIds = $this->allowedAuthorIds($viewer, $friendsOnly, $followingOnly);
 
@@ -74,6 +71,7 @@ class EventController extends Controller
             ->filter(fn (Event $event) => $this->isEventInTheFuture($event))
             ->filter(fn (Event $event) => $this->matchesSearchQuery($event, $search))
             ->filter(fn (Event $event) => $this->matchesCategories($event, $categoryIds))
+            ->filter(fn (Event $event) => $this->matchesDateRange($event, $dateFrom, $dateTo))
             ->filter(fn (Event $event) => $this->matchesAuthors($event, $authorIds))
             ->values();
 
@@ -92,7 +90,7 @@ class EventController extends Controller
                 'current_page' => $page,
                 'per_page' => $perPage,
                 'total' => $total,
-                'last_page' => $total === 0 ? 1 : (int) ceil($total / $perPage),
+                'last_page' => $total === 0 ? 1 : ceil($total / $perPage),
                 'has_more' => $offset + $pageItems->count() < $total,
                 'applied_sort_by' => $sortBy,
                 'applied_sort_direction' => $sortDirection,
@@ -611,6 +609,21 @@ class EventController extends Controller
             ->pluck('id')
             ->intersect($categoryIds)
             ->isNotEmpty();
+    }
+
+    private function matchesDateRange(Event $event, ?Carbon $dateFrom, ?Carbon $dateTo): bool
+    {
+        $eventStart = Carbon::parse($event->start_date);
+
+        if ($dateFrom && $eventStart->lt($dateFrom)) {
+            return false;
+        }
+
+        if ($dateTo && $eventStart->gt($dateTo)) {
+            return false;
+        }
+
+        return true;
     }
 
     private function matchesAuthors(Event $event, ?array $authorIds): bool

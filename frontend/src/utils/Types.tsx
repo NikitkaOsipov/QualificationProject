@@ -80,10 +80,7 @@ export interface EventType {
     background_image_path?: string | null;
     visibility?: Visibility;
     categories?: Category[];
-    user?: {
-        id?: number;
-        name?: string;
-    };
+    user?: User;
     going_count?: number;
     interested_count?: number;
 }
@@ -110,6 +107,8 @@ export interface EventFilters {
     categories?: number[];
     friends_only?: boolean;
     following_only?: boolean;
+    date_from?: string;
+    date_to?: string;
     sort_by?: EventSortBy;
     sort_direction?: SortDirection;
     page?: number;

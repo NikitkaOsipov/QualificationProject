@@ -56,7 +56,7 @@ const EventAddToCalendarButton = ({ event }: EventAddToCalendarButtonProps) => {
     }
 
     return (
-        <div className="relative z-[2000]">
+        <div className="relative">
             <button
                 type="button"
                 onClick={() => setIsOpen((currentValue) => !currentValue)}

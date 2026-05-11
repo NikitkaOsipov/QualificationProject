@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Autocomplete, TextField } from '@mui/material';
 import { getCategories } from '@/utils/category_service';
 import type { Category, EventFilters, EventSortBy, SortDirection } from '@/utils/Types';
 
 interface EventSearchAndFiltersProps {
-    value: EventFilters;
+    filters: EventFilters;
     onChangeAction: (EventFilters) => void;
     onSubmitAction: () => void;
     onResetAction: () => void;
@@ -29,9 +29,9 @@ const SORT_DIRECTION_OPTIONS = [
 ];
 
 export default function EventSearchAndFilters({
-    value,
-    onChangeAction,
-    onSubmitAction,
+    filters,
+    onChangeAction, // When filters changes
+    onSubmitAction, // When clicks submit
     onResetAction,
     showSort = false,
     disableSocialFilters = false,
@@ -39,6 +39,9 @@ export default function EventSearchAndFilters({
 }: EventSearchAndFiltersProps) {
     const [categories, setCategories] = useState<Category[]>([]);
     const [isSortOpen, setIsSortOpen] = useState(false);
+    const [isDateOpen, setIsDateOpen] = useState(false);
+    const sortWrapperRef = useRef<HTMLDivElement | null>(null);
+    const dateWrapperRef = useRef<HTMLDivElement | null>(null);
 
     // Fetches categories
     useEffect(() => {
@@ -63,19 +66,54 @@ export default function EventSearchAndFilters({
         };
     }, []);
 
+    // Check for click outside of sorting options dropdown
+    useEffect(() => {
+        if (!isSortOpen && !isDateOpen) return;
+
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Node;
+            const clickedInsideSort = !!sortWrapperRef.current?.contains(target);
+            const clickedInsideDate = !!dateWrapperRef.current?.contains(target);
+
+            if (!clickedInsideSort) {
+                setIsSortOpen(false);
+            }
+
+            if (!clickedInsideDate) {
+                setIsDateOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isSortOpen, isDateOpen]);
+
     const selectedCategories = useMemo(
-        () => categories.filter(category => value.categories.includes(category.id)),
-        [categories, value.categories],
+        () => categories.filter(category => filters.categories.includes(category.id)),
+        [categories, filters.categories],
     );
 
-    const update = (patch: Partial<EventFilters>) => onChangeAction({ ...value, ...patch });
+    const isDateRangeInvalid =
+        filters.date_from
+        && filters.date_to
+        && filters.date_to < filters.date_from;
+
+    const update = (newFilters: Partial<EventFilters>) => onChangeAction({ ...filters, ...newFilters });
 
     const handleCategoryRemove = (categoryId: number) => {
-        update({ categories: value.categories.filter(id => id !== categoryId) });
+        update({ categories: filters.categories.filter(id => id !== categoryId) });
     };
 
-    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (event) => {
         event.preventDefault();
+
+        if (isDateRangeInvalid) {
+            return;
+        }
+
         onSubmitAction();
     };
 
@@ -86,17 +124,19 @@ export default function EventSearchAndFilters({
         >
             <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)_auto]">
+                    {/* Search */}
                     <div>
                         <label className="mb-1 block text-sm font-medium text-gray-700">Meklēt pasākumus</label>
                         <input
                             type="text"
-                            value={value.search}
+                            value={filters.search}
                             onChange={event => update({ search: event.target.value })}
                             placeholder="Pasākuma nosaukums vai vieta"
-                            className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            className="h-10 w-full rounded border border-gray-300 px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
                         />
                     </div>
 
+                    {/* Categories */}
                     <div className="relative">
                         <label className="mb-1 block text-sm font-medium text-gray-700">Kategorijas</label>
                         <Autocomplete
@@ -111,7 +151,7 @@ export default function EventSearchAndFilters({
                                 '& .MuiAutocomplete-tag': { display: 'none' },
                                 '& .MuiOutlinedInput-root': {
                                     height: '40px',
-                                    borderRadius: '0.5rem',
+                                    borderRadius: '0.25rem',
                                     backgroundColor: 'white',
                                     alignItems: 'center',
                                     paddingTop: '0',
@@ -127,24 +167,26 @@ export default function EventSearchAndFilters({
                         />
                     </div>
 
+                    {/* Submit and reset buttons */}
                     <div className="flex items-end gap-2">
                         <button
                             type="submit"
-                            disabled={isLoading}
-                            className="h-10 rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                            disabled={isLoading || isDateRangeInvalid}
+                            className="h-10 rounded bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
                         >
                             {isLoading ? 'Meklē...' : 'Meklēt'}
                         </button>
                         <button
                             type="button"
                             onClick={onResetAction}
-                            className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                            className="h-10 rounded border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
                         >
                             Notīrīt
                         </button>
                     </div>
                 </div>
 
+                {/* Selected categories display */}
                 {selectedCategories.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                         {selectedCategories.map(category => (
@@ -152,7 +194,7 @@ export default function EventSearchAndFilters({
                                 key={category.id}
                                 type="button"
                                 onClick={() => handleCategoryRemove(category.id)}
-                                className="rounded-lg bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 transition hover:bg-blue-100"
+                                className="rounded bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 transition hover:bg-blue-100"
                             >
                                 {category.name} ×
                             </button>
@@ -160,12 +202,13 @@ export default function EventSearchAndFilters({
                     </div>
                 )}
 
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="flex flex-wrap items-center gap-4">
+                {/* Social filters (friends only/following only) */}
+                <div className="flex flex-col gap-3 items-end lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex w-full flex-wrap items-center gap-4 lg:w-auto">
                         <label className={`flex items-center gap-2 text-sm ${disableSocialFilters ? 'text-gray-400' : 'text-gray-700'}`}>
                             <input
                                 type="checkbox"
-                                checked={value.friends_only}
+                                checked={filters.friends_only}
                                 onChange={event => update({ friends_only: event.target.checked })}
                                 disabled={disableSocialFilters}
                                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -176,7 +219,7 @@ export default function EventSearchAndFilters({
                         <label className={`flex items-center gap-2 text-sm ${disableSocialFilters ? 'text-gray-400' : 'text-gray-700'}`}>
                             <input
                                 type="checkbox"
-                                checked={value.following_only}
+                                checked={filters.following_only}
                                 onChange={event => update({ following_only: event.target.checked })}
                                 disabled={disableSocialFilters}
                                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -189,53 +232,102 @@ export default function EventSearchAndFilters({
                         )}
                     </div>
 
-                    {showSort && (
-                        <div className="relative self-start lg:self-auto">
+                    {/* Date filters and Sorting dropdowns */}
+                    <div className="ml-auto flex w-full max-w-md flex-col gap-2 lg:w-auto lg:max-w-none lg:flex-row">
+                        <div ref={dateWrapperRef} className="relative w-full lg:w-auto">
                             <button
                                 type="button"
-                                onClick={() => setIsSortOpen(open => !open)}
-                                className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                                onClick={() => setIsDateOpen(open => !open)}
+                                className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 lg:w-auto"
                             >
-                                Kārtošana: {SORT_BY_OPTIONS.find(option => option.value === value.sort_by)?.label ?? ''} ({SORT_DIRECTION_OPTIONS.find(option => option.value === value.sort_direction)?.label ?? ''})
+                                Datuma periods
                             </button>
 
-                            {isSortOpen && (
-                                <div className="absolute right-0 z-20 mt-2 min-w-72 rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
-                                    <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">Kārtot pēc</label>
-                                    <select
-                                        value={value.sort_by}
-                                        onChange={event => update({ sort_by: event.target.value as EventSortBy })}
-                                        className="mb-3 h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-blue-500"
-                                    >
-                                        {SORT_BY_OPTIONS.map(option => (
-                                            <option key={option.value} value={option.value}>{option.label}</option>
-                                        ))}
-                                    </select>
+                            {/* Date filters */}
+                            {isDateOpen && (
+                                <div className="absolute right-0 z-20 mt-2 min-w-72 rounded border border-gray-200 bg-white p-3 shadow-lg">
+                                    <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">No datuma</label>
+                                    <TextField
+                                        type="date"
+                                        value={filters.date_from ?? ''}
+                                        onChange={event => {
+                                            const nextFrom = event.target.value;
+                                            const nextTo = filters.date_to && nextFrom && filters.date_to < nextFrom
+                                                ? nextFrom
+                                                : filters.date_to;
 
-                                    <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">Virziens</label>
-                                    <select
-                                        value={value.sort_direction}
-                                        onChange={event => update({ sort_direction: event.target.value as SortDirection })}
-                                        className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm outline-none focus:border-blue-500"
-                                    >
-                                        {SORT_DIRECTION_OPTIONS.map(option => (
-                                            <option key={option.value} value={option.value}>{option.label}</option>
-                                        ))}
-                                    </select>
+                                            update({ date_from: nextFrom, date_to: nextTo });
+                                        }}
+                                        fullWidth
+                                        size="small"
+                                        slotProps={{
+                                            htmlInput: {
+                                                max: filters.date_to || undefined,
+                                            },
+                                        }}
+                                        sx={{ mb: 1.5 }}
+                                    />
+
+                                    <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">Līdz datumam</label>
+                                    <TextField
+                                        type="date"
+                                        value={filters.date_to ?? ''}
+                                        onChange={event => update({ date_to: event.target.value })}
+                                        fullWidth
+                                        size="small"
+                                        slotProps={{
+                                            htmlInput: {
+                                                min: filters.date_from || undefined,
+                                            },
+                                        }}
+                                        error={isDateRangeInvalid}
+                                        helperText={isDateRangeInvalid ? 'Beigu datums nedrīkst būt agrāks par sākuma datumu.' : ' '}
+                                    />
                                 </div>
                             )}
                         </div>
-                    )}
+
+                        {/* Sorting */}
+                        {showSort && (
+                            <div ref={sortWrapperRef} className="relative w-full lg:w-auto">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsSortOpen(open => !open)}
+                                    className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 lg:w-auto"
+                                >
+                                    Kārtošana: {SORT_BY_OPTIONS.find(option => option.value === filters.sort_by)?.label ?? ''} ({SORT_DIRECTION_OPTIONS.find(option => option.value === filters.sort_direction)?.label ?? ''})
+                                </button>
+
+                                {isSortOpen && (
+                                    <div className="absolute right-0 z-20 mt-2 min-w-72 rounded border border-gray-200 bg-white p-3 shadow-lg">
+                                        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">Kārtot pēc</label>
+                                        <select
+                                            value={filters.sort_by}
+                                            onChange={event => update({ sort_by: event.target.value as EventSortBy })}
+                                            className="mb-3 h-10 w-full rounded border border-gray-300 px-3 text-sm outline-none focus:border-blue-500"
+                                        >
+                                            {SORT_BY_OPTIONS.map(option => (
+                                                <option key={option.value} value={option.value}>{option.label}</option>
+                                            ))}
+                                        </select>
+
+                                        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">Virziens</label>
+                                        <select
+                                            value={filters.sort_direction}
+                                            onChange={event => update({ sort_direction: event.target.value as SortDirection })}
+                                            className="h-10 w-full rounded border border-gray-300 px-3 text-sm outline-none focus:border-blue-500"
+                                        >
+                                            {SORT_DIRECTION_OPTIONS.map(option => (
+                                                <option key={option.value} value={option.value}>{option.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </form>
     );
 }
-
-
-
-
-
-
-
-

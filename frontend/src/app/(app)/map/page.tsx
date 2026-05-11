@@ -76,7 +76,7 @@ const MapPage = () => {
 
                         <div className="pointer-events-auto absolute left-4 right-4 top-4 z-[1000] mx-auto max-w-5xl [&>form]:border-0 [&>form]:bg-transparent [&>form]:p-0 [&>form]:shadow-none">
                             <EventSearchAndFilters
-                                value={draftFilters}
+                                filters={draftFilters}
                                 onChangeAction={(nextValue) => setDraftFilters(nextValue)}
                                 onSubmitAction={handleApplyFilters}
                                 onResetAction={handleResetFilters}
