@@ -1,39 +1,47 @@
-'use client'
+'use client';
 
-import Button from '@/components/Button'
-import Input from '@/components/Input'
-import InputError from '@/components/InputError'
-import Label from '@/components/Label'
-import Link from 'next/link'
-import { useAuth } from '@/hooks/auth'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus'
+import Button from '@/components/Button';
+import Input from '@/components/Input';
+import InputError from '@/components/InputError';
+import Label from '@/components/Label';
+import Link from 'next/link';
+import { useAuth } from '@/hooks/auth';
+import { useEffect, useState, useContext } from 'react';
+import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus';
+import { SnackbarContext } from '@/context/SnackbarContext'
+
+interface LoginErrors {
+    email: string[];
+    password: string[];
+}
 
 const Login = () => {
-    const router = useRouter()
+    const addSnackbarMessage = useContext(SnackbarContext);
 
     const { login } = useAuth({
         middleware: 'guest',
         redirectIfAuthenticated: '/',
-    })
+    });
 
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [shouldRemember, setShouldRemember] = useState(false)
-    const [errors, setErrors] = useState([])
-    const [status, setStatus] = useState(null)
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [shouldRemember, setShouldRemember] = useState(false);
+    const [errors, setErrors] = useState<LoginErrors>(null);
+    const [status, setStatus] = useState<string>(null);
 
     useEffect(() => {
-        if (router.reset?.length > 0 && errors.length === 0) {
-            setStatus(atob(router.reset))
+        const params = new URLSearchParams(window.location.search);
+        const reset = params.get('reset');
+
+        if (reset && !errors) {
+            setStatus(decodeURIComponent(reset));
         } else {
-            setStatus(null)
+            setStatus(null);
         }
-    })
+    }, []);
 
     const submitForm = async event => {
-        event.preventDefault()
+        event.preventDefault();
 
         login({
             email,
@@ -41,13 +49,21 @@ const Login = () => {
             remember: shouldRemember,
             setErrors,
             setStatus,
-        })
+        });
     }
+
+    useEffect(() => {
+        if (!errors) return;
+
+        Object.values(errors).forEach(messages => {
+            messages?.forEach(message => addSnackbarMessage(message, 'error'));
+        });
+    }, [errors]);
 
     return (
         <>
             <AuthSessionStatus className="mb-4" status={status} />
-            <form onSubmit={submitForm}>
+            <form onSubmit={submitForm} className="space-y-4 sm:space-y-5">
                 {/* Email Address */}
                 <div>
                     <Label htmlFor="email">E-pasts</Label>
@@ -62,11 +78,11 @@ const Login = () => {
                         autoFocus
                     />
 
-                    <InputError messages={errors.email} className="mt-2" />
+                    <InputError messages={errors?.email} className="mt-2" />
                 </div>
 
                 {/* Password */}
-                <div className="mt-4">
+                <div>
                     <Label htmlFor="password">Parole</Label>
 
                     <Input
@@ -80,13 +96,13 @@ const Login = () => {
                     />
 
                     <InputError
-                        messages={errors.password}
+                        messages={errors?.password}
                         className="mt-2"
                     />
                 </div>
 
                 {/* Remember Me */}
-                <div className="block mt-4">
+                <div className="block">
                     <label
                         htmlFor="remember_me"
                         className="inline-flex items-center">
@@ -106,14 +122,14 @@ const Login = () => {
                     </label>
                 </div>
 
-                <div className="flex items-center justify-end mt-4">
+                <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-1">
                     <Link
                         href="/forgot-password"
-                        className="underline text-sm text-gray-600 hover:text-gray-900">
+                        className="underline text-sm text-gray-600 hover:text-gray-900 text-center sm:text-left">
                         Aizmirsāt paroli?
                     </Link>
 
-                    <Button className="ml-3">Pieslēgties</Button>
+                    <Button className="w-full sm:w-auto">Pieslēgties</Button>
                 </div>
             </form>
         </>

@@ -103,17 +103,17 @@ export const useAuth = ({
     }
 
     const register = async ({ setErrors, ...props }) => {
-        await csrf()
+        await csrf();
 
-        setErrors([])
+        setErrors([]);
 
         axios
             .post(`/api/register`, props)
             .then(() => mutate())
             .catch(error => {
-                if (error.response.status !== 422) throw error
+                if (error.response.status !== 422) throw error;
 
-                setErrors(error.response.data.errors)
+                setErrors(error.response.data.errors);
             });
     }
 
@@ -125,7 +125,7 @@ export const useAuth = ({
 
         const response = await axios
             .post('/api/login', props, { withCredentials: true })
-            .catch(error => {
+            .catch((error) => {
                 if (error.response.status !== 422) throw error;
 
                 setErrors(error.response.data.errors);
@@ -144,43 +144,43 @@ export const useAuth = ({
     }
 
     const forgotPassword = async ({ setErrors, setStatus, email }) => {
-        await csrf()
+        await csrf();
 
-        setErrors([])
-        setStatus(null)
+        setErrors([]);
+        setStatus(null);
 
         axios
             .post('/api/forgot-password', { email })
             .then(response => setStatus(response.data.status))
             .catch(error => {
-                if (error.response.status !== 422) throw error
+                if (error.response.status !== 422) throw error;
 
-                setErrors(error.response.data.errors)
-            })
+                setErrors(error.response.data.errors);
+            });
     }
 
     const resetPassword = async ({ setErrors, setStatus, ...props }) => {
-        await csrf()
+        await csrf();
 
-        setErrors([])
-        setStatus(null)
+        setErrors([]);
+        setStatus(null);
 
         axios
             .post('/api/reset-password', { token: params.token, ...props })
             .then(response =>
-                router.push('/login?reset=' + btoa(response.data.status)),
+                router.push('/login?reset=' + encodeURIComponent(response.data.status)),
             )
             .catch(error => {
-                if (error.response.status !== 422) throw error
+                if (error.response.status !== 422) throw error;
 
-                setErrors(error.response.data.errors)
-            })
+                setErrors(error.response.data.errors);
+            });
     }
 
     const resendEmailVerification = ({ setStatus }) => {
         axios
             .post('/api/email/verification-notification')
-            .then(response => setStatus(response.data.status))
+            .then(response => setStatus(response.data.status));
     }
 
     const logout = async () => {
@@ -196,24 +196,30 @@ export const useAuth = ({
     }
 
     useEffect(() => {
-        // Still loading — don't redirect yet
+        // Still loading - don't redirect yet
         if (user === undefined && !error) return;
 
-        if (middleware === 'guest' && redirectIfAuthenticated && user){
+        if (middleware === 'guest'
+            && redirectIfAuthenticated && user){
             router.push(redirectIfAuthenticated);
         }
 
-        if (middleware === 'auth' && (user && !user.email_verified_at)) {
+        // If user email is not verified -> redirect to verify-email page
+        if (user && !user.email_verified_at) {
             router.push('/verify-email');
         }
 
-        if (
-            window.location.pathname === '/verify-email' &&
-            user?.email_verified_at
-        ) {
+        // If user has verified email and on verify-email page -> redirect
+        if (window.location.pathname === '/verify-email'
+            && (user && user.email_verified_at))
+        {
             router.push(redirectIfAuthenticated);
         }
+
+        // If user must be authenticated and error occured -> logout
         if (middleware === 'auth' && error) logout();
+
+        // If user must be authenticated and user is not, redirect to main page
         if (middleware === 'auth' && !user)
             router.push('/');
     }, [user, error])

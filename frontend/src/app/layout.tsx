@@ -5,6 +5,7 @@ import { Nunito } from 'next/font/google';
 import '@/app/global.css';
 import { useAuth } from '@/hooks/auth';
 import Navigation from '@/components/Navigation';
+import { SnackbarProvider } from '@/context/SnackbarContext';
 
 const nunitoFont = Nunito({
     subsets: ['latin-ext'],
@@ -21,15 +22,17 @@ const RootLayout = ({
     return (
         <html lang="en" className={nunitoFont.className}>
             <body className="min-h-screen bg-white">
-                <div className="flex flex-col h-screen">
-                    <Navigation user={user} />
+                <SnackbarProvider>
+                    <div className="flex flex-col h-screen">
+                        <Navigation user={user} />
 
-                    <main
-                        className="flex-1"
-                    >
-                        {children}
-                    </main>
-                </div>
+                        <main
+                            className="flex-1"
+                        >
+                            {children}
+                        </main>
+                    </div>
+                </SnackbarProvider>
             </body>
 
         </html>

@@ -1,28 +1,45 @@
-'use client'
+'use client';
 
-import Button from '@/components/Button'
-import Input from '@/components/Input'
-import InputError from '@/components/InputError'
-import Label from '@/components/Label'
-import { useAuth } from '@/hooks/auth'
-import { useState } from 'react'
-import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus'
+import Button from '@/components/Button';
+import Input from '@/components/Input';
+import InputError from '@/components/InputError';
+import Label from '@/components/Label';
+import { useAuth } from '@/hooks/auth';
+import { useContext, useEffect, useState } from 'react';
+import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus';
+import { SnackbarContext } from '@/context/SnackbarContext';
+
+
+interface ForgotPasswordErrors {
+    email: string[];
+}
 
 const Page = () => {
+    const addSnackbarMessage = useContext(SnackbarContext);
+
     const { forgotPassword } = useAuth({
         middleware: 'guest',
         redirectIfAuthenticated: '/',
-    })
+    });
 
-    const [email, setEmail] = useState('')
-    const [errors, setErrors] = useState([])
-    const [status, setStatus] = useState(null)
+    const [email, setEmail] = useState('');
+    const [errors, setErrors] = useState<ForgotPasswordErrors>(null);
+    const [status, setStatus] = useState(null);
 
     const submitForm = event => {
-        event.preventDefault()
+        event.preventDefault();
 
-        forgotPassword({ email, setErrors, setStatus })
+        forgotPassword({ email, setErrors, setStatus });
     }
+
+    // Show all errors in snackbar
+    useEffect(() => {
+        if (!errors) return;
+
+        Object.values(errors).forEach(messages => {
+            messages?.forEach(message => addSnackbarMessage(message, 'error'));
+        });
+    }, [errors]);
 
     return (
         <>
@@ -50,7 +67,7 @@ const Page = () => {
                         autoFocus
                     />
 
-                    <InputError messages={errors.email} className="mt-2" />
+                    <InputError messages={errors?.email} className="mt-2" />
                 </div>
 
                 <div className="flex items-center justify-end mt-4">

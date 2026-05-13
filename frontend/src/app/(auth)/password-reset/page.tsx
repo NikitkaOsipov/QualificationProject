@@ -1,29 +1,37 @@
-'use client'
+'use client';
 
-import Button from '@/components/Button'
-import Input from '@/components/Input'
-import InputError from '@/components/InputError'
-import Label from '@/components/Label'
-import { useAuth } from '@/hooks/auth'
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus'
+import Button from '@/components/Button';
+import Input from '@/components/Input';
+import InputError from '@/components/InputError';
+import Label from '@/components/Label';
+import { useAuth } from '@/hooks/auth';
+import { useContext, useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation';
+import AuthSessionStatus from '@/app/(auth)/AuthSessionStatus';
+import { SnackbarContext } from '@/context/SnackbarContext';
+
+interface PasswordResetErrors {
+    email: string[];
+    password: string[];
+    password_confirmation: string[];
+}
 
 const PasswordReset = () => {
-    const searchParams = useSearchParams()
+    const addSnackbarMessage = useContext(SnackbarContext);
+    const searchParams = useSearchParams();
 
-    const { resetPassword } = useAuth({ middleware: 'guest' })
+    const { resetPassword } = useAuth({ middleware: 'guest' });
 
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [passwordConfirmation, setPasswordConfirmation] = useState('')
-    const [errors, setErrors] = useState([])
-    const [status, setStatus] = useState(null)
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordConfirmation, setPasswordConfirmation] = useState('');
+    const [errors, setErrors] = useState<PasswordResetErrors>(null);
+    const [status, setStatus] = useState(null);
 
     const token = searchParams.get('token');
 
     const submitForm = event => {
-        event.preventDefault()
+        event.preventDefault();
 
         resetPassword({
             email,
@@ -32,16 +40,24 @@ const PasswordReset = () => {
             password_confirmation: passwordConfirmation,
             setErrors,
             setStatus,
-        })
+        });
     }
 
     useEffect(() => {
-        setEmail(searchParams.get('email'))
-    }, [searchParams.get('email')])
+        setEmail(searchParams.get('email'));
+    }, [searchParams.get('email')]);
 
     if (!token) {
         return <p>Nederīga vai noilgusi paroles atjaunošanas saite.</p>
     }
+
+    useEffect(() => {
+        if (!errors) return;
+
+        Object.values(errors).forEach(messages => {
+            messages?.forEach(message => addSnackbarMessage(message, 'error'));
+        });
+    }, [errors]);
 
     return (
         <>
@@ -63,7 +79,7 @@ const PasswordReset = () => {
                         autoFocus
                     />
 
-                    <InputError messages={errors.email} className="mt-2" />
+                    <InputError messages={errors?.email} className="mt-2" />
                 </div>
 
                 {/* Password */}
@@ -79,7 +95,7 @@ const PasswordReset = () => {
                     />
 
                     <InputError
-                        messages={errors.password}
+                        messages={errors?.password}
                         className="mt-2"
                     />
                 </div>
@@ -102,7 +118,7 @@ const PasswordReset = () => {
                     />
 
                     <InputError
-                        messages={errors.password_confirmation}
+                        messages={errors?.password_confirmation}
                         className="mt-2"
                     />
                 </div>

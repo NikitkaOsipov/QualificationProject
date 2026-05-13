@@ -1,27 +1,37 @@
-'use client'
+'use client';
 
-import Button from '@/components/Button'
-import Input from '@/components/Input'
-import InputError from '@/components/InputError'
-import Label from '@/components/Label'
-import Link from 'next/link'
-import { useAuth } from '@/hooks/auth'
-import { useState } from 'react'
+import Button from '@/components/Button';
+import Input from '@/components/Input';
+import InputError from '@/components/InputError';
+import Label from '@/components/Label';
+import Link from 'next/link';
+import { useAuth } from '@/hooks/auth';
+import { useContext, useState, useEffect } from 'react'
+import { SnackbarContext } from '@/context/SnackbarContext'
+
+interface RegisterErrors {
+    name: string[];
+    email: string[];
+    password: string[];
+    password_confirmation: string[];
+}
 
 const Page = () => {
+    const addSnackbarMessage = useContext(SnackbarContext);
+
     const { register } = useAuth({
         middleware: 'guest',
         redirectIfAuthenticated: '/',
-    })
+    });
 
-    const [name, setName] = useState('')
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [passwordConfirmation, setPasswordConfirmation] = useState('')
-    const [errors, setErrors] = useState([])
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordConfirmation, setPasswordConfirmation] = useState('');
+    const [errors, setErrors] = useState<RegisterErrors>(null);
 
     const submitForm = event => {
-        event.preventDefault()
+        event.preventDefault();
 
         register({
             name,
@@ -29,8 +39,16 @@ const Page = () => {
             password,
             password_confirmation: passwordConfirmation,
             setErrors,
-        })
+        });
     }
+
+    useEffect(() => {
+        if (!errors) return;
+
+        Object.values(errors).forEach(messages => {
+            messages?.forEach(message => addSnackbarMessage(message, 'error'));
+        });
+    }, [errors]);
 
     return (
         <form onSubmit={submitForm}>
@@ -48,7 +66,7 @@ const Page = () => {
                     autoFocus
                 />
 
-                <InputError messages={errors.name} className="mt-2" />
+                <InputError messages={errors?.name} className="mt-2" />
             </div>
 
             {/* Email Address */}
@@ -64,7 +82,7 @@ const Page = () => {
                     required
                 />
 
-                <InputError messages={errors.email} className="mt-2" />
+                <InputError messages={errors?.email} className="mt-2" />
             </div>
 
             {/* Password */}
@@ -81,7 +99,7 @@ const Page = () => {
                     autoComplete="new-password"
                 />
 
-                <InputError messages={errors.password} className="mt-2" />
+                <InputError messages={errors?.password} className="mt-2" />
             </div>
 
             {/* Confirm Password */}
@@ -102,7 +120,7 @@ const Page = () => {
                 />
 
                 <InputError
-                    messages={errors.password_confirmation}
+                    messages={errors?.password_confirmation}
                     className="mt-2"
                 />
             </div>
@@ -120,4 +138,4 @@ const Page = () => {
     )
 }
 
-export default Page
+export default Page;
