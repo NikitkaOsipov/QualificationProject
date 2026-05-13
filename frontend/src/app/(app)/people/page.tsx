@@ -11,7 +11,7 @@ import type { User } from '@/utils/Types';
 const PAGE_SIZE = 12;
 
 export default function PeoplePage() {
-    const { user } = useAuth({ middleware: 'auth' });
+    const { user } = useAuth();
 
     const [search, setSearch] = useState('');
     const [users, setUsers] = useState<User[]>([]);

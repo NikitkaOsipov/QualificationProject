@@ -254,10 +254,17 @@ class UserController extends Controller
         $search = trim($validated['search'] ?? '');
         $perPage = (int) ($validated['per_page'] ?? 15);
 
-        $query = User::query()
-            ->select(['id', 'name', 'email', 'avatar_path'])
-            ->where('id', '!=', $authUser->id);
+        $query = null;
 
+        if ($authUser) {
+            $query = User::query()
+                ->select(['id', 'name', 'email', 'avatar_path'])
+                ->where('id', '!=', $authUser->id);
+        } else
+        {
+            $query = User::query()
+                ->select(['id', 'name', 'email', 'avatar_path']);
+        }
 
         if ($search !== '') {
             $query->where(function ($builder) use ($search) {
