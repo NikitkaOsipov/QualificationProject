@@ -21,36 +21,22 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): JsonResponse
     {
-        if (!Auth::guard('web')->attempt($request->only('email', 'password'))) {
-
-            return response()->json(['message' => 'Invalid credentials'], 401);
-        }
+        $request->authenticate();
 
         $user = Auth::user();
 
-        // 🟢 SPA → session cookie already created, just return user
+        // SPA - session cookie already created, just return user
         if ($request->expectsJson() === false) {
             return response()->json($user);
         }
 
-        // 🟢 Mobile → create token
+        // Mobile - create token
         $token = $user->createToken(config('app.name'))->plainTextToken;
 
         return response()->json([
             'user' => $user,
             'token' => $token,
         ]);
-
-
-
-////        Mail::to($request->email)->send(new WelcomeMail($request->all()));
-//        $request->authenticate();
-//
-//        $token = $request->user()->createToken(config('app.name'))->plainTextToken;
-//
-//        return response()->json([
-//            'token' => $token,
-//        ]);
     }
 
     /**

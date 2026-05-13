@@ -28,22 +28,9 @@ const Navigation = ({ user }) => {
                         {/* Logo */}
                         <div className="flex-shrink-0 flex items-center">
                             <Link href="/">
-                                <ApplicationLogo className="block h-10 w-auto fill-current text-gray-600" />
+                                <ApplicationLogo className="block h-12 w-14 fill-current text-gray-600" />
                             </Link>
                         </div>
-
-                        {/*/!* Search *!/*/}
-                        {/*<div className="ml-4 hidden sm:flex sm:items-center sm:ml-4">*/}
-                        {/*    <TextField*/}
-                        {/*        size="small"*/}
-                        {/*        placeholder="Search..."*/}
-                        {/*        value={searchValue}*/}
-                        {/*        onChange={(e) => setSearchValue(e.target.value)}*/}
-                        {/*        variant="outlined"*/}
-                        {/*        className="w-64"*/}
-                        {/*        slotProps={{ input: { className: 'h-8' } }}*/}
-                        {/*    />*/}
-                        {/*</div>*/}
 
                         {/* Navigation Links */}
                         <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">

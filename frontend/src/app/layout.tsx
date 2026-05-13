@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/auth';
 import Navigation from '@/components/Navigation';
 
 const nunitoFont = Nunito({
-    subsets: ['latin'],
+    subsets: ['latin-ext'],
     display: 'swap',
 });
 
@@ -26,7 +26,9 @@ const RootLayout = ({
 
                     <main
                         className="flex-1"
-                    >{children}</main>
+                    >
+                        {children}
+                    </main>
                 </div>
             </body>
 
