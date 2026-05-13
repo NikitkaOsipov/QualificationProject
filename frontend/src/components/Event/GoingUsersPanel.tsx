@@ -35,7 +35,7 @@ export default function GoingUsersPanel({ goingCount, goingUsers }: GoingUsersPa
                 }`}
             >
                 <h3 className="font-semibold mb-3">
-                    Draugi, kas piedalās
+                    Cilvēki, kas piedalās
                 </h3>
 
                 {goingFriendUsers.length > 0 && (

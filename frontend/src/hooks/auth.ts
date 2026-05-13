@@ -126,9 +126,9 @@ export const useAuth = ({
         const response = await axios
             .post('/api/login', props, { withCredentials: true })
             .catch(error => {
-                if (error.response.status !== 422) throw error
+                if (error.response.status !== 422) throw error;
 
-                setErrors(error.response.data.errors)
+                setErrors(error.response.data.errors);
             });
 
         if (isNative && response) {
