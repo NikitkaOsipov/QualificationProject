@@ -9,3 +9,4 @@ const AuthCard = ({ logo, children }) => (
 )
 
 export default AuthCard
+
