@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+.npm
+
+# Laravel
+vendor
+.env
+.env.*
+bootstrap/cache/*
+storage/*
+
+# IDE
+.vscode
+.idea
+.DS_Store
+*.swp
+*.swo
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Misc
+.editorconfig
+README.md
+LICENSE
+*.md
+ssl/
+backup.sql
+
