@@ -13,15 +13,13 @@ RUN apk add --no-cache \
     bash
 
 # Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+
 RUN docker-php-ext-install \
-    pdo \
     pdo_pgsql \
     gd \
     bcmath \
-    ctype \
-    json \
-    mbstring \
-    tokenizer
+    mbstring
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
