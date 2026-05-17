@@ -107,14 +107,29 @@ export const useAuth = ({
 
         setErrors([]);
 
-        axios
+        const response = await axios
             .post(`/api/register`, props)
-            .then(() => mutate())
             .catch(error => {
                 if (error.response.status !== 422) throw error;
 
                 setErrors(error.response.data.errors);
             });
+
+        if (isNative && response) {
+            const token = response.data?.token;
+
+            if (!token) {
+                await mutate();
+                return;
+            }
+
+            await Preferences.set({
+                key: 'auth_token',
+                value: token,
+            });
+        }
+
+        await mutate();
     }
 
     const login = async ({ setErrors, setStatus, ...props }) => {
@@ -132,7 +147,12 @@ export const useAuth = ({
             });
 
         if (isNative && response) {
-            const token = response.data.token;
+            const token = response.data?.token;
+
+            if (!token) {
+                await mutate();
+                return;
+            }
 
             await Preferences.set({
                 key: 'auth_token',

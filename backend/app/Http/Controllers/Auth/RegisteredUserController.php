@@ -37,9 +37,9 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+        $isNativeClient = $request->header('X-Client-Platform') === 'native';
 
-        if ($request->expectsJson() === false) {
-
+        if (!$isNativeClient) {
             try {
                 Log::info('Session ID:', [$request->session()->getId()]);
             } catch (Exception $e) {

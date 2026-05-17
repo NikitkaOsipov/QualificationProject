@@ -24,13 +24,14 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $user = Auth::user();
+        $isNativeClient = $request->header('X-Client-Platform') === 'native';
 
-        // SPA - session cookie already created, just return user
-        if ($request->expectsJson() === false) {
+        // Web SPA: session cookie auth only.
+        if (!$isNativeClient) {
             return response()->json($user);
         }
 
-        // Mobile - create token
+        // Native app: return API token.
         $token = $user->createToken(config('app.name'))->plainTextToken;
 
         return response()->json([
