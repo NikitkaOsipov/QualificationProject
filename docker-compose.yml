@@ -38,6 +38,16 @@ services:
       DB_DATABASE: ${DB_DATABASE:-pasakumu_karte}
       DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      BROADCAST_CONNECTION: ${BROADCAST_CONNECTION:-reverb}
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-database}
+      REVERB_APP_ID: ${REVERB_APP_ID:-pasakumu-karte-id}
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-pasakumu-karte-key}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-pasakumu-karte-secret}
+      REVERB_HOST: ${REVERB_HOST:-reverb}
+      REVERB_PORT: ${REVERB_PORT:-8080}
+      REVERB_SCHEME: ${REVERB_SCHEME:-http}
+      REVERB_SERVER_HOST: ${REVERB_SERVER_HOST:-0.0.0.0}
+      REVERB_SERVER_PORT: ${REVERB_SERVER_PORT:-8080}
       MAIL_MAILER: ${MAIL_MAILER:-log}
       MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@birabidon.lv}
       SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-birabidon.lv}
@@ -52,6 +62,94 @@ services:
       - app_network
     restart: unless-stopped
 
+  #  Laravel Queue Worker
+  queue:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: laravel_queue
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    environment:
+      APP_NAME: ${APP_NAME:-PasakumuKarte}
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-https://birabidon.lv}
+      APP_KEY: ${APP_KEY}
+      FRONTEND_URL: ${FRONTEND_URL:-https://birabidon.lv}
+      DB_CONNECTION: pgsql
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-database}
+      BROADCAST_CONNECTION: ${BROADCAST_CONNECTION:-reverb}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-pasakumu_karte}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      REVERB_APP_ID: ${REVERB_APP_ID:-pasakumu-karte-id}
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-pasakumu-karte-key}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-pasakumu-karte-secret}
+      REVERB_HOST: ${REVERB_HOST:-reverb}
+      REVERB_PORT: ${REVERB_PORT:-8080}
+      REVERB_SCHEME: ${REVERB_SCHEME:-http}
+      REVERB_SERVER_HOST: ${REVERB_SERVER_HOST:-0.0.0.0}
+      REVERB_SERVER_PORT: ${REVERB_SERVER_PORT:-8080}
+      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-birabidon.lv}
+      SESSION_DOMAIN: ${SESSION_DOMAIN:-birabidon.lv}
+    volumes:
+      - ./backend/storage:/app/storage
+      - ./backend/bootstrap/cache:/app/bootstrap/cache
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  # Laravel Reverb WebSocket Server
+  reverb:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: laravel_reverb
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    environment:
+      APP_NAME: ${APP_NAME:-PasakumuKarte}
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-https://birabidon.lv}
+      APP_KEY: ${APP_KEY}
+      FRONTEND_URL: ${FRONTEND_URL:-https://birabidon.lv}
+      DB_CONNECTION: pgsql
+      QUEUE_CONNECTION: ${QUEUE_CONNECTION:-database}
+      BROADCAST_CONNECTION: ${BROADCAST_CONNECTION:-reverb}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-pasakumu_karte}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      REVERB_APP_ID: ${REVERB_APP_ID:-pasakumu-karte-id}
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-pasakumu-karte-key}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-pasakumu-karte-secret}
+      REVERB_HOST: ${REVERB_HOST:-reverb}
+      REVERB_PORT: ${REVERB_PORT:-8080}
+      REVERB_SCHEME: ${REVERB_SCHEME:-http}
+      REVERB_SERVER_HOST: ${REVERB_SERVER_HOST:-0.0.0.0}
+      REVERB_SERVER_PORT: ${REVERB_SERVER_PORT:-8080}
+      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-birabidon.lv}
+      SESSION_DOMAIN: ${SESSION_DOMAIN:-birabidon.lv}
+    volumes:
+      - ./backend/storage:/app/storage
+      - ./backend/bootstrap/cache:/app/bootstrap/cache
+    networks:
+      - app_network
+    restart: unless-stopped
+
   # Next.js Frontend
   frontend:
     build:
@@ -59,8 +157,12 @@ services:
       dockerfile: Dockerfile
     container_name: nextjs_app
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://birabidon.lv/api}
-      NEXT_PUBLIC_DOMAIN: ${NEXT_PUBLIC_DOMAIN:-birabidon.lv}
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://birabidon.lv/api}
+      NEXT_PUBLIC_ANDROID_BACKEND_URL: ${NEXT_PUBLIC_ANDROID_BACKEND_URL:-https://birabidon.lv/api}
+      NEXT_PUBLIC_REVERB_APP_KEY: ${NEXT_PUBLIC_REVERB_APP_KEY:-pasakumu-karte-key}
+      NEXT_PUBLIC_REVERB_HOST: ${NEXT_PUBLIC_REVERB_HOST:-birabidon.lv}
+      NEXT_PUBLIC_REVERB_PORT: ${NEXT_PUBLIC_REVERB_PORT:-443}
+      NEXT_PUBLIC_GEOPIFY_API_KEY: ${NEXT_PUBLIC_GEOPIFY_API_KEY:-}
     volumes:
       - ./frontend/public:/app/public
     depends_on:
