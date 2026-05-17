@@ -1,16 +1,18 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.2-fpm-bookworm
 
 # Install system dependencies
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     git \
-    postgresql-dev \
+    libpq-dev \
     libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libonig-dev \
     zip \
     unzip \
-    bash
+    bash \
+ && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
@@ -29,6 +31,15 @@ WORKDIR /app
 # Copy existing application code
 COPY . .
 
+# Create cache directories before Composer runs Laravel scripts
+RUN mkdir -p /app/bootstrap/cache \
+    /app/storage/framework/cache/data \
+    /app/storage/framework/sessions \
+    /app/storage/framework/views \
+    /app/storage/logs \
+ && chown -R www-data:www-data /app/bootstrap /app/storage \
+ && chmod -R 755 /app/bootstrap /app/storage
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
@@ -36,9 +47,6 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 RUN chmod -R 755 /app/storage /app/bootstrap/cache
 
-# Create cache directories if they don't exist
-RUN mkdir -p /app/bootstrap/cache /app/storage/logs
-RUN chown -R www-data:www-data /app/bootstrap /app/storage
 
 EXPOSE 9000
 
