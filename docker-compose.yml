@@ -47,7 +47,14 @@ services:
       REVERB_SERVER_HOST: ${REVERB_SERVER_HOST:-0.0.0.0}
       REVERB_SERVER_PORT: ${REVERB_SERVER_PORT:-8080}
       MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_SCHEME: ${MAIL_SCHEME:-smtp}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-tls}
       MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@birabidon.lat}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-PasakumuKarte}
       SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-birabidon.lat}
       SESSION_DOMAIN: ${SESSION_DOMAIN:-birabidon.lat}
     volumes:
@@ -97,6 +104,15 @@ services:
       REVERB_SERVER_PORT: ${REVERB_SERVER_PORT:-8080}
       SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-birabidon.lat}
       SESSION_DOMAIN: ${SESSION_DOMAIN:-birabidon.lat}
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_SCHEME: ${MAIL_SCHEME:-smtp}
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-tls}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@birabidon.lat}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-PasakumuKarte}
     volumes:
       - ./backend/storage:/app/storage
       - ./backend/bootstrap/cache:/app/bootstrap/cache
