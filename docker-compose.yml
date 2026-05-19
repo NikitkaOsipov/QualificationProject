@@ -172,10 +172,17 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://birabidon.lat}
+        NEXT_PUBLIC_ANDROID_BACKEND_URL: ${NEXT_PUBLIC_ANDROID_BACKEND_URL:-https://birabidon.lat}
+        NEXT_PUBLIC_REVERB_APP_KEY: ${NEXT_PUBLIC_REVERB_APP_KEY:-pasakumu-karte-key}
+        NEXT_PUBLIC_REVERB_HOST: ${NEXT_PUBLIC_REVERB_HOST:-birabidon.lat}
+        NEXT_PUBLIC_REVERB_PORT: ${NEXT_PUBLIC_REVERB_PORT:-443}
+        NEXT_PUBLIC_GEOPIFY_API_KEY: ${NEXT_PUBLIC_GEOPIFY_API_KEY:-}
     container_name: nextjs_app
     environment:
-      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://birabidon.lat/api}
-      NEXT_PUBLIC_ANDROID_BACKEND_URL: ${NEXT_PUBLIC_ANDROID_BACKEND_URL:-https://birabidon.lat/api}
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-https://birabidon.lat}
+      NEXT_PUBLIC_ANDROID_BACKEND_URL: ${NEXT_PUBLIC_ANDROID_BACKEND_URL:-https://birabidon.lat}
       NEXT_PUBLIC_REVERB_APP_KEY: ${NEXT_PUBLIC_REVERB_APP_KEY:-pasakumu-karte-key}
       NEXT_PUBLIC_REVERB_HOST: ${NEXT_PUBLIC_REVERB_HOST:-birabidon.lat}
       NEXT_PUBLIC_REVERB_PORT: ${NEXT_PUBLIC_REVERB_PORT:-443}
