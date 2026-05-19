@@ -21,9 +21,15 @@ abstract class Controller
         $avatarPath = null;
 
         if ($request->hasFile('avatar')) {
-            $avatarPath = Storage::disk('public')->put('avatars', $request->avatar);
+            $avatarPath = Storage::disk('public')->putFile('avatars', $request->file('avatar'));
 
-            $fields['avatar'] = $avatarPath;
+            if ($avatarPath === false) {
+                return redirect()->back()->with([
+                    'error' => 'Failed to upload avatar. Please try again later.',
+                ]);
+            }
+
+            $fields['avatar_path'] = $avatarPath;
         }
 
         try {

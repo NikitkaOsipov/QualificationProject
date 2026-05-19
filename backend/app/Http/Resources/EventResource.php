@@ -14,6 +14,11 @@ class EventResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $backgroundImagePath = $this->background_image_path;
+        if ($backgroundImagePath === '0' || $backgroundImagePath === 0 || $backgroundImagePath === false) {
+            $backgroundImagePath = null;
+        }
+
         return [
             'id' => $this->id,
             'title' => $this->title,
@@ -30,7 +35,7 @@ class EventResource extends JsonResource
             'end_date' => $this->end_date,
             'price' => $this->price,
             'description' => $this->description,
-            'background_image_path' => $this->background_image_path,
+            'background_image_path' => $backgroundImagePath,
             'event_access_type_id' => $this->event_access_type_id,
             'event_type_id' => $this->event_type_id,
             'event_visibility_id' => $this->event_visibility_id,

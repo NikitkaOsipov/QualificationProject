@@ -113,7 +113,7 @@ class EventController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'nullable|date',
             'price' => 'nullable|numeric',
-            'background_image' => 'nullable|file|image|mimes:jpeg,png,jpg,svg|max:2048',
+            'background_image' => 'nullable|file|image|mimes:jpeg,png,jpg,svg,webp|max:2048',
             'lat' => 'required|numeric',
             'lng' => 'required|numeric',
             'categories' => 'nullable|array',
@@ -155,7 +155,16 @@ class EventController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('background_image')) {
-            $imagePath = Storage::disk('public')->put('BackgroundImages', $request->background_image);
+            $imagePath = Storage::disk('public')->putFile('BackgroundImages', $request->file('background_image'));
+
+            if ($imagePath === false) {
+                Log::error('Failed to persist event background image to public disk.');
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to upload background image. Please try again.',
+                ], 500);
+            }
 
             $fields['background_image_path'] = $imagePath;
         }
