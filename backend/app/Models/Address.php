@@ -15,6 +15,14 @@ class Address extends Model
         'name',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'lat' => 'float',
+            'lng' => 'float',
+        ];
+    }
+
     public function events() {
         return $this->hasMany(Event::class);
     }

@@ -36,6 +36,11 @@ function formatEventDate(start?: string | Date, end?: string | Date) {
 const EventPreview = ({isOpen, toggleModal, event}: EventPreviewProps) => {
     const router = useRouter();
 
+    const fixCoordinateNumber = (value: unknown): string => {
+        const numeric = typeof value === 'number' ? value : Number(value);
+        return numeric ? numeric.toFixed(4) : '0.0000';
+    };
+
     const handleGoToEvent = () => {
         if (event?.id) {
             router.push(`/event?id=${event.id}`);
@@ -102,7 +107,7 @@ const EventPreview = ({isOpen, toggleModal, event}: EventPreviewProps) => {
                     {/* Coordinates */}
                     <div className="border-t pt-3">
                         <p className="text-xs text-gray-500">
-                            {event.address.lat.toFixed(4)}, {event.address.lng.toFixed(4)}
+                            {fixCoordinateNumber(event.address.lat)}, {fixCoordinateNumber(event.address.lng)}
                         </p>
                     </div>
 

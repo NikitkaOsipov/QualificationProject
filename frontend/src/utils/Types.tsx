@@ -65,8 +65,8 @@ export interface UserProfile {
 
 export interface Address {
     name: string;
-    lat: number;
-    lng: number;
+    lat: number | string;
+    lng: number | string;
 }
 
 export interface EventType {

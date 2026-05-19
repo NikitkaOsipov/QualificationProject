@@ -11,6 +11,10 @@ export type MarkerMapProps = MapContainerProps & {
 }
 
 const MapPage = ({markers, onMarkerClick, ...props}: MarkerMapProps) => {
+    const toCoordinate = (value: unknown): number => {
+        const numeric = typeof value === 'number' ? value : Number(value);
+        return numeric ? numeric : 0;
+    };
 
     return (
         <>
@@ -20,7 +24,7 @@ const MapPage = ({markers, onMarkerClick, ...props}: MarkerMapProps) => {
                 { markers ? markers.map((m, index) =>
                     <Marker
                         key={index}
-                        position={[m.address.lat, m.address.lng]}
+                        position={[toCoordinate(m.address.lat), toCoordinate(m.address.lng)]}
                         eventHandlers={{ click: () => onMarkerClick(m) }}>
                     </Marker>) : <></>
                 }
