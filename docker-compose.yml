@@ -59,7 +59,6 @@ services:
       SESSION_DOMAIN: ${SESSION_DOMAIN:-birabidon.lat}
     volumes:
       - ./backend/storage:/app/storage
-      - ./backend/bootstrap/cache:/app/bootstrap/cache
     depends_on:
       postgres:
         condition: service_healthy
@@ -115,7 +114,6 @@ services:
       MAIL_FROM_NAME: ${MAIL_FROM_NAME:-PasakumuKarte}
     volumes:
       - ./backend/storage:/app/storage
-      - ./backend/bootstrap/cache:/app/bootstrap/cache
     networks:
       - app_network
     restart: unless-stopped
@@ -159,7 +157,6 @@ services:
       SESSION_DOMAIN: ${SESSION_DOMAIN:-birabidon.lat}
     volumes:
       - ./backend/storage:/app/storage
-      - ./backend/bootstrap/cache:/app/bootstrap/cache
     networks:
       - app_network
     restart: unless-stopped
