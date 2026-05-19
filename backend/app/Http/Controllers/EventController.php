@@ -54,8 +54,10 @@ class EventController extends Controller
             ->all();
         $friendsOnly = (bool) ($validated['friends_only'] ?? false);
         $followingOnly = (bool) ($validated['following_only'] ?? false);
-        $dateFrom = $validated['date_from'] ? Carbon::parse($validated['date_from'])->startOfDay() : null;
-        $dateTo = $validated['date_to'] ? Carbon::parse($validated['date_to'])->endOfDay() : null;
+        $dateFromValue = $validated['date_from'] ?? null;
+        $dateToValue = $validated['date_to'] ?? null;
+        $dateFrom = $dateFromValue ? Carbon::parse($dateFromValue)->startOfDay() : null;
+        $dateTo = $dateToValue ? Carbon::parse($dateToValue)->endOfDay() : null;
         $sortBy = $validated['sort_by'] ?? 'default';
         $sortDirection = $validated['sort_direction'] ?? 'desc';
         $page = max(1, (int) ($validated['page'] ?? 1));
