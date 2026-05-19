@@ -27,6 +27,12 @@ const Page = () => {
                 </div>
             )}
 
+            {status === 'verification-link-failed' && (
+                <div className="mb-4 font-medium text-sm text-red-600">
+                    Neizdevās nosūtīt apstiprināšanas e-pastu. Lūdzu mēģiniet vēlreiz vēlāk.
+                </div>
+            )}
+
             <div className="mt-4 flex items-center justify-between">
                 <Button onClick={() => resendEmailVerification({ setStatus })}>
                     Nosūtīt apstiprināšanas e-pastu vēlreiz

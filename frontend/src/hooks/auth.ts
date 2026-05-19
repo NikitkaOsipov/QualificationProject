@@ -200,7 +200,11 @@ export const useAuth = ({
     const resendEmailVerification = ({ setStatus }) => {
         axios
             .post('/api/email/verification-notification')
-            .then(response => setStatus(response.data.status));
+            .then(response => setStatus(response.data.status))
+            .catch(error => {
+                console.error('Failed to resend verification email:', error);
+                setStatus('verification-link-failed');
+            });
     }
 
     const logout = async () => {
@@ -231,6 +235,7 @@ export const useAuth = ({
 
         // If user has verified email and on verify-email page -> redirect
         if (window.location.pathname === '/verify-email'
+            && middleware === 'auth'
             && (user && user.email_verified_at))
         {
             router.push(redirectIfAuthenticated);
