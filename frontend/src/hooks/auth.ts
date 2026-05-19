@@ -228,10 +228,10 @@ export const useAuth = ({
             router.push(redirectIfAuthenticated);
         }
 
-        // If user email is not verified -> redirect to verify-email page
-        if (user && !user.email_verified_at) {
-            router.push('/verify-email');
-        }
+        // // If user email is not verified -> redirect to verify-email page
+        // if (user && !user.email_verified_at) {
+        //     router.push('/verify-email');
+        // }
 
         // If user has verified email and on verify-email page -> redirect
         if (window.location.pathname === '/verify-email'
