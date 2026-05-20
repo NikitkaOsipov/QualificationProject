@@ -65,36 +65,36 @@ function CommentsSection({ eventId }: Params) {
 
         if (Number.isNaN(date.getTime())) return '';
 
-        const diffSeconds = Math.round((date.getTime() - nowMs) / 1000);
+        const diffSeconds = Math.round((nowMs - date.getTime()) / 1000);
         const absSeconds = Math.abs(diffSeconds);
         const rtf = new Intl.RelativeTimeFormat('lv-LV', { numeric: 'auto' });
 
         if (absSeconds < 60) {
-            return rtf.format(diffSeconds, 'second');
+            return rtf.format(-diffSeconds, 'second');
         }
 
         const diffMinutes = Math.round(diffSeconds / 60);
         if (Math.abs(diffMinutes) < 60) {
-            return rtf.format(diffMinutes, 'minute');
+            return rtf.format(-diffMinutes, 'minute');
         }
 
         const diffHours = Math.round(diffMinutes / 60);
         if (Math.abs(diffHours) < 24) {
-            return rtf.format(diffHours, 'hour');
+            return rtf.format(-diffHours, 'hour');
         }
 
         const diffDays = Math.round(diffHours / 24);
         if (Math.abs(diffDays) < 30) {
-            return rtf.format(diffDays, 'day');
+            return rtf.format(-diffDays, 'day');
         }
 
         const diffMonths = Math.round(diffDays / 30);
         if (Math.abs(diffMonths) < 12) {
-            return rtf.format(diffMonths, 'month');
+            return rtf.format(-diffMonths, 'month');
         }
 
         const diffYears = Math.round(diffMonths / 12);
-        return rtf.format(diffYears, 'year');
+        return rtf.format(-diffYears, 'year');
     }
 
     const isEdited = (comment: Comment) => {
