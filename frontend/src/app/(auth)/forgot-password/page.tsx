@@ -70,8 +70,8 @@ const Page = () => {
                     <InputError messages={errors?.email} className="mt-2" />
                 </div>
 
-                <div className="flex items-center justify-end mt-4">
-                    <Button className="email reset">Nosūtīt paroles atjaunošanas saiti</Button>
+                <div className="flex items-center justify-end mt-4 w-full">
+                    <Button className="w-full sm:w-auto">Nosūtīt paroles atjaunošanas saiti</Button>
                 </div>
             </form>
         </>

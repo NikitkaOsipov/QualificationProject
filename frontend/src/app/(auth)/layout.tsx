@@ -1,14 +1,10 @@
-import Link from 'next/link'
-import AuthCard from '@/app/(auth)/AuthCard'
-import ApplicationLogo from '@/components/ApplicationLogo'
-
-export const metadata = {
-    title: 'Laravel',
-}
+import Link from 'next/link';
+import AuthCard from '@/app/(auth)/AuthCard';
+import ApplicationLogo from '@/components/ApplicationLogo';
 
 const Layout = ({ children }) => {
     return (
-        <div className="h-full">
+        <div className="h-full overflow-hidden">
             <AuthCard
                 logo={
                     <Link href="/" className="hidden md:block">
@@ -18,7 +14,7 @@ const Layout = ({ children }) => {
                 {children}
             </AuthCard>
         </div>
-    )
+    );
 }
 
-export default Layout
+export default Layout;

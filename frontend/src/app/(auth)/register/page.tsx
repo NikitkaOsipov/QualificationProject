@@ -125,14 +125,14 @@ const Page = () => {
                 />
             </div>
 
-            <div className="flex items-center justify-end mt-4">
+            <div className="mt-4 flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:items-center sm:justify-end">
                 <Link
                     href="/login"
-                    className="underline text-sm text-gray-600 hover:text-gray-900">
+                    className="text-center text-sm text-gray-600 underline hover:text-gray-900 sm:text-left">
                     Jau esat reģistrējies?
                 </Link>
 
-                <Button className="ml-4">Reģistrēties</Button>
+                <Button className="w-full sm:w-auto">Reģistrēties</Button>
             </div>
         </form>
     )

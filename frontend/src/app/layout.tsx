@@ -23,7 +23,7 @@ const RootLayout = ({
         <html lang="en" className={nunitoFont.className}>
             <body className="min-h-screen bg-white">
                 <SnackbarProvider>
-                    <div className="flex flex-col h-screen">
+                    <div className="flex min-h-[100dvh] flex-col">
                         <Navigation user={user} />
 
                         <main
