@@ -24,7 +24,7 @@ class FollowedUserEventCreatedNotification extends Notification implements Shoul
 
     public function via(object $notifiable): array
     {
-        if (! $notifiable instanceof User) {
+        if (!$notifiable instanceof User) {
             return [];
         }
 
@@ -34,10 +34,10 @@ class FollowedUserEventCreatedNotification extends Notification implements Shoul
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New event from someone you follow')
-            ->greeting('Hello!')
-            ->line("{$this->creator->name} just created a new event: \"{$this->event->title}\".")
-            ->line('Open the app to view event details.');
+            ->subject('Jauns pasākums no lietotāja, kuram sekojat')
+            ->greeting('Sveiki!')
+            ->line("{$this->creator->name} tikko izveidoja jaunu pasākumu: \"{$this->event->title}\".")
+            ->line('Atveriet lietotni, lai apskatītu pasākuma informāciju.');
     }
 
     public function toBroadcast(object $notifiable): BroadcastMessage
@@ -51,8 +51,8 @@ class FollowedUserEventCreatedNotification extends Notification implements Shoul
     {
         return [
             'notification_type' => NotificationType::FollowedUserEventCreated->value,
-            'title' => 'New event published',
-            'body' => "{$this->creator->name} created \"{$this->event->title}\".",
+            'title' => 'Publicēts jauns pasākums',
+            'body' => "{$this->creator->name} izveidoja pasākumu \"{$this->event->title}\".",
             'actor' => [
                 'id' => $this->creator->id,
                 'name' => $this->creator->name,

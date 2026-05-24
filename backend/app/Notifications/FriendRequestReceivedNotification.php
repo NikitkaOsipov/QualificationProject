@@ -24,7 +24,7 @@ class FriendRequestReceivedNotification extends Notification implements ShouldQu
      */
     public function via(object $notifiable): array
     {
-        if (! $notifiable instanceof User) {
+        if (!$notifiable instanceof User) {
             return [];
         }
 
@@ -34,10 +34,10 @@ class FriendRequestReceivedNotification extends Notification implements ShouldQu
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New friend request')
-            ->greeting('Hello!')
-            ->line("{$this->sender->name} sent you a friend request.")
-            ->line('Open the app to accept or decline the request.');
+            ->subject('Jauns draudzības pieprasījums')
+            ->greeting('Sveiki!')
+            ->line("{$this->sender->name} nosūtīja jums draudzības pieprasījumu.")
+            ->line('Atveriet lietotni, lai pieņemtu vai noraidītu pieprasījumu.');
     }
 
     public function toBroadcast(object $notifiable): BroadcastMessage
@@ -56,8 +56,8 @@ class FriendRequestReceivedNotification extends Notification implements ShouldQu
     {
         return [
             'notification_type' => NotificationType::FriendRequestReceived->value,
-            'title' => 'New friend request',
-            'body' => "{$this->sender->name} sent you a friend request.",
+            'title' => 'Jauns draudzības pieprasījums',
+            'body' => "{$this->sender->name} nosūtīja jums draudzības pieprasījumu.",
             'actor' => [
                 'id' => $this->sender->id,
                 'name' => $this->sender->name,

@@ -24,7 +24,7 @@ class EventParticipationRequestNotification extends Notification implements Shou
 
     public function via(object $notifiable): array
     {
-        if (! $notifiable instanceof User) {
+        if (!$notifiable instanceof User) {
             return [];
         }
 
@@ -34,10 +34,10 @@ class EventParticipationRequestNotification extends Notification implements Shou
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Event participation request')
-            ->greeting('Hello!')
-            ->line("{$this->sender->name} invited you to join \"{$this->event->title}\".")
-            ->line('Open the app to view the event details.');
+            ->subject('Uzaicinājums piedalīties pasākumā')
+            ->greeting('Sveiki!')
+            ->line("{$this->sender->name} uzaicināja jūs pievienoties pasākumam \"{$this->event->title}\".")
+            ->line('Atveriet lietotni, lai apskatītu pasākuma informāciju.');
     }
 
     public function toBroadcast(object $notifiable): BroadcastMessage
@@ -51,8 +51,8 @@ class EventParticipationRequestNotification extends Notification implements Shou
     {
         return [
             'notification_type' => NotificationType::EventParticipationRequest->value,
-            'title' => 'Event participation request',
-            'body' => "{$this->sender->name} invited you to join {$this->event->title}.",
+            'title' => 'Uzaicinājums piedalīties pasākumā',
+            'body' => "{$this->sender->name} uzaicināja jūs pievienoties pasākumam \"{$this->event->title}\".",
             'actor' => [
                 'id' => $this->sender->id,
                 'name' => $this->sender->name,

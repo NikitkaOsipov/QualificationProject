@@ -11,7 +11,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/notifications/{notificationId}', [NotificationController::class, 'delete']);
     Route::delete('/notifications', [NotificationController::class, 'deleteAll']);
 
-    Route::get('/notification-preferences', [NotificationPreferenceController::class, 'index']);
-    Route::put('/notification-preferences/{type}', [NotificationPreferenceController::class, 'update']);
+    Route::get('/notification-preferences', [NotificationPreferenceController::class, 'index'])->middleware('verified');
+    Route::put('/notification-preferences/{type}', [NotificationPreferenceController::class, 'update'])->middleware('verified');
 });
 

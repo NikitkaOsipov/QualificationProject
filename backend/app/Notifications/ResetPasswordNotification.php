@@ -42,17 +42,13 @@ class ResetPasswordNotification extends Notification
             . '&email=' . urlencode($notifiable->getEmailForPasswordReset());
 
         return (new MailMessage)
-            ->subject("Reset Password Notification")
-            ->greeting("Hello!")
-            ->line('You are receiving this email because we received a password reset request for your account.')
-            ->action('Reset Password', $url)
-            ->line('This password reset link will expire in 60 minutes.
-
-                        \nIf you did not request a password reset, no further action is required.
-
-                        Regards,
-                        PasakumuKarte
-                        ');
+            ->subject('Paroles atjaunošanas paziņojums')
+            ->greeting('Sveiki!')
+            ->line('Jūs saņēmāt šo e-pastu, jo tika saņemts pieprasījums atjaunot jūsu konta paroli.')
+            ->action('Atjaunot paroli', $url)
+            ->line('Saites derīguma termiņš beigsies pēc 60 minūtēm.')
+            ->line('Ja jūs nepieprasījāt paroles atjaunošanu, nekāda tālāka rīcība nav nepieciešama.')
+            ->line('Ar cieņu, PasakumuKarte');
     }
 
     /**

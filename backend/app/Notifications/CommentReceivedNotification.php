@@ -37,10 +37,10 @@ class CommentReceivedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New comment on your event')
-            ->greeting('Hello!')
-            ->line("{$this->commenter->name} commented on your event \"{$this->eventTitle}\".")
-            ->line('Open the app to read and reply.');
+            ->subject('Jauns komentārs jūsu pasākumam')
+            ->greeting('Sveiki!')
+            ->line("{$this->commenter->name} komentēja jūsu pasākumu \"{$this->eventTitle}\".")
+            ->line('Atveriet lietotni, lai izlasītu un atbildētu.');
     }
 
     /**
@@ -62,8 +62,8 @@ class CommentReceivedNotification extends Notification implements ShouldQueue
     {
         return [
             'notification_type' => NotificationType::CommentReceived->value,
-            'title' => 'New comment',
-            'body' => "{$this->commenter->name} commented on your event \"{$this->eventTitle}\".",
+            'title' => 'Jauns komentārs',
+            'body' => "{$this->commenter->name} komentēja jūsu pasākumu \"{$this->eventTitle}\".",
             'actor' => [
                 'id' => $this->commenter->id,
                 'name' => $this->commenter->name,
