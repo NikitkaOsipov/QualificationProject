@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AppNotification } from '@/utils/Types';
 import NotificationItem from '@/components/NotificationItem';
 import {
@@ -9,6 +9,7 @@ import {
     deleteAllNotifications,
 } from '@/utils/notification_service';
 import { configureAppEcho, getEcho } from '@/lib/echo';
+import ResponsiveOverlayPanel from '@/components/ResponsiveOverlayPanel';
 
 interface Props {
     user: { id: number | string } | null | undefined;
@@ -21,7 +22,6 @@ const Notifications = ({ user }: Props) => {
     const [notificationOpen, setNotificationOpen] = useState(false);
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const dropdownRef = useRef<HTMLDivElement | null>(null);
 
     const latestNotifications = useMemo(
         () => notifications.slice(0, MAX_VISIBLE_NOTIFICATIONS),
@@ -38,29 +38,6 @@ const Notifications = ({ user }: Props) => {
             data: payload.data,
         };
     };
-
-    // Check if user clicks outside of notification window
-    useEffect(() => {
-        if (!notificationOpen) {
-            return;
-        }
-
-        const handleDocumentPointerDown = (event: PointerEvent) => {
-            const target = event.target as Node | null;
-
-            if (!target || dropdownRef.current?.contains(target)) {
-                return;
-            }
-
-            setNotificationOpen(false);
-        };
-
-        document.addEventListener('pointerdown', handleDocumentPointerDown);
-
-        return () => {
-            document.removeEventListener('pointerdown', handleDocumentPointerDown);
-        };
-    }, [notificationOpen]);
 
     // Fetches notifications if user is logged in
     useEffect(() => {
@@ -185,66 +162,65 @@ const Notifications = ({ user }: Props) => {
         }
     };
 
-
     return (
-        <div ref={dropdownRef} className="relative">
-            <button
-                onClick={() => setNotificationOpen((value) => !value)}
-                className="relative rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                aria-label="Paziņojumi"
-            >
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                {unreadCount > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-semibold leading-none text-white">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
-                )}
-            </button>
-
-            {notificationOpen && (
-                <div className="absolute right-0 z-20 mt-2 w-96 rounded-lg border border-gray-200 bg-white shadow-lg">
-                    <div className="flex items-center justify-between border-b border-gray-100 px-4 py-2">
-                        <span className="text-sm font-semibold text-gray-900">Paziņojumi</span>
-                        <div className="flex gap-2">
-                            {latestNotifications.length > 0 && (
-                                <button
-                                    onClick={handleClearAll}
-                                    className="text-xs font-medium text-red-600 hover:text-red-700"
-                                >
-                                    Notīrīt visus
-                                </button>
-                            )}
-                            {unreadCount > 0 && (
-                                <button
-                                    onClick={handleReadAll}
-                                    className="text-xs font-medium text-blue-600 hover:text-blue-700"
-                                >
-                                    Atzīmēt visus kā lasītus
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="max-h-96 overflow-y-auto py-1">
-                        {latestNotifications.length === 0 && (
-                            <div className="px-4 py-5 text-sm text-gray-500">Paziņojumu vēl nav.</div>
+        <ResponsiveOverlayPanel
+            isOpen={notificationOpen}
+            onClose={() => setNotificationOpen(false)}
+            title="Paziņojumi"
+            closeOnOutsideClick
+            desktopWidthClass="w-96"
+            trigger={
+                <button
+                    onClick={() => setNotificationOpen((value) => !value)}
+                    className="relative rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                    aria-label="Paziņojumi"
+                >
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                    {unreadCount > 0 && (
+                        <span className="absolute -right-0.5 -top-0.5 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-xs font-semibold leading-none text-white">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                    )}
+                </button>
+            }
+            actions={
+                latestNotifications.length || unreadCount > 0 ?
+                    <>
+                        {latestNotifications.length > 0 && (
+                            <button
+                                onClick={handleClearAll}
+                                className="text-xs font-medium text-red-600 hover:text-red-700"
+                            >
+                                Notīrīt visus
+                            </button>
                         )}
-
-                        {latestNotifications.map((notification) => (
-                            <NotificationItem
-                                key={notification.id}
-                                notification={notification}
-                                onClick={handleNotificationClick}
-                                onClose={() => setNotificationOpen(false)}
-                                onDelete={handleDeleteNotification}
-                            />
-                        ))}
-                    </div>
-                </div>
+                        {unreadCount > 0 && (
+                            <button
+                                onClick={handleReadAll}
+                                className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                            >
+                                Atzīmēt visus kā lasītus
+                            </button>
+                        )}
+                    </>
+                    : undefined
+            }>
+            {latestNotifications.length === 0 && (
+                <div className="px-4 py-5 text-sm text-gray-500">Paziņojumu vēl nav.</div>
             )}
-        </div>
+
+            {latestNotifications.map((notification) => (
+                <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    onClick={handleNotificationClick}
+                    onClose={() => setNotificationOpen(false)}
+                    onDelete={handleDeleteNotification}
+                />
+            ))}
+        </ResponsiveOverlayPanel>
     );
 };
 

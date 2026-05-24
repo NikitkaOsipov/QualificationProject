@@ -1,3 +1,45 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+	.text-logo-gradient {
+		background-image: linear-gradient(to right, #8b008b, #45008b, #00668b);
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+	}
+
+	.nav-active-gradient-underline {
+		position: relative;
+		border-bottom-color: transparent;
+	}
+
+	.nav-active-gradient-underline::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: -1px;
+		height: 2px;
+		background-image: linear-gradient(to right, #8b008b, #45008b, #00668b);
+		border-radius: 9999px;
+	}
+
+	.nav-active-gradient-left {
+		position: relative;
+		border-left-color: transparent;
+	}
+
+	.nav-active-gradient-left::before {
+		content: '';
+		position: absolute;
+		left: -1px;
+		top: 0;
+		bottom: 0;
+		width: 4px;
+		background-image: linear-gradient(to bottom, #8b008b, #45008b, #00668b);
+		border-radius: 9999px;
+	}
+}
+
