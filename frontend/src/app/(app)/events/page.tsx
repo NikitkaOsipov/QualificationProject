@@ -1,12 +1,12 @@
 "use client";
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 import "@/css/SideModal.css";
-import EventSearchAndFilters from '@/components/Event/EventSearchAndFilters'
-import { useAuth } from '@/hooks/auth'
-import type { EventFilters, EventType, PaginatedEventsMeta } from '@/utils/Types'
-import { getPosts } from '@/utils/post_service'
-import Loading from '@/components/Loading'
-import EventCard from '@/components/Event/EventCard'
+import EventSearchAndFilters from '@/components/Event/EventSearchAndFilters';
+import { useAuth } from '@/hooks/auth';
+import type { EventFilters, EventType } from '@/utils/Types';
+import { getPosts, type PaginatedEventsMeta } from '@/utils/post_service';
+import Loading from '@/components/Loading';
+import EventCard from '@/components/Event/EventCard';
 
 
 const DEFAULT_FILTERS: EventFilters = {

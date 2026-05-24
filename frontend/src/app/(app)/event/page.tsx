@@ -1,8 +1,8 @@
 "use client"
 
-import { deletePost, getPost, setGoingPost, setInterestedPost } from '@/utils/post_service'
+import { deletePost, getPost, setGoingPost, setInterestedPost, type EventResponse } from '@/utils/post_service'
 import { useEffect, useState } from 'react';
-import type { EventResponse, EventType, User } from '@/utils/Types'
+import type { EventType, User } from '@/utils/Types'
 import { API_BASE_URL} from '@/Config/api';
 import Map from '@/components/Map/DynamicMarkerMap';
 import Image from "next/image";
@@ -46,7 +46,7 @@ export default function EventPage() {
         : `${API_BASE_URL}/storage/BackgroundImages/default.jpg`;
 
     const setEventDetails = (eventResponse: EventResponse) => {
-        setEvent(eventResponse.event);
+        setEvent(eventResponse.data);
         setGoing(eventResponse.meta.is_going);
         setInterested(eventResponse.meta.is_interested);
         setHost(eventResponse.meta.host ?? null);

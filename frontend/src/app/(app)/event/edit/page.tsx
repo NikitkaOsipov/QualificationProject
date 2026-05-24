@@ -1,10 +1,10 @@
 "use client";
 
 import { getPost, updatePost } from '@/utils/post_service';
-import type { UpdatePostData } from '@/utils/post_service';
+import type { UpdatePostData , EventResponse} from '@/utils/post_service';
 import { getCategories } from '@/utils/category_service';
 import { useEffect, useState, useCallback } from 'react';
-import { EventResponse, Category, EventFormData } from '@/utils/Types';
+import { Category, EventFormData } from '@/utils/Types';
 import { useRouter } from 'next/navigation';
 import Loading from '@/components/Loading';
 import { useAuth } from '@/hooks/auth';
@@ -85,7 +85,7 @@ export default function EditEventPage() {
         async function fetchEvent() {
             try {
                 const response: EventResponse = await getPost(id!);
-                const event = response.event;
+                const event = response.data;
                 const host = response.meta.host;
 
                 const canManageEvent = Boolean(user && (user.role === 'admin' || (host && user.id === host.id)));

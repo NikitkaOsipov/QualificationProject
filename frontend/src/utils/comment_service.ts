@@ -1,5 +1,6 @@
 import axios from '@/lib/axios';
-import type { Comment, CreateResponse, EventType } from './Types'
+import type { Comment, EventType } from './Types'
+import type { LaravelStatusResponse } from './response_helper'
 
 export const getEventComments = async (eventId: number | string, page?: number) =>
     axios.get(`/api/event-comments/${eventId}?page=${page}`).then(r => r.data.data as Comment[]);
@@ -14,11 +15,11 @@ export const createComment = async (text: string, eventId: number | string) =>
         event_id: eventId
     };
 
-    return axios.post('/api/comment', data).then(r => r.data as CreateResponse);
+    return axios.post('/api/comment', data).then(r => r.data as LaravelStatusResponse);
 }
 
 export const updateComment = async (commentId: number | string, text: string) =>
-    axios.patch(`/api/comment/${commentId}`, { text }).then(r => r.data as CreateResponse);
+    axios.patch(`/api/comment/${commentId}`, { text }).then(r => r.data as LaravelStatusResponse);
 
 export const deleteComment = async (commentId: number | string) =>
-    axios.delete(`/api/comment/${commentId}`).then(r => r.data);
+    axios.delete(`/api/comment/${commentId}`).then(r => r.data as LaravelStatusResponse);

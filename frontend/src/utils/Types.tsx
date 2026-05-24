@@ -54,15 +54,6 @@ export interface User {
 
 export type FriendshipStatus = 'none' | 'pending_sent' | 'pending_received' | 'friends';
 
-export interface UserProfile {
-    user: User;
-    meta: {
-        isFollowing: boolean;
-        isOwner: boolean;
-        friendshipStatus: FriendshipStatus;
-    };
-}
-
 export interface Address {
     name: string;
     lat: number | string;
@@ -85,20 +76,6 @@ export interface EventType {
     interested_count?: number;
 }
 
-// Result of the event request (Details page for event)
-export interface EventResponse {
-    event: EventType;
-    meta: {
-        is_interested: boolean;
-        is_going: boolean;
-        host?: User | null;
-        going_count?: number;
-        interested_count?: number;
-        going_users?: User[];
-        interested_users?: User[];
-    };
-}
-
 export type EventSortBy = 'default' | 'soonest' | 'interested' | 'going' | 'cost';
 export type SortDirection = 'asc' | 'desc';
 
@@ -115,21 +92,6 @@ export interface EventFilters {
     per_page?: number;
 }
 
-export interface PaginatedEventsMeta {
-    current_page: number;
-    per_page: number;
-    total: number;
-    last_page: number;
-    has_more: boolean;
-    applied_sort_by: EventSortBy;
-    applied_sort_direction: SortDirection;
-}
-
-export interface PaginatedEventsResponse {
-    data: EventType[];
-    meta: PaginatedEventsMeta;
-}
-
 export interface Comment {
     id: number;
     text: string;
@@ -138,20 +100,10 @@ export interface Comment {
     updated_at?: string;
 }
 
-export interface CreateResponse {
-    status: 'ok' | 'error';
-    message?: string;
-}
 
 // Profile
 export const TABS = ['events', 'comments', 'likes', 'following', 'friends'] as const;
 export type TabState = typeof TABS[number];
-
-export interface ProfileTabResponse {
-    data: any[];
-    current_page: number;
-    last_page: number;
-}
 
 export type NotificationType =
     | 'friend_request_received'

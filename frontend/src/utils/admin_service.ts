@@ -1,5 +1,6 @@
 import axios from '@/lib/axios'
-import type { CreateResponse, User } from '@/utils/Types'
+import type { User } from '@/utils/Types'
+import type { LaravelStatusResponse } from '@/utils/response_helper'
 
 interface AdminUsersResponse {
     data: User[];
@@ -17,7 +18,7 @@ export const getAdminUsers = async (params?: { search?: string; page?: number; p
 export const updateAdminUser = async (
     userId: number,
     params: { name: string; email: string; role: 'user' | 'admin' },
-) => axios.patch(`/api/admin/users/${userId}`, params).then((r) => r.data as CreateResponse);
+) => axios.patch(`/api/admin/users/${userId}`, params).then((r) => r.data as LaravelStatusResponse);
 
 export const deleteAdminUser = async (userId: number) =>
-    axios.delete(`/api/admin/users/${userId}`).then((r) => r.data as CreateResponse);
+    axios.delete(`/api/admin/users/${userId}`).then((r) => r.data as LaravelStatusResponse);

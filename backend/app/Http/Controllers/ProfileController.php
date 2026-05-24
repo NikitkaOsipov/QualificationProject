@@ -71,7 +71,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Return all user events
      */
     public function events(User $user)
     {
@@ -101,7 +101,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Return all user comments
      */
     public function comments(User $user)
     {
@@ -111,7 +111,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Return all user liked events
      */
     public function likes(User $user)
     {
@@ -121,7 +121,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Return all users user is following
      */
     public function following(User $user)
     {
@@ -131,7 +131,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Return all users that are friends with the user
      */
     public function friends(User $user)
     {
