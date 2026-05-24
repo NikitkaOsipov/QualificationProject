@@ -25,7 +25,7 @@ abstract class Controller
 
             if ($avatarPath === false) {
                 return redirect()->back()->with([
-                    'error' => 'Failed to upload avatar. Please try again later.',
+                    'error' => 'Neizdevās augšupielādēt avatāru. Lūdzu, mēģiniet vēlāk.',
                 ]);
             }
 
@@ -45,7 +45,7 @@ abstract class Controller
             }
 
             return redirect()->back()->with([
-                'error' => 'Failed to register user. Please try again later.',
+                'error' => 'Neizdevās reģistrēt lietotāju. Lūdzu, mēģiniet vēlāk.',
             ]);
         }
     }

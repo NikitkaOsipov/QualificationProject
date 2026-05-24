@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\EventHelper;
 use App\Support\NotificationMapper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,7 +24,6 @@ class NotificationController extends Controller
         );
 
         return response()->json([
-            'status' => 'ok',
             'data' => $notifications,
             'meta' => [
                 'unread_count' => $user->unreadNotifications()->count(),
@@ -36,17 +36,14 @@ class NotificationController extends Controller
         $notification = $this->ownedNotification($request, $notificationId);
 
         if (!$notification) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Paziņojums nav atrasts',
-            ], 404);
+            return EventHelper::errorResponse('Paziņojums nav atrasts', 404);
         }
 
         if (!$notification->read_at) {
             $notification->markAsRead();
         }
 
-        return response()->json(['status' => 'ok']);
+        return EventHelper::successResponse();
     }
 
     public function markAllAsRead(Request $request)
@@ -55,7 +52,7 @@ class NotificationController extends Controller
             'read_at' => now(),
         ]);
 
-        return response()->json(['status' => 'ok']);
+        return EventHelper::successResponse();
     }
 
     public function delete(Request $request, string $notificationId)
@@ -63,22 +60,19 @@ class NotificationController extends Controller
         $notification = $this->ownedNotification($request, $notificationId);
 
         if (!$notification) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Paziņojums nav atrasts',
-            ], 404);
+            return EventHelper::errorResponse('Paziņojums nav atrasts', 404);
         }
 
         $notification->delete();
 
-        return response()->json(['status' => 'ok']);
+        return EventHelper::successResponse();
     }
 
     public function deleteAll(Request $request)
     {
         $request->user()->notifications()->delete();
 
-        return response()->json(['status' => 'ok']);
+        return EventHelper::successResponse();
     }
 
     // Gets notification by id

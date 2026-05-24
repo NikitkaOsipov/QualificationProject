@@ -8,6 +8,7 @@ use App\Models\FriendshipRequest;
 use App\Models\User;
 use App\Notifications\FriendRequestAcceptedNotification;
 use App\Notifications\FriendRequestReceivedNotification;
+use App\Support\EventHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -22,7 +23,7 @@ class UserController extends Controller
     public function update(Request $request) {
         $user = Auth::user();
 
-        abort_unless($user, 401);
+        abort_if(!$user, 401);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -50,10 +51,7 @@ class UserController extends Controller
             $authUser = Auth::user();
 
             if ($authUser->id === $targetUser->id) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'You cannot follow yourself'
-                ], 400);
+                return EventHelper::errorResponse('You cannot follow yourself', 400);
             }
 
             $existing = Follower::where([
@@ -72,20 +70,16 @@ class UserController extends Controller
                 $isFollowing = true;
             }
 
-            return response()->json([
-                'status' => 'ok',
-                'message' => $isFollowing ? 'You are successfully following' : 'You successfully unfollowed',
-            ]);
+            return EventHelper::successResponse(
+                message: $isFollowing ? 'You are successfully following' : 'You successfully unfollowed'
+            );
 
         } catch (Throwable $e) {
             \Log::error('Follow failed', [
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Something went wrong',
-            ], 500);
+            return EventHelper::errorResponse('Something went wrong', 500);
         }
     }
 
@@ -98,15 +92,15 @@ class UserController extends Controller
             $authUser = Auth::user();
 
             if ($authUser->id === $targetUser->id) {
-                return response()->json(['status' => 'error', 'message' => 'You cannot add yourself'], 400);
+                return EventHelper::errorResponse('You cannot add yourself', 400);
             }
 
             if (Friend::areFriends($authUser->id, $targetUser->id)) {
-                return response()->json(['status' => 'error', 'message' => 'Already friends'], 409);
+                return EventHelper::errorResponse('Already friends', 409);
             }
 
             if (FriendshipRequest::getBetween($authUser->id, $targetUser->id)) {
-                return response()->json(['status' => 'error', 'message' => 'Request already exists'], 409);
+                return EventHelper::errorResponse('Request already exists', 409);
             }
 
             FriendshipRequest::create([
@@ -117,10 +111,10 @@ class UserController extends Controller
 
             $targetUser->notify(new FriendRequestReceivedNotification($authUser));
 
-            return response()->json(['status' => 'ok', 'message' => 'Friend request sent']);
+            return EventHelper::successResponse('Friend request sent');
         } catch (Throwable $e) {
             \Log::error('sendFriendRequest failed', ['error' => $e->getMessage()]);
-            return response()->json(['status' => 'error', 'message' => 'Something went wrong'], 500);
+            return EventHelper::errorResponse('Something went wrong', 500);
         }
     }
 
@@ -145,14 +139,14 @@ class UserController extends Controller
 
                 $targetUser->notify(new FriendRequestAcceptedNotification($authUser));
 
-                return response()->json(['status' => 'ok', 'message' => 'Friend request accepted']);
+                return EventHelper::successResponse('Friend request accepted');
             } else {
                 $friendRequest->update(['status' => 'declined']);
-                return response()->json(['status' => 'ok', 'message' => 'Friend request declined']);
+                return EventHelper::successResponse('Friend request declined');
             }
         } catch (Throwable $e) {
             \Log::error('respondFriendRequest failed', ['error' => $e->getMessage()]);
-            return response()->json(['status' => 'error', 'message' => 'Something went wrong'], 500);
+            return EventHelper::errorResponse('Something went wrong', 500);
         }
     }
 
@@ -172,10 +166,10 @@ class UserController extends Controller
             // Remove friendship
             Friend::removeFriendship($authUser->id, $targetUser->id);
 
-            return response()->json(['status' => 'ok', 'message' => 'Friendship removed']);
+            return EventHelper::successResponse('Friendship removed');
         } catch (Throwable $e) {
             \Log::error('removeFriend failed', ['error' => $e->getMessage()]);
-            return response()->json(['status' => 'error', 'message' => 'Something went wrong'], 500);
+            return EventHelper::errorResponse('Something went wrong', 500);
         }
     }
 
@@ -236,9 +230,7 @@ class UserController extends Controller
             })
             ->values();
 
-        return response()->json([
-            'data' => $friendsPayload,
-        ]);
+        return EventHelper::successResponse(data: $friendsPayload);
     }
 
     public function search(Request $request)
@@ -278,15 +270,15 @@ class UserController extends Controller
             ->orderBy('name')
             ->paginate($perPage);
 
-        return response()->json([
-            'data' => $users->items(),
-            'meta' => [
+        return EventHelper::successResponse(
+            data: $users->items(),
+            meta: [
                 'current_page' => $users->currentPage(),
                 'per_page' => $users->perPage(),
                 'total' => $users->total(),
                 'last_page' => $users->lastPage(),
             ],
-        ]);
+        );
     }
 
     /**
@@ -297,10 +289,7 @@ class UserController extends Controller
         $authUser = Auth::user();
         Cache::put($this->onlineCacheKey($authUser->id), now()->toIso8601String(), now()->addSeconds(self::ONLINE_TTL_SECONDS * 2));
 
-        return response()->json([
-            'status' => 'ok',
-            'message' => 'Tiešsaistes statuss ir atjaunināts',
-        ]);
+        return EventHelper::successResponse('Tiešsaistes statuss ir atjaunināts');
     }
 
     // Helper functions

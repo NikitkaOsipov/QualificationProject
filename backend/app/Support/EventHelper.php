@@ -7,29 +7,55 @@ use App\Models\Friend;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 
+/**
+ * Response status guide (internal note):
+ * - 200: OK - request succeeded.
+ * - 400: Bad Request - invalid input or request format.
+ * - 403: Forbidden - user has no permission.
+ * - 404: Not Found - requested resource does not exist.
+ * - 500: Internal Server Error - unexpected server-side failure.
+ */
 class EventHelper
 {
     /**
      * Return a standardised JSON error response with given message and HTTP status code.
      */
-    public static function errorResponse(string $message, int $status = 400): JsonResponse
+    public static function errorResponse(string $message, int $status = 400, ?array $errors = null): JsonResponse
     {
-        return response()->json([
+        $response = [
             'status' => 'error',
             'message'  => $message,
-        ], $status);
+        ];
+
+        if ($errors !== null) {
+            $response['errors'] = $errors;
+        }
+
+        return response()->json($response, $status);
     }
 
     /**
      * Return a standardised JSON success response
      */
-    public static function successResponse(string $message, array $data = [], int $status = 200): JsonResponse
+    public static function successResponse(?string $message = null, ?array $data = [], int $status = 200, ?array $meta = null): JsonResponse
     {
-        return response()->json([
+        $response = [
             'status'  => 'ok',
-            'message' => $message,
-            'data'    => $data,
-        ], $status);
+        ];
+
+        if ($message !== null) {
+            $response['message'] = $message;
+        }
+
+        if ($data !== null) {
+            $response['data'] = $data;
+        }
+
+        if ($meta !== null) {
+            $response['meta'] = $meta;
+        }
+
+        return response()->json($response, $status);
     }
 
     /**

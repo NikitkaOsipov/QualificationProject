@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Log;
 class CommentsController extends Controller
 {
     /**
-     * Store a newly created comment in storage.
+     * Store a newly created comment for the specified event
      */
     public function store(Request $request)
     {
@@ -26,11 +26,11 @@ class CommentsController extends Controller
 
         $event = Event::query()->find($fields['event_id']);
         if (! $event) {
-            return EventHelper::errorResponse('Event not found.', 404);
+            return EventHelper::errorResponse('Pasākums nav atrasts.', 404);
         }
 
         if (! EventHelper::canUserAccessEvent(Auth::user(), $event)) {
-            return EventHelper::errorResponse('You do not have access to this event.', 403);
+            return EventHelper::errorResponse('Jums nav piekļuves šim pasākumam.', 403);
         }
 
         $fields['user_id'] = Auth::id();
@@ -52,18 +52,21 @@ class CommentsController extends Controller
         } catch (\Exception $exception) {
             Log::info('Error'. $exception->getMessage());
 
-            return EventHelper::errorResponse('Failed to create comment. Please try again later.' . $exception->getMessage(), 500);
+            return EventHelper::errorResponse('Neizdevās izveidot komentāru. Lūdzu, mēģiniet vēlāk.' . $exception->getMessage(), 500);
         }
 
-        return EventHelper::successResponse('Comment created successfully', [
+        return EventHelper::successResponse('Komentārs veiksmīgi izveidots', [
             'comment' => new CommentResource($comment),
         ], 201);
     }
 
+    /**
+     * Update the text of an existing comment
+     */
     public function update(Request $request, Comment $comment)
     {
         if ((int) $comment->user_id !== (int) Auth::id()) {
-            return EventHelper::errorResponse('You can only edit your own comments.', 403);
+            return EventHelper::errorResponse('Jūs varat rediģēt tikai savus komentārus.', 403);
         }
 
         $fields = $request->validate([
@@ -73,27 +76,30 @@ class CommentsController extends Controller
         $comment->text = $fields['text'];
         $comment->save();
 
-        return EventHelper::successResponse('Comment updated successfully');
+        return EventHelper::successResponse('Komentārs veiksmīgi atjaunināts');
     }
 
+    /**
+     * Delete the specified comment
+     */
     public function destroy(Comment $comment)
     {
         if ((int) $comment->user_id !== (int) Auth::id()) {
-            return EventHelper::errorResponse('You can only delete your own comments.', 403);
+            return EventHelper::errorResponse('Jūs varat dzēst tikai savus komentārus.', 403);
         }
 
         $comment->delete();
 
-        return EventHelper::successResponse('Comment deleted successfully');
+        return EventHelper::successResponse('Komentārs veiksmīgi dzēsts');
     }
 
     /**
-     * Display the specified resource.
+     * Retrieve all comments for the specified event
      */
     public function eventComments(Event $event)
     {
         if (! EventHelper::canUserAccessEvent(Auth::user(), $event)) {
-            return EventHelper::errorResponse('You do not have access to this event.', 403);
+            return EventHelper::errorResponse('Jums nav piekļuves šim pasākumam.', 403);
         }
 
         $comments = $event->comments()->with('user')->latest()->get();
@@ -102,7 +108,7 @@ class CommentsController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Retrieve all comments made by the specified user
      */
     public function userComments(User $user)
     {

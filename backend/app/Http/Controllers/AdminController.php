@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\EventHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -35,15 +36,15 @@ class AdminController extends Controller
             ->orderBy('name')
             ->paginate($perPage);
 
-        return response()->json([
-            'data' => $users->items(),
-            'meta' => [
+        return EventHelper::successResponse(
+            data: $users->items(),
+            meta: [
                 'current_page' => $users->currentPage(),
                 'per_page' => $users->perPage(),
                 'total' => $users->total(),
                 'last_page' => $users->lastPage(),
             ],
-        ]);
+        );
     }
 
     public function update(Request $request, User $targetUser)
@@ -57,18 +58,12 @@ class AdminController extends Controller
         ]);
 
         if ($authUser->id === $targetUser->id && $fields['role'] !== User::ROLE_ADMIN) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Admin cannot remove own admin role.',
-            ], 422);
+            return EventHelper::errorResponse('Administrators nevar noņemt sev administratora lomu.', 422);
         }
 
         $targetUser->update($fields);
 
-        return response()->json([
-            'status' => 'ok',
-            'message' => 'User updated successfully.'
-        ]);
+        return EventHelper::successResponse('Lietotājs veiksmīgi atjaunināts.');
     }
 
     public function destroy(User $targetUser)
@@ -76,17 +71,11 @@ class AdminController extends Controller
         $authUser = Auth::user();
 
         if ($authUser->id === $targetUser->id) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Admin cannot delete own account.',
-            ], 422);
+            return EventHelper::errorResponse('Administrators nevar dzēst savu kontu.', 422);
         }
 
         $targetUser->delete();
 
-        return response()->json([
-            'status' => 'ok',
-            'message' => 'User deleted successfully.',
-        ]);
+        return EventHelper::successResponse('Lietotājs veiksmīgi dzēsts.');
     }
 }

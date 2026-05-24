@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\NotificationType;
 use App\Models\NotificationPreference;
+use App\Support\EventHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -24,9 +25,7 @@ class NotificationPreferenceController extends Controller
             ])
             ->values();
 
-        return response()->json([
-            'data' => $preferences,
-        ]);
+        return EventHelper::successResponse(data: $preferences);
     }
 
     public function update(Request $request, string $type)
@@ -37,17 +36,11 @@ class NotificationPreferenceController extends Controller
         ]);
 
         if (! $request->hasAny(['in_app_enabled', 'email_enabled'])) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Obligāti jāaizpilda vismaz viens preferenču lauks.',
-            ], 422);
+            return EventHelper::errorResponse('Obligāti jāaizpilda vismaz viens preferenču lauks.', 422);
         }
 
         if (! in_array($type, NotificationType::values(), true)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Nezināms paziņojuma veids',
-            ], 422);
+            return EventHelper::errorResponse('Nezināms paziņojuma veids', 422);
         }
 
         $existingPreference = $request->user()->notificationPreferences()
@@ -70,7 +63,7 @@ class NotificationPreferenceController extends Controller
             ],
         );
 
-        return response()->json(['status' => 'ok']);
+        return EventHelper::successResponse();
     }
 }
 

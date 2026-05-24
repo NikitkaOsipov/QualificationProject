@@ -86,9 +86,9 @@ class EventController extends Controller
             ->slice($offset, $perPage)
             ->values();
 
-        return response()->json([
-            'data' => EventResource::collection($pageItems)->resolve(),
-            'meta' => [
+        return EventHelper::successResponse(
+            data: EventResource::collection($pageItems)->resolve(),
+            meta: [
                 'current_page' => $page,
                 'per_page' => $perPage,
                 'total' => $total,
@@ -96,8 +96,8 @@ class EventController extends Controller
                 'has_more' => $offset + $pageItems->count() < $total,
                 'applied_sort_by' => $sortBy,
                 'applied_sort_direction' => $sortDirection,
-            ],
-        ]);
+            ]
+        );
     }
 
     /**
@@ -160,10 +160,7 @@ class EventController extends Controller
             if ($imagePath === false) {
                 Log::error('Failed to persist event background image to public disk.');
 
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Failed to upload background image. Please try again.',
-                ], 500);
+                return EventHelper::errorResponse('Neizdevās augšupielādēt fona attēlu. Lūdzu, mēģiniet vēlreiz.', 500);
             }
 
             $fields['background_image_path'] = $imagePath;
@@ -199,15 +196,10 @@ class EventController extends Controller
                 Storage::disk('public')->delete($imagePath);
             }
 
-            return response()->json([
-                'error' => 'Failed to create event. Please try again later.' . $exception->getMessage(),
-            ], 500);
+            return EventHelper::errorResponse('Neizdevās izveidot pasākumu. Lūdzu, mēģiniet vēlreiz vēlāk.', 500);
         }
 
-        return response()->json([
-            'status' => 'ok',
-            'message' => 'You successfully created event',
-        ]);
+        return EventHelper::successResponse('Pasākums veiksmīgi izveidots.');
     }
 
     /**
@@ -219,10 +211,7 @@ class EventController extends Controller
         $event->loadMissing(['user', 'visibility', 'categories']);
 
         if (! EventHelper::canUserAccessEvent($user, $event)) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'You do not have access to this event.',
-            ], 403);
+            return EventHelper::errorResponse('Jums nav piekļuves šim pasākumam.', 403);
         }
 
         $isInterested = false;
@@ -264,7 +253,7 @@ class EventController extends Controller
         $host = $event->user;
 
         return response()->json([
-            'event' => $event->toResource(),
+            'data' => $event->toResource(),
             'meta' => [
                 'is_interested' => $isInterested,
                 'is_going' => $isGoing,
@@ -287,10 +276,7 @@ class EventController extends Controller
         $canManageEvent = $editor && ($editor->isAdmin() || $editor->id === $event->user_id);
 
         if (! $canManageEvent) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Only event author or admin can edit this event.',
-            ], 403);
+            return EventHelper::errorResponse('Šo pasākumu var rediģēt tikai autors vai administrators.', 403);
         }
 
         $fields = $request->validate([
@@ -334,10 +320,7 @@ class EventController extends Controller
                 ]);
             }
 
-            return response()->json([
-                'status' => 'ok',
-                'message' => 'Event updated successfully.',
-            ]);
+            return EventHelper::successResponse('Pasākums veiksmīgi atjaunināts.');
         } catch (Throwable $e) {
             Log::error('Event update failed', [
                 'error' => $e->getMessage(),
@@ -345,10 +328,7 @@ class EventController extends Controller
                 'user_id' => Auth::id(),
             ]);
 
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Something went wrong while updating event.',
-            ], 500);
+            return EventHelper::errorResponse('Pasākumu neizdevās atjaunināt.', 500);
         }
     }
 
@@ -362,10 +342,7 @@ class EventController extends Controller
         $canManageEvent = $editor && ($editor->isAdmin() || $editor->id === $event->user_id);
 
         if (! $canManageEvent) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Only event author or admin can delete this event.',
-            ], 403);
+            return EventHelper::errorResponse('Šo pasākumu var dzēst tikai autors vai administrators.', 403);
         }
 
         try {
@@ -380,10 +357,7 @@ class EventController extends Controller
                 $address->delete();
             }
 
-            return response()->json([
-                'status' => 'ok',
-                'message' => 'Event deleted successfully.',
-            ]);
+            return EventHelper::successResponse('Pasākums veiksmīgi dzēsts.');
         } catch (Throwable $e) {
             Log::error('Event delete failed', [
                 'error' => $e->getMessage(),
@@ -391,10 +365,7 @@ class EventController extends Controller
                 'user_id' => Auth::id(),
             ]);
 
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Something went wrong while deleting event.',
-            ], 500);
+            return EventHelper::errorResponse('Pasākumu neizdevās dzēst.', 500);
         }
     }
 
@@ -402,10 +373,7 @@ class EventController extends Controller
         try {
             $viewer = Auth::user();
             if (! EventHelper::canUserAccessEvent($viewer, $event)) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'You do not have access to this event.',
-                ], 403);
+                return EventHelper::errorResponse('Jums nav piekļuves šim pasākumam.', 403);
             }
 
             $request->validate([
@@ -424,9 +392,7 @@ class EventController extends Controller
                 ])->delete();
             }
 
-            return response()->json([
-                'status' => 'ok',
-            ]);
+            return EventHelper::successResponse('Interese par pasākumu veiksmīgi atjaunināta.');
         } catch (Throwable $e) {
             \Log::error('Interested toggle failed', [
                 'error' => $e->getMessage(),
@@ -434,20 +400,14 @@ class EventController extends Controller
                 'user_id' => Auth::id(),
             ]);
 
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Something went wrong while updating interest.',
-            ], 500);
+            return EventHelper::errorResponse('Neizdevās atjaunināt interesi par pasākumu.', 500);
         }
     }
     public function going(Event $event, Request $request) {
         try {
             $viewer = Auth::user();
             if (! EventHelper::canUserAccessEvent($viewer, $event)) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'You do not have access to this event.',
-                ], 403);
+                return EventHelper::errorResponse('Jums nav piekļuves šim pasākumam.', 403);
             }
 
             $request->validate([
@@ -466,9 +426,7 @@ class EventController extends Controller
                 ])->delete();
             }
 
-            return response()->json([
-                'status' => 'ok',
-            ]);
+            return EventHelper::successResponse('Dalības statuss pasākumā veiksmīgi atjaunināts.');
 
         } catch (Throwable $e) {
             \Log::error('Going toggle failed', [
@@ -477,10 +435,7 @@ class EventController extends Controller
                 'user_id' => Auth::id(),
             ]);
 
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Something went wrong while updating going.',
-            ], 500);
+            return EventHelper::errorResponse('Neizdevās atjaunināt dalības statusu pasākumā.', 500);
         }
     }
 
@@ -489,10 +444,7 @@ class EventController extends Controller
         try {
             $sender = Auth::user();
             if (! EventHelper::canUserAccessEvent($sender, $event)) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'You do not have access to this event.',
-                ], 403);
+                return EventHelper::errorResponse('Jums nav piekļuves šim pasākumam.', 403);
             }
 
             $validated = $request->validate([
@@ -502,10 +454,7 @@ class EventController extends Controller
 
             $this->sendParticipationRequests($event, $sender, $validated['friend_ids']);
 
-            return response()->json([
-                'status' => 'ok',
-                'message' => 'Participation requests sent.',
-            ]);
+            return EventHelper::successResponse('Dalības pieprasījumi veiksmīgi nosūtīti.');
         } catch (Throwable $e) {
             \Log::error('Participation request sending failed', [
                 'error' => $e->getMessage(),
@@ -513,10 +462,7 @@ class EventController extends Controller
                 'user_id' => Auth::id(),
             ]);
 
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Something went wrong while sending requests.',
-            ], 500);
+            return EventHelper::errorResponse('Neizdevās nosūtīt dalības pieprasījumus.', 500);
         }
     }
 
