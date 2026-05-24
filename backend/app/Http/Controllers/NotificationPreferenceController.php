@@ -25,7 +25,6 @@ class NotificationPreferenceController extends Controller
             ->values();
 
         return response()->json([
-            'status' => 'ok',
             'data' => $preferences,
         ]);
     }
@@ -40,14 +39,14 @@ class NotificationPreferenceController extends Controller
         if (! $request->hasAny(['in_app_enabled', 'email_enabled'])) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'At least one preference field is required',
+                'message' => 'Obligāti jāaizpilda vismaz viens preferenču lauks.',
             ], 422);
         }
 
         if (! in_array($type, NotificationType::values(), true)) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Unknown notification type',
+                'message' => 'Nezināms paziņojuma veids',
             ], 422);
         }
 

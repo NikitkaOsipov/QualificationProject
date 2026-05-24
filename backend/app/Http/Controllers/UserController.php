@@ -289,8 +289,6 @@ class UserController extends Controller
         ]);
     }
 
-    // Help functions
-
     /**
      * Update authenticated user online status timestamp
      */
@@ -301,9 +299,11 @@ class UserController extends Controller
 
         return response()->json([
             'status' => 'ok',
-            'is_online' => true,
+            'message' => 'Tiešsaistes statuss ir atjaunināts',
         ]);
     }
+
+    // Helper functions
 
     private function onlineCacheKey(int $userId): string
     {

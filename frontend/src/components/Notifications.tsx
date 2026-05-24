@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react'
 import { AppNotification } from '@/utils/Types';
 import NotificationItem from '@/components/NotificationItem';
 import {
@@ -10,6 +10,8 @@ import {
 } from '@/utils/notification_service';
 import { configureAppEcho, getEcho } from '@/lib/echo';
 import ResponsiveOverlayPanel from '@/components/ResponsiveOverlayPanel';
+import { SnackbarContext } from '@/context/SnackbarContext';
+import { extractErrorMessage } from '@/utils/response_helper';
 
 interface Props {
     user: { id: number | string } | null | undefined;
@@ -22,6 +24,7 @@ const Notifications = ({ user }: Props) => {
     const [notificationOpen, setNotificationOpen] = useState(false);
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const addSnackbarMessage = useContext(SnackbarContext);
 
     const latestNotifications = useMemo(
         () => notifications.slice(0, MAX_VISIBLE_NOTIFICATIONS),
@@ -130,7 +133,13 @@ const Notifications = ({ user }: Props) => {
     };
 
     const handleReadAll = async () => {
-        await markAllNotificationsAsRead();
+        try {
+            await markAllNotificationsAsRead();
+        } catch (error) {
+            const message = extractErrorMessage(error);
+            addSnackbarMessage(message, 'error');
+        }
+
         setNotifications((prev) =>
             prev.map((item) => ({ ...item, read_at: item.read_at ?? new Date().toISOString() })),
         );
@@ -148,7 +157,8 @@ const Notifications = ({ user }: Props) => {
                 setUnreadCount((prev) => Math.max(prev - 1, 0));
             }
         } catch (error) {
-            console.error('Failed to delete notification:', error);
+            const message = extractErrorMessage(error);
+            addSnackbarMessage(message, 'error');
         }
     };
 
@@ -158,7 +168,8 @@ const Notifications = ({ user }: Props) => {
             setNotifications([]);
             setUnreadCount(0);
         } catch (error) {
-            console.error('Failed to clear notifications:', error);
+            const message = extractErrorMessage(error);
+            addSnackbarMessage(message, 'error');
         }
     };
 

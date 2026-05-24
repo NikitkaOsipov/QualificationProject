@@ -35,14 +35,14 @@ class NotificationController extends Controller
     {
         $notification = $this->ownedNotification($request, $notificationId);
 
-        if (! $notification) {
+        if (!$notification) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Notification not found',
+                'message' => 'Paziņojums nav atrasts',
             ], 404);
         }
 
-        if (! $notification->read_at) {
+        if (!$notification->read_at) {
             $notification->markAsRead();
         }
 
@@ -62,10 +62,10 @@ class NotificationController extends Controller
     {
         $notification = $this->ownedNotification($request, $notificationId);
 
-        if (! $notification) {
+        if (!$notification) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Notification not found',
+                'message' => 'Paziņojums nav atrasts',
             ], 404);
         }
 
@@ -81,7 +81,8 @@ class NotificationController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
-    private function ownedNotification(Request $request, string $notificationId): ?DatabaseNotification
+    // Gets notification by id
+    private function ownedNotification(Request $request, string $notificationId): DatabaseNotification
     {
         return $request->user()
             ->notifications()
