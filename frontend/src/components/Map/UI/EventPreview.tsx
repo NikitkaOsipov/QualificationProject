@@ -1,8 +1,9 @@
-'use client'
+'use client';
 
-import type { EventType } from '@/utils/Types'
-import SideModal from '@/components/SideModal'
-import { useRouter } from 'next/navigation'
+import type { EventType } from '@/utils/Types';
+import SideModal from '@/components/SideModal';
+import Button from '@/components/Button';
+import { useRouter } from 'next/navigation';
 
 
 type EventPreviewProps = {
@@ -112,17 +113,13 @@ const EventPreview = ({isOpen, toggleModal, event}: EventPreviewProps) => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col gap-2 border-t pt-4">
-                        <button
-                            onClick={handleGoToEvent}
-                            className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm"
-                        >
-                            Skatīt pilnu pasākumu
-                        </button>
-
-                        {/*<button className="w-full px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition font-medium text-sm">*/}
-                        {/*    Add to Calendar*/}
-                        {/*</button>*/}
+                     <div className="flex flex-col gap-2 border-t pt-4">
+                         <Button
+                             onClick={handleGoToEvent}
+                             className="w-full py-3 font-medium text-sm"
+                         >
+                             Skatīt pilnu pasākumu
+                         </Button>
                     </div>
 
                 </div>

@@ -207,8 +207,8 @@ export default function EditEventPage() {
                 <section className="bg-white rounded-xl border shadow-sm p-6">
                     <LocationStage
                         address={formData.address}
-                        latitude={formData.latitude}
-                        longitude={formData.longitude}
+                        latitude={Number(formData.latitude)}
+                        longitude={Number(formData.longitude)}
                         onAddressChange={(address) => updateForm({ address })}
                         onCoordinatesChange={(lat, lng) => updateForm({ latitude: lat, longitude: lng })}
                         error={formData.errors.location ?? formData.errors.address}

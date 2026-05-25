@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Autocomplete, TextField } from '@mui/material';
 import { getCategories } from '@/utils/category_service';
 import type { Category, EventFilters, EventSortBy, SortDirection } from '@/utils/Types';
+import Button from '@/components/Button'
 
 interface EventSearchAndFiltersProps {
     filters: EventFilters;
@@ -169,20 +170,22 @@ export default function EventSearchAndFilters({
 
                     {/* Submit and reset buttons */}
                     <div className="flex items-end gap-2">
-                        <button
+                        <Button
                             type="submit"
                             disabled={isLoading || isDateRangeInvalid}
-                            className="h-10 rounded bg-blue-600 px-4 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                            variant="primary"
+                            className="h-10 text-sm font-medium"
                         >
                             {isLoading ? 'Meklē...' : 'Meklēt'}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="button"
                             onClick={onResetAction}
-                            className="h-10 rounded border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                            variant="secondary"
+                            className="h-10 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
                         >
                             Notīrīt
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
@@ -190,14 +193,15 @@ export default function EventSearchAndFilters({
                 {selectedCategories.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                         {selectedCategories.map(category => (
-                            <button
+                            <Button
                                 key={category.id}
                                 type="button"
                                 onClick={() => handleCategoryRemove(category.id)}
-                                className="rounded bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 transition hover:bg-blue-100"
+                                variant="secondary"
+                                className="bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700 hover:bg-blue-100"
                             >
                                 {category.name} ×
-                            </button>
+                            </Button>
                         ))}
                     </div>
                 )}
@@ -228,20 +232,21 @@ export default function EventSearchAndFilters({
                         </label>
 
                         {disableSocialFilters && (
-                            <span className="text-xs text-gray-500">Piesakieties, lai izmantotu sociālos filtrus.</span>
+                            <span className="text-xs text-gray-500">Pieslegties, lai izmantotu sociālos filtrus.</span>
                         )}
                     </div>
 
                     {/* Date filters and Sorting dropdowns */}
-                    <div className="ml-auto flex w-full max-w-md flex-col gap-2 lg:w-auto lg:max-w-none lg:flex-row">
-                        <div ref={dateWrapperRef} className="relative w-full lg:w-auto">
-                            <button
+                    <div className="ml-auto flex max-w-md flex-col gap-2 lg:w-auto lg:max-w-none lg:flex-row">
+                        <div ref={dateWrapperRef} className="relative w-auto">
+                            <Button
                                 type="button"
                                 onClick={() => setIsDateOpen(open => !open)}
-                                className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 lg:w-auto"
+                                variant="secondary"
+                                className="w-full border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white hover:bg-gray-100 w-auto"
                             >
                                 Datuma periods
-                            </button>
+                            </Button>
 
                             {/* Date filters */}
                             {isDateOpen && (
@@ -290,13 +295,14 @@ export default function EventSearchAndFilters({
                         {/* Sorting */}
                         {showSort && (
                             <div ref={sortWrapperRef} className="relative w-full lg:w-auto">
-                                <button
+                                <Button
                                     type="button"
                                     onClick={() => setIsSortOpen(open => !open)}
-                                    className="w-full rounded border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 lg:w-auto"
+                                    variant="secondary"
+                                    className="bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 lg:w-auto"
                                 >
                                     Kārtošana: {SORT_BY_OPTIONS.find(option => option.value === filters.sort_by)?.label ?? ''} ({SORT_DIRECTION_OPTIONS.find(option => option.value === filters.sort_direction)?.label ?? ''})
-                                </button>
+                                </Button>
 
                                 {isSortOpen && (
                                     <div className="absolute right-0 z-20 mt-2 min-w-72 rounded border border-gray-200 bg-white p-3 shadow-lg">

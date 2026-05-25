@@ -11,6 +11,7 @@ import EventPreview from '@/components/Map/UI/EventPreview'
 import { useAuth } from '@/hooks/auth'
 import { extractErrorMessage, extractValidationErrors, isValidationError } from '@/utils/response_helper'
 import { SnackbarContext } from '@/context/SnackbarContext'
+import ResponsiveOverlayPanel from '@/components/ResponsiveOverlayPanel'
 
 const DEFAULT_FILTERS: EventFilters = {
     search: '',
@@ -30,6 +31,7 @@ const MapPage = () => {
     const [draftFilters, setDraftFilters] = useState<EventFilters>({ ...DEFAULT_FILTERS });
     const [currentFilters, setCurrentFilters] = useState<EventFilters>({ ...DEFAULT_FILTERS });
     const [isLoading, setIsLoading] = useState(true);
+    const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
     const addSnackbarMessage = useContext(SnackbarContext);
 
     useEffect(() => {
@@ -83,47 +85,72 @@ const MapPage = () => {
             {isLoading ? (
                 <Loading/>
             ) : (
-                    <div
-                        className="relative w-full h-full"
-                    >
-
-                        <div className="pointer-events-auto absolute left-4 right-4 top-4 z-[1000] mx-auto max-w-5xl [&>form]:border-0 [&>form]:bg-transparent [&>form]:p-0 [&>form]:shadow-none">
-                            <EventSearchAndFilters
-                                filters={draftFilters}
-                                onChangeAction={(nextValue) => setDraftFilters(nextValue)}
-                                onSubmitAction={handleApplyFilters}
-                                onResetAction={handleResetFilters}
-                                disableSocialFilters={!user}
-                            />
-                        </div>
-
-                        <Map
-                            center={[56.88, 24.28]}
-                            zoom={8}
-                            markers={posts}
-                            className={"w-full h-full"}
-                            onMarkerClick={selectEvent}
-                        >
-                        </Map>
-
-                        {/* MAP UI */}
-                        <div
-                            className="pointer-events-auto absolute left-0 top-0 h-full"
-                        >
-                            <EventPreview
-                                isOpen={open}
-                                toggleModal={toggleModal}
-                                event={selectedEvent}/>
-                        </div>
-
-                        {posts.length === 0 && (
-                            <div className="pointer-events-none absolute inset-x-0 bottom-6 z-[1000] flex justify-center px-4">
-                                <div className="rounded-full bg-white/95 px-4 py-2 text-sm text-gray-700 shadow">
-                                    Neviens pasākums neatbilda šiem filtriem.
+                <div className="relative w-full h-full">
+                    {/* Shows only for mobile */}
+                    <div className="sm:hidden w-full h-full">
+                        <ResponsiveOverlayPanel
+                            isOpen={isMobileFiltersOpen}
+                            onClose={() => setIsMobileFiltersOpen(false)}
+                            trigger={
+                                <div className="absolute left-4 top-4 z-[1100] sm:hidden">
+                                    <button
+                                        className="rounded-full bg-gradient-to-r from-logo-1 to-logo-3 px-4 py-2 text-white shadow"
+                                        onClick={() => setIsMobileFiltersOpen(true)}
+                                        aria-label="Atvērt filtrus"
+                                    >
+                                        Filtri
+                                    </button>
                                 </div>
+                            }
+                            title="Filtri"
+                        >
+                            <div className="mx-4">
+                                <EventSearchAndFilters
+                                    filters={draftFilters}
+                                    onChangeAction={(nextValue) => setDraftFilters(nextValue)}
+                                    onSubmitAction={() => { setIsMobileFiltersOpen(false); handleApplyFilters(); }}
+                                    onResetAction={() => { setIsMobileFiltersOpen(false); handleResetFilters(); }}
+                                    disableSocialFilters={!user}
+                                />
                             </div>
-                        )}
+                        </ResponsiveOverlayPanel>
                     </div>
+
+                    {/* Shows for desktop */}
+                    <div className="pointer-events-auto absolute left-4 right-4 top-4 z-[1000] mx-auto max-w-5xl [&>form]:border-0 [&>form]:bg-transparent [&>form]:p-0 [&>form]:shadow-none hidden sm:block">
+                        <EventSearchAndFilters
+                            filters={draftFilters}
+                            onChangeAction={(nextValue) => setDraftFilters(nextValue)}
+                            onSubmitAction={handleApplyFilters}
+                            onResetAction={handleResetFilters}
+                            disableSocialFilters={!user}
+                        />
+                    </div>
+
+                    <Map
+                        center={[56.88, 24.28]}
+                        zoom={8}
+                        markers={posts}
+                        className={"w-full h-full"}
+                        onMarkerClick={selectEvent}
+                    />
+
+                    {/* MAP UI */}
+                    <div className="pointer-events-auto absolute left-0 top-0 h-full">
+                        <EventPreview
+                            isOpen={open}
+                            toggleModal={toggleModal}
+                            event={selectedEvent}/>
+                    </div>
+
+                    {posts.length === 0 && (
+                        <div className="pointer-events-none fixed left-0 right-0 bottom-0 z-[1200] flex justify-center w-full px-2 pb-4 sm:pb-6">
+                            <div className="rounded-full bg-white/95 px-4 py-2 text-sm sm:text-base text-gray-700 shadow border border-brand-500 font-medium">
+                                Neviens pasākums neatbilda šiem filtriem.
+                            </div>
+                        </div>
+                    )}
+                </div>
             )}
         </>
     )

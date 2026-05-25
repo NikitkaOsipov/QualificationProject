@@ -1,4 +1,5 @@
 "use client";
+
 import { useContext, useEffect, useState } from 'react'
 import "@/css/SideModal.css";
 import EventSearchAndFilters from '@/components/Event/EventSearchAndFilters';

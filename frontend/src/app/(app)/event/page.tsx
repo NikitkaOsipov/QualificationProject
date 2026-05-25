@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { deletePost, getPost, setGoingPost, setInterestedPost, type EventResponse } from '@/utils/post_service'
 import { useEffect, useState } from 'react';
@@ -19,6 +19,7 @@ import EventParticipationRequestButton from '@/components/Event/EventParticipati
 import EventShareButton from '@/components/Event/EventShareButton';
 import EventOwnerMenu from '@/components/Event/EventOwnerMenu';
 import EventAddToCalendarButton from '@/components/Event/EventAddToCalendarButton';
+import { FaCalendarAlt, FaMapMarkerAlt, FaEuroSign } from 'react-icons/fa';
 
 export default function EventPage() {
     const router = useRouter();
@@ -145,9 +146,8 @@ export default function EventPage() {
     return (
         event ? (
             <>
-                <div className="max-w-6xl mx-auto pb-16">
-
-                    <div className="relative w-full h-72 md:h-96 rounded-xl overflow-hidden mb-8">
+                <div className="max-w-6xl mx-auto pb-16 px-2 sm:px-4">
+                    <div className="relative w-full h-56 sm:h-72 md:h-96 rounded-xl overflow-hidden mb-6 sm:mb-8">
                         <Image
                             src={eventImageSrc}
                             alt={event.title}
@@ -155,14 +155,12 @@ export default function EventPage() {
                             className="object-cover"
                         />
                     </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                        <div className="lg:col-span-2 flex flex-col gap-8">
-
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+                        {/* Main content */}
+                        <div className="lg:col-span-2 flex flex-col gap-6 sm:gap-8">
                             <div>
                                 <div className="flex flex-wrap items-center gap-3 mb-3">
-                                    <h1 className="text-3xl font-bold text-gray-900">
+                                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                                         {event.title}
                                     </h1>
                                     <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700 border border-slate-200">
@@ -182,10 +180,7 @@ export default function EventPage() {
                                     </div>
                                 )}
                             </div>
-
-
                             <div className="flex gap-3 flex-wrap">
-
                                 {user ? (
                                     <>
                                         <InterestedUsersDisplay
@@ -194,13 +189,11 @@ export default function EventPage() {
                                             interestedCount={interestedCount}
                                             interestedUsers={interestedUsers}
                                         />
-
                                         <GoingButton isGoing={going} onClick={handleGoing} />
                                     </>
                                 ) : null}
                                 <EventShareButton eventTitle={event.title} />
                                 <EventAddToCalendarButton event={event} />
-
                                 {canManageEvent && (
                                     <EventOwnerMenu
                                         eventId={eventId}
@@ -209,26 +202,22 @@ export default function EventPage() {
                                         onDeleteAction={handleDeleteEvent}
                                     />
                                 )}
-
                             </div>
-
-
                             <div>
-                                <h2 className="text-xl font-semibold mb-3">
-                                    Datums un vieta
-                                </h2>
-
-                                <div className="text-gray-700 mb-4">
-                                    📅 {event.start_date?.toString()}
+                                <h2 className="text-lg sm:text-xl font-semibold mb-3">Datums un vieta</h2>
+                                <div className="flex flex-col gap-2 mb-4">
+                                    <div className="flex items-center gap-2 text-gray-700">
+                                        <FaCalendarAlt color="black" />
+                                        <span>{event.start_date?.toString()}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-gray-700">
+                                        <FaMapMarkerAlt color="black" />
+                                        <span>{event.address.name}</span>
+                                    </div>
                                 </div>
-
-                                <div className="text-gray-700 mb-4">
-                                    📍 {event.address.name}
-                                </div>
-
-                                <div className="h-64 rounded-xl overflow-hidden border">
+                                <div className="h-48 sm:h-64 rounded-xl overflow-hidden border">
                                     <Map
-                                        center={[event.address.lat, event.address.lng]}
+                                        center={[Number(event.address.lat), Number(event.address.lng)]}
                                         zoom={14}
                                         markers={[event]}
                                         onMarkerClick={() => {}}
@@ -236,58 +225,74 @@ export default function EventPage() {
                                     />
                                 </div>
                             </div>
-
-
                             <div>
-                                <h2 className="text-xl font-semibold mb-3">
-                                    Par pasākumu
-                                </h2>
-
+                                <h2 className="text-lg sm:text-xl font-semibold mb-3">Par pasākumu</h2>
                                 <EventDescriptionMarkdown
                                     content={event.description ?? "Nav aprakstu"}
                                     className="prose prose-sm max-w-none text-gray-700"
                                 />
                             </div>
-
-
-                            <CommentsSection eventId={eventId}/>
-
+                            {/* On mobile show right section below description */}
+                            <div className="flex flex-col gap-6 sm:gap-8 lg:hidden">
+                                <div className="border rounded-xl p-5 shadow-sm">
+                                    <p className="text-sm text-gray-500 mb-1 flex items-center gap-2">
+                                        <FaEuroSign color="black" />
+                                        Cena
+                                    </p>
+                                    <p className="text-2xl font-bold">
+                                        {event.price ? `€${event.price}` : "Bezmaksas"}
+                                    </p>
+                                </div>
+                                <div className="border rounded-xl p-5 shadow-sm">
+                                    <h3 className="font-semibold mb-3">Rīkotājs</h3>
+                                    {host ? (
+                                        <UserCard user={host} showFriendBadge />
+                                    ) : (
+                                        <p className="text-sm text-gray-500">Rīkotāja informācija nav pieejama.</p>
+                                    )}
+                                </div>
+                                <GoingUsersPanel
+                                    goingCount={goingCount}
+                                    goingUsers={goingUsers}
+                                />
+                                {host && user && user.id === host.id && (
+                                    <EventParticipationRequestButton eventId={eventId} />
+                                )}
+                            </div>
+                            {/* Comments always at the bottom of main content */}
+                            <div>
+                                <CommentsSection eventId={eventId}/>
+                            </div>
                         </div>
-
-                        <div className="flex flex-col gap-6">
-
+                        {/* Right section for desktop */}
+                        <div className="flex-col gap-6 sm:gap-8 hidden lg:flex">
                             <div className="border rounded-xl p-5 shadow-sm">
-                                <p className="text-sm text-gray-500 mb-1">
+                                <p className="text-sm text-gray-500 mb-1 flex items-center gap-2">
+                                    <FaEuroSign color="black" />
                                     Cena
                                 </p>
-
                                 <p className="text-2xl font-bold">
                                     {event.price ? `€${event.price}` : "Bezmaksas"}
                                 </p>
                             </div>
-
                             <div className="border rounded-xl p-5 shadow-sm">
                                 <h3 className="font-semibold mb-3">Rīkotājs</h3>
-
                                 {host ? (
                                     <UserCard user={host} showFriendBadge />
                                 ) : (
                                     <p className="text-sm text-gray-500">Rīkotāja informācija nav pieejama.</p>
                                 )}
                             </div>
-
                             <GoingUsersPanel
                                 goingCount={goingCount}
                                 goingUsers={goingUsers}
                             />
-
                             {host && user && user.id === host.id && (
                                 <EventParticipationRequestButton eventId={eventId} />
                             )}
                         </div>
                     </div>
                 </div>
-
             </>
         ) : <Loading/>
     )

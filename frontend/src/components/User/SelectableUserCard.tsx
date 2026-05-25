@@ -3,6 +3,7 @@
 import React from 'react';
 import { User } from '@/utils/Types';
 import UserCardContent from '@/components/User/UserCardContent';
+import Button from '@/components/Button'
 
 export interface SelectableUserCardProps {
     user: User;
@@ -31,14 +32,15 @@ const SelectableUserCard= ({
                 showOnlineState={showOnlineState}
                 showFriendBadge={showFriendBadge}
                 rightSlot={
-                    <button
+                    <Button
                         type="button"
                         onClick={() => selectAction?.(user)}
                         disabled={disabled}
+                        variant={selected ? 'primary' : 'secondary'}
                         className={`px-3 py-1.5 rounded-md text-sm font-medium ${selected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} disabled:cursor-not-allowed disabled:opacity-60`}
                     >
                         {selected ? 'Izvelēts' : 'Izvelēties'}
-                    </button>
+                    </Button>
                 }
             />
         </div>

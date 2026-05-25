@@ -127,7 +127,7 @@ const AccountSettingsPanel = ({ user, onUserUpdatedAction }: Props) => {
                 <div className="mt-4 flex justify-end">
                     <Button
                         disabled={isSaving}
-                        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+                        className="text-sm font-medium"
                     >
                         {isSaving ? 'Saglabāju...' : 'Saglabāt izmaiņas'}
                     </Button>

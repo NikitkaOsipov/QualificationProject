@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
+import Button from '@/components/Button'
 import Link from 'next/link';
 import { createComment, deleteComment, getEventComments, updateComment } from '@/utils/comment_service';
 import { Comment } from '@/utils/Types';
 import Loading from '@/components/Loading';
 import UserAvatar from '@/components/User/UserAvatar';
 import { useAuth } from '@/hooks/auth';
+import { SnackbarContext } from '@/context/SnackbarContext'
+import { extractErrorMessage, extractValidationErrors, isValidationError } from '@/utils/response_helper'
 
 const MIN_LENGTH = 3;
 const MAX_LENGTH = 500;
@@ -28,6 +31,7 @@ function CommentsSection({ eventId }: Params) {
     const [editingError, setEditingError] = useState('');
     const [actionCommentId, setActionCommentId] = useState<number | null>(null);
     const [nowMs, setNowMs] = useState<number | null>(null);
+    const addSnackbarMessage = useContext(SnackbarContext);
 
     useEffect(() => {
         const getComments = async () => {
@@ -56,7 +60,12 @@ function CommentsSection({ eventId }: Params) {
         return "";
     }
 
-    const canSubmit = useMemo(() => !error && !!newComment.trim() && !isSubmitting, [error, newComment, isSubmitting]);
+    const canSubmit = useMemo(() =>
+        !error
+        && !!newComment.trim()
+        && !isSubmitting
+        , [error, newComment, isSubmitting]
+    );
 
     const formatRelativeTime = (dateString: string) => {
         if (!nowMs) return '';
@@ -123,9 +132,16 @@ function CommentsSection({ eventId }: Params) {
 
             setNewComment('');
             setError('');
-        } catch (e) {
-            console.error(e);
-            setError('Neizdevās publicēt komentāru. Mēģini vēlreiz.');
+        } catch (error) {
+            if (isValidationError(error)) {
+                const errors = extractValidationErrors(error);
+                Object.values(errors).forEach(messages => {
+                    messages?.forEach(message => addSnackbarMessage(message, 'error'));
+                });
+            } else {
+                const errorMessage = extractErrorMessage(error);
+                addSnackbarMessage(errorMessage, 'error');
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -217,13 +233,13 @@ function CommentsSection({ eventId }: Params) {
                     </div>
 
                     <div className="flex justify-end">
-                        <button
+                        <Button
                             onClick={handleSubmit}
                             disabled={!canSubmit}
-                            className={`rounded-lg px-4 py-2 text-sm font-medium text-white transition ${canSubmit ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                            className="text-sm font-medium"
                         >
                             {isSubmitting ? 'Publicē...' : 'Publicēt'}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             ) : (
@@ -234,7 +250,7 @@ function CommentsSection({ eventId }: Params) {
 
             <div className="flex flex-col divide-y divide-gray-100">
                 {comments.map((comment) => {
-                    const isOwner = user?.id === comment.user.id;
+                    const isOwner = user ? user?.id === comment.user.id : false;
                     const isEditing = editingId === comment.id;
                     const isBusy = actionCommentId === comment.id;
 
@@ -272,14 +288,15 @@ function CommentsSection({ eventId }: Params) {
                                             {editingError && <div className="mt-1 text-xs text-red-500">{editingError}</div>}
 
                                             <div className="mt-2 flex items-center gap-2">
-                                                <button
+                                                <Button
                                                     type="button"
                                                     disabled={!!editingError || !editingText.trim() || isBusy}
                                                     onClick={() => saveEditing(comment.id)}
-                                                    className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                                    variant="secondary"
+                                                    className="px-3 py-1.5 text-xs font-medium"
                                                 >
                                                     {isBusy ? 'Saglabā...' : 'Saglabāt'}
-                                                </button>
+                                                </Button>
                                                 <button
                                                     type="button"
                                                     onClick={cancelEditing}

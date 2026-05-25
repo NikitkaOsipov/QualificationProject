@@ -54,6 +54,7 @@ const ResponsiveOverlayPanel = ({
 
             {isOpen && (
                 <>
+                    {/* Desktop */}
                     <div className={`absolute right-0 z-[1200] mt-2 hidden rounded-lg border border-gray-200 bg-white shadow-lg sm:block ${desktopWidthClass}`}>
                         <div className="relative z-[1201] flex items-center justify-between border-b border-gray-100 px-4 py-2">
                             <span className="text-sm font-semibold text-gray-900">{title}</span>
@@ -63,6 +64,7 @@ const ResponsiveOverlayPanel = ({
                         <div className="max-h-80 overflow-y-auto py-1">{children}</div>
                     </div>
 
+                    {/* Mobile */}
                     <div className="fixed inset-0 z-[1300] bg-white sm:hidden">
                         <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
                             <span className="text-base font-semibold text-gray-900">{title}</span>
@@ -80,7 +82,7 @@ const ResponsiveOverlayPanel = ({
 
                         {actions ? <div className="flex gap-2 px-4 py-2">{actions}</div> : null}
 
-                        <div className="overflow-y-auto py-1">{children}</div>
+                        <div className="overflow-y-auto py-1 h-full">{children}</div>
                     </div>
                 </>
             )}

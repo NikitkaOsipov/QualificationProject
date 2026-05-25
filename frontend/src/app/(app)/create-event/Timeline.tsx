@@ -23,7 +23,7 @@ const Timeline = ({ currentStage, totalStages }: TimelineProps) => {
                         <div
                             className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold text-sm transition-all ${
                                 stage.number <= currentStage
-                                    ? 'bg-blue-600 text-white'
+                                    ? 'bg-gradient-to-r from-logo-1 to-logo-3 text-white'
                                     : 'bg-gray-200 text-gray-600'
                             }`}
                         >
@@ -33,7 +33,9 @@ const Timeline = ({ currentStage, totalStages }: TimelineProps) => {
                         {/* Stage Label */}
                         <p
                             className={`mt-2 text-xs font-medium text-center transition-all ${
-                                stage.number <= currentStage ? 'text-blue-600' : 'text-gray-500'
+                                stage.number <= currentStage
+                                    ? 'bg-gradient-to-r from-logo-1 to-logo-3 bg-clip-text text-transparent'
+                                    : 'text-gray-500'
                             }`}
                         >
                             {stage.label}
@@ -45,7 +47,7 @@ const Timeline = ({ currentStage, totalStages }: TimelineProps) => {
             {/* Progress Bar Below */}
             <div className="mt-8 w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                    className="h-full bg-blue-600 transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-logo-1 to-logo-3 transition-all duration-300"
                     style={{ width: `${(currentStage / totalStages) * 100}%` }}
                 />
             </div>

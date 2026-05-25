@@ -61,7 +61,7 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
                             {formData.title || 'Pasākums bez nosaukuma'}
                         </h1>
                         <p className="text-gray-600">
-                            📍 {formData.address || 'Vieta nav norādīta'}
+                            {formData.address || 'Vieta nav norādīta'}
                         </p>
                     </div>
 
@@ -130,17 +130,10 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
                     {/* Coordinates */}
                     {formData.latitude && formData.longitude && (
                         <div className="text-xs text-gray-500 pt-4 border-t border-gray-200">
-                            <p>📍 Koordinātas: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}</p>
+                            <p>Koordinātas: {Number(formData.latitude).toFixed(4)}, {Number(formData.longitude).toFixed(4)}</p>
                         </div>
                     )}
                 </div>
-            </div>
-
-            {/* Note */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800">
-                    <strong>Piezīme:</strong> Pēc publicēšanas joprojām varēsiet rediģēt lielāko daļu pasākuma detaļu. Redzamību var mainīt jebkurā laikā.
-                </p>
             </div>
         </div>
     );

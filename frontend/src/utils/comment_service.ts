@@ -2,6 +2,14 @@ import axios from '@/lib/axios';
 import type { Comment, EventType } from './Types'
 import type { LaravelStatusResponse } from './response_helper'
 
+interface CreateCommentResponse {
+    status: 'ok' | 'error';
+    data?: {
+        comment: Comment
+    };
+    message: string;
+}
+
 export const getEventComments = async (eventId: number | string, page?: number) =>
     axios.get(`/api/event-comments/${eventId}?page=${page}`).then(r => r.data.data as Comment[]);
 
@@ -15,7 +23,7 @@ export const createComment = async (text: string, eventId: number | string) =>
         event_id: eventId
     };
 
-    return axios.post('/api/comment', data).then(r => r.data as LaravelStatusResponse);
+    return axios.post('/api/comment', data).then(r => r.data as CreateCommentResponse);
 }
 
 export const updateComment = async (commentId: number | string, text: string) =>

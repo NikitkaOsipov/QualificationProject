@@ -3,8 +3,8 @@ export type Visibility = 'public' | 'friends_only' | 'private';
 export interface EventFormData {
     // Stage 1: Location
     address: string;
-    latitude: number | null;
-    longitude: number | null;
+    latitude: number | string | null;
+    longitude: number | string | null;
 
     // Stage 2: Details
     title: string;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Button from '@/components/Button';
 import FriendSelector from '@/components/User/FriendSelector';
 import { requestEventParticipation } from '@/utils/post_service';
 
@@ -49,14 +50,15 @@ const EventParticipationRequestButton = ({ eventId }: EventParticipationRequestB
 
     return (
         <>
-            <button
+            <Button
                 type="button"
                 onClick={() => setIsModalOpen(true)}
                 disabled={!eventId}
-                className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                variant="secondary"
+                className=""
             >
                 Uzaicināt draugus
-            </button>
+            </Button>
 
             {isModalOpen && (
                 <div
@@ -97,14 +99,14 @@ const EventParticipationRequestButton = ({ eventId }: EventParticipationRequestB
                             >
                                 Atcelt
                             </button>
-                            <button
+                            <Button
                                 type="button"
                                 disabled={selectedFriendIds.length === 0 || sendingRequests}
                                 onClick={handleSendParticipationRequests}
-                                className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                className=""
                             >
                                 {sendingRequests ? 'Sūta ielūgumus...' : 'Nosūtīt ielūgumus'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

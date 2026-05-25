@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useContext } from 'react'
+import Button from '@/components/Button';
 import { useRouter } from 'next/navigation';
 import { createPost } from '@/utils/post_service';
 import { getCategories } from '@/utils/category_service';
@@ -176,8 +177,8 @@ export default function CreateEventPage() {
                    {currentStage === 1 && (
                         <LocationStage
                             address={formData.address}
-                            latitude={formData.latitude}
-                            longitude={formData.longitude}
+                            latitude={Number(formData.latitude)}
+                            longitude={Number(formData.longitude)}
                             onAddressChange={(address) => updateForm({ address })}
                             onCoordinatesChange={(lat, lng) => updateForm({ latitude: lat, longitude: lng })}
                             error={formData.errors.location || formData.errors.address}
@@ -249,29 +250,29 @@ export default function CreateEventPage() {
 
                 {/* Navigation Buttons */}
                 <div className="flex justify-between gap-4">
-                    <button
+                    <Button
                         onClick={handlePreviousStage}
                         disabled={currentStage === 1}
-                        className="px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        className="border border-gray-300 font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
                     >
                         ← Iepriekšējais
-                    </button>
+                    </Button>
 
                     {currentStage < 5 ? (
-                        <button
+                        <Button
                             onClick={handleNextStage}
-                            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+                            className="font-medium"
                         >
                             Nākamais →
-                        </button>
+                        </Button>
                     ) : (
-                        <button
+                        <Button
                             onClick={handleSubmit}
                             disabled={isSubmitting}
-                            className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                            className="font-medium"
                         >
                             {isSubmitting ? 'Publicē...' : 'Publicēt pasākumu'}
-                        </button>
+                        </Button>
                     )}
                 </div>
             </div>

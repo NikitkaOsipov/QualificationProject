@@ -1,6 +1,7 @@
 "use client";
 
 import { useContext, useEffect, useState } from 'react'
+import Button from '@/components/Button';
 import Tab from '@/components/User/ProfileTab';
 import { followUser, getUserProfile, sendFriendRequest, respondFriendRequest, removeFriend } from '@/utils/user_service';
 import { TabState, User, FriendshipStatus } from '@/utils/Types';
@@ -10,7 +11,7 @@ import Loading from '@/components/Loading';
 import UserAvatar from '@/components/User/UserAvatar';
 import { SnackbarContext } from '@/context/SnackbarContext';
 import { useRouter } from 'next/navigation';
-import { extractErrorMessage, extractValidationErrors, isValidationError } from '@/utils/response_helper';
+import { extractValidationErrors, isValidationError } from '@/utils/response_helper';
 
 const DefaultTab = "events";
 
@@ -182,27 +183,25 @@ export default function ProfilePage() {
                 {(!isOwner && user) && (
                     <div className="flex flex-wrap gap-2">
                         {/* Follow button */}
-                        <button
+                        <Button
                             onClick={toggleFollow}
                             disabled={actionLoading}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-60
-                                ${isFollowing
-                                    ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                                    : "bg-blue-600 text-white hover:bg-blue-700"
-                                }`}
+                            variant='secondary'
+                            className={`text-sm font-medium ${isFollowing ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : ''}`}
                         >
                             {isFollowing ? "Seko" : "Sekot"}
-                        </button>
+                        </Button>
 
                         {/* Friend request button — state-driven */}
                         {friendshipStatus === 'none' && (
-                            <button
+                            <Button
                                 onClick={handleSendFriendRequest}
                                 disabled={actionLoading}
-                                className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-60"
+                                variant='secondary'
+                                className="text-sm font-medium"
                             >
                                 Pievienot draugos
-                            </button>
+                            </Button>
                         )}
 
                         {friendshipStatus === 'pending_sent' && (
