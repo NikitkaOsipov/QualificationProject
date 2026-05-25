@@ -2,8 +2,8 @@ import axios from '@/lib/axios'
 import { FriendshipStatus, User } from '@/utils/Types'
 import type { LaravelPaginatedResponse, LaravelStatusResponse } from '@/utils/response_helper'
 
-type UserSearchResponse = LaravelPaginatedResponse<User[]>;
-type ProfileTabResponse = LaravelPaginatedResponse<any[]>;
+type UserSearchResponse = LaravelPaginatedResponse<User>;
+type ProfileTabResponse = LaravelPaginatedResponse<any>;
 
 export interface UserProfile {
     user: User;

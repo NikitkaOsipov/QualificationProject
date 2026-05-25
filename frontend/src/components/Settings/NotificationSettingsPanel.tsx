@@ -1,11 +1,8 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import useSWR from 'swr';
 import { NotificationPreference, NotificationType } from '@/utils/Types';
-import {
-    getNotificationPreferences,
-    updateNotificationPreference,
-} from '@/utils/notification_service';
+import { getNotificationPreferences, updateNotificationPreference } from '@/utils/notification_service';
+import { SnackbarContext } from '@/context/SnackbarContext';
 
 const NOTIFICATION_TYPES: NotificationType[] = [
     'friend_request_received',
@@ -26,15 +23,14 @@ const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
 const NotificationSettingsPanel = () => {
     // This is for disabling checkboxes which where clicked while fetching response
     const [updatingKeys, setUpdatingKeys] = useState<Set<string>>(new Set());
+    const addSnackbarMessage = useContext(SnackbarContext);
 
     const {
         data: preferences,
         isValidating,
         mutate,
     } = useSWR('notification-preferences', async () => {
-        const response = await getNotificationPreferences();
-
-        return response.data;
+        return await getNotificationPreferences();
     });
 
     const isLoading = !preferences && isValidating;
@@ -100,7 +96,8 @@ const NotificationSettingsPanel = () => {
             await mutate((currentList: NotificationPreference[] = []) => {
                 return updatePreferences(currentList, type, channel, previousValue);
             }, false);
-            console.error('Failed to update notification preference:', error);
+
+            addSnackbarMessage('Nevarēja atjaunināt preferences.', 'error');
         } finally {
             setUpdatingKeys((prev) => {
                 const next = new Set(prev);

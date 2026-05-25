@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react'
 import Loading from '@/components/Loading';
 import PaginationControls from '@/components/PaginationControls';
 import UserCard from '@/components/User/UserCard';
 import { useAuth } from '@/hooks/auth';
 import { searchUsers } from '@/utils/user_service';
 import type { User } from '@/utils/Types';
+import { SnackbarContext } from '@/context/SnackbarContext'
+import { extractErrorMessage, extractValidationErrors, isValidationError } from '@/utils/response_helper'
 
 const PAGE_SIZE = 12;
 
@@ -18,7 +20,8 @@ export default function PeoplePage() {
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const addSnackbarMessage = useContext(SnackbarContext);
+
 
     useEffect(() => {
         const timer = setTimeout(async () => {
@@ -32,9 +35,16 @@ export default function PeoplePage() {
 
                 setUsers(response.data);
                 setLastPage(response.meta.last_page || 1);
-                setError(null);
-            } catch (e: any) {
-                setError(e?.response?.data?.message ?? 'Neizdevās ielādēt lietotājus.');
+            } catch (error) {
+                if (isValidationError(error)) {
+                    const errors = extractValidationErrors(error);
+                    Object.values(errors).forEach(messages => {
+                        messages?.forEach(message => addSnackbarMessage(message, 'error'));
+                    });
+                } else {
+                    const errorMessage = extractErrorMessage(error);
+                    addSnackbarMessage(errorMessage, 'error');
+                }
             } finally {
                 setIsLoading(false);
             }
@@ -65,12 +75,6 @@ export default function PeoplePage() {
                     className="w-full rounded-lg border px-3 py-2 text-sm"
                 />
             </div>
-
-            {error && (
-                <div className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                    {error}
-                </div>
-            )}
 
             {isLoading ? (
                 <Loading />

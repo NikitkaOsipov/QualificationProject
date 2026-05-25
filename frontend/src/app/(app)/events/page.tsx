@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react'
 import "@/css/SideModal.css";
 import EventSearchAndFilters from '@/components/Event/EventSearchAndFilters';
 import { useAuth } from '@/hooks/auth';
@@ -7,6 +7,8 @@ import type { EventFilters, EventType } from '@/utils/Types';
 import { getPosts, type PaginatedEventsMeta } from '@/utils/post_service';
 import Loading from '@/components/Loading';
 import EventCard from '@/components/Event/EventCard';
+import { SnackbarContext } from '@/context/SnackbarContext'
+import { extractErrorMessage, extractValidationErrors, isValidationError } from '@/utils/response_helper'
 
 
 const DEFAULT_FILTERS: EventFilters = {
@@ -32,6 +34,7 @@ export default function EventsPage() {
     const [meta, setMeta] = useState<PaginatedEventsMeta | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const addSnackbarMessage = useContext(SnackbarContext);
 
     const fetchEvents = async (filters: EventFilters, page = 1, append = false) => {
         if (append) {
@@ -51,6 +54,16 @@ export default function EventsPage() {
 
             setEvents(current => append ? [...current, ...response.data] : response.data);
             setMeta(response.meta);
+        } catch (error) {
+            if (isValidationError(error)) {
+                const errors = extractValidationErrors(error);
+                Object.values(errors).forEach(messages => {
+                    messages?.forEach(message => addSnackbarMessage(message, 'error'));
+                });
+            } else {
+                const errorMessage = extractErrorMessage(error);
+                addSnackbarMessage(errorMessage, 'error');
+            }
         } finally {
             setIsLoading(false);
             setIsLoadingMore(false);

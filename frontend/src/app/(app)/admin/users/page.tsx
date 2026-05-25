@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/auth';
 import Loading from '@/components/Loading';
 import PaginationControls from '@/components/PaginationControls';
 import SelectableUserCard from '@/components/User/SelectableUserCard';
 import type { User } from '@/utils/Types';
 import { deleteAdminUser, getAdminUsers, updateAdminUser } from '@/utils/admin_service';
+import { SnackbarContext } from '@/context/SnackbarContext'
+import { extractErrorMessage, extractValidationErrors, isValidationError } from '@/utils/response_helper'
 
 const PAGE_SIZE = 6;
 
@@ -21,7 +23,7 @@ export default function AdminUsersPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const addSnackbarMessage = useContext(SnackbarContext);
 
     const [editName, setEditName] = useState('');
     const [editEmail, setEditEmail] = useState('');
@@ -53,10 +55,16 @@ export default function AdminUsersPage() {
                     setEditEmail(firstUser?.email ?? '');
                     setEditRole(firstUser?.role === 'admin' ? 'admin' : 'user');
                 }
-
-                setError(null);
-            } catch (e: any) {
-                setError(e?.response?.data?.message ?? 'Neizdevās ielādēt lietotājus.');
+            } catch (error) {
+                if (isValidationError(error)) {
+                    const errors = extractValidationErrors(error);
+                    Object.values(errors).forEach(messages => {
+                        messages?.forEach(message => addSnackbarMessage(message, 'error'));
+                    });
+                } else {
+                    const errorMessage = extractErrorMessage(error);
+                    addSnackbarMessage(errorMessage, 'error');
+                }
             } finally {
                 setIsLoading(false);
             }
@@ -70,7 +78,6 @@ export default function AdminUsersPage() {
         setEditName(target.name ?? '');
         setEditEmail(target.email ?? '');
         setEditRole(target.role === 'admin' ? 'admin' : 'user');
-        setError(null);
     };
 
     const onSave = async () => {
@@ -87,7 +94,7 @@ export default function AdminUsersPage() {
             });
 
             if (response.status !== 'ok') {
-                setError(response.message ?? 'Neizdevās saglabāt lietotāja izmaiņas.');
+                addSnackbarMessage('Neizdevās saglabāt lietotāja izmaiņas.', 'error');
                 return;
             }
 
@@ -95,9 +102,16 @@ export default function AdminUsersPage() {
                 target.id === selectedUser.id ? { ...target, name: editName.trim(), email: editEmail.trim(), role: editRole} : target,
             ));
             setSelectedUser((currentUser) => currentUser ? { ...currentUser, name: editName.trim(), email: editEmail.trim(), role: editRole } : currentUser);
-            setError(null);
-        } catch (e: any) {
-            setError(e?.response?.data?.message ?? 'Neizdevās saglabāt lietotāja izmaiņas.');
+        } catch (error) {
+            if (isValidationError(error)) {
+                const errors = extractValidationErrors(error);
+                Object.values(errors).forEach(messages => {
+                    messages?.forEach(message => addSnackbarMessage(message, 'error'));
+                });
+            } else {
+                const errorMessage = extractErrorMessage(error);
+                addSnackbarMessage(errorMessage, 'error');
+            }
         } finally {
             setIsSaving(false);
         }
@@ -109,7 +123,7 @@ export default function AdminUsersPage() {
         }
 
         if (selectedUser.id === user.id) {
-            setError('Jūs nevarat izdzēst savu kontu šajā sadaļā.');
+            addSnackbarMessage('Jūs nevarat izdzēst savu kontu.', 'error');
             return;
         }
 
@@ -123,7 +137,7 @@ export default function AdminUsersPage() {
             const response = await deleteAdminUser(selectedUser.id);
 
             if (response.status !== 'ok') {
-                setError(response.message ?? 'Neizdevās izdzēst lietotāju.');
+                addSnackbarMessage('Neizdevās izdzēst lietotāju.', 'error');
                 return;
             }
 
@@ -135,9 +149,16 @@ export default function AdminUsersPage() {
             setEditName(nextSelectedUser?.name ?? '');
             setEditEmail(nextSelectedUser?.email ?? '');
             setEditRole(nextSelectedUser?.role === 'admin' ? 'admin' : 'user');
-            setError(null);
-        } catch (e: any) {
-            setError(e?.response?.data?.message ?? 'Neizdevās izdzēst lietotāju.');
+        } catch (error) {
+            if (isValidationError(error)) {
+                const errors = extractValidationErrors(error);
+                Object.values(errors).forEach(messages => {
+                    messages?.forEach(message => addSnackbarMessage(message, 'error'));
+                });
+            } else {
+                const errorMessage = extractErrorMessage(error);
+                addSnackbarMessage(errorMessage, 'error');
+            }
         } finally {
             setIsDeleting(false);
         }
@@ -174,13 +195,6 @@ export default function AdminUsersPage() {
                     className="w-full rounded-lg border px-3 py-2 text-sm"
                 />
             </div>
-
-            {error && (
-                <div className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-                    {error}
-                </div>
-            )}
-
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <div className="space-y-3">
                     {isLoading ? (

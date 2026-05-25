@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from 'react'
 import Tab from '@/components/User/ProfileTab';
 import { followUser, getUserProfile, sendFriendRequest, respondFriendRequest, removeFriend } from '@/utils/user_service';
 import { TabState, User, FriendshipStatus } from '@/utils/Types';
@@ -8,19 +8,23 @@ import ProfilePaginationTable from '@/components/User/ProfilePaginationTable';
 import { useAuth } from '@/hooks/auth';
 import Loading from '@/components/Loading';
 import UserAvatar from '@/components/User/UserAvatar';
+import { SnackbarContext } from '@/context/SnackbarContext';
+import { useRouter } from 'next/navigation';
+import { extractErrorMessage, extractValidationErrors, isValidationError } from '@/utils/response_helper';
 
 const DefaultTab = "events";
 
 export default function ProfilePage() {
     const [profileId, setProfileId] = useState<string | null>(null);
-    const [profileError, setProfileError] = useState<string | null | undefined>(undefined);
 
-    const [profileUser, setProfileUser] = useState<User | null>(null)
-    const [isFollowing, setIsFollowing] = useState(false)
-    const [isOwner, setIsOwner] = useState(false)
-    const [friendshipStatus, setFriendshipStatus] = useState<FriendshipStatus>('none')
-    const [activeTab, setActiveTab] = useState<TabState>(DefaultTab)
-    const [actionLoading, setActionLoading] = useState(false)
+    const [profileUser, setProfileUser] = useState<User | null>(null);
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [isOwner, setIsOwner] = useState(false);
+    const [friendshipStatus, setFriendshipStatus] = useState<FriendshipStatus>('none');
+    const [activeTab, setActiveTab] = useState<TabState>(DefaultTab);
+    const [actionLoading, setActionLoading] = useState(false);
+    const router = useRouter();
+    const addSnackbarMessage = useContext(SnackbarContext);
 
     const { user } = useAuth();
 
@@ -35,8 +39,13 @@ export default function ProfilePage() {
 
         const onUrlChange = () => {
             const id = readProfileId();
+            if (!id) {
+                addSnackbarMessage('Lietotājs nav atrasts.', 'error');
+                router.push('/');
+                return;
+            }
+
             setProfileId(id);
-            setProfileError(id ? null : 'Lietotājs nav atrasts. Pārbaudiet profila saiti.');
         };
 
         const emitUrlChangeAsync = () => {
@@ -70,18 +79,13 @@ export default function ProfilePage() {
             window.removeEventListener('popstate', onUrlChange);
             window.removeEventListener('app:url-change', onUrlChange);
         };
-    }, []);
+    }, [router]);
 
     useEffect(() => {
         let isCancelled = false;
 
         async function fetchUser() {
-            if (profileError !== null) {
-                return;
-            }
-
             if (!profileId) {
-                setProfileUser(null);
                 return;
             }
 
@@ -93,27 +97,35 @@ export default function ProfilePage() {
                     return;
                 }
 
-                setProfileUser(data.user)
-                setIsFollowing(data.meta.isFollowing)
-                setIsOwner(data.meta.isOwner)
-                setFriendshipStatus(data.meta.friendshipStatus)
-                setActiveTab(DefaultTab)
-            } catch {
+                setProfileUser(data.user);
+                setIsFollowing(data.meta.isFollowing);
+                setIsOwner(data.meta.isOwner);
+                setFriendshipStatus(data.meta.friendshipStatus);
+                setActiveTab(DefaultTab);
+            } catch (error) {
                 if (isCancelled) {
                     return;
                 }
 
+                if (isValidationError(error)) {
+                    const errors = extractValidationErrors(error);
+                    Object.values(errors).forEach(messages => {
+                        messages?.forEach(message => addSnackbarMessage(message, 'error'));
+                    });
+                }
+
+                addSnackbarMessage('Lietotājs nav atrasts. Iespējams, profils neeksistē vai nav pieejams.', 'error');
                 setProfileUser(null);
-                setProfileError('Lietotājs nav atrasts. Iespējams, profils neeksistē vai nav pieejams.');
+                router.push('/');
             }
         }
 
-        fetchUser()
+        fetchUser();
 
         return () => {
             isCancelled = true;
         };
-    }, [profileId, profileError])
+    }, [profileId, router])
 
     const toggleFollow = async () => {
         if (actionLoading) return;
@@ -147,16 +159,6 @@ export default function ProfilePage() {
         setActionLoading(false);
     }
 
-    if (profileError === undefined) return <Loading />;
-    if (profileError) {
-        return (
-            <div className="max-w-3xl mx-auto py-12 px-4">
-                <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
-                    {profileError}
-                </div>
-            </div>
-        );
-    }
     if (!profileUser) return <Loading />;
 
     return (

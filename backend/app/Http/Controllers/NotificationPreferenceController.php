@@ -7,6 +7,7 @@ use App\Models\NotificationPreference;
 use App\Support\EventHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use phpDocumentor\Reflection\Types\Resource_;
 
 class NotificationPreferenceController extends Controller
 {
@@ -23,9 +24,10 @@ class NotificationPreferenceController extends Controller
                 'in_app_enabled' => (bool) ($preferencesByType[$type]?->in_app_enabled ?? true),
                 'email_enabled' => (bool) ($preferencesByType[$type]?->email_enabled ?? false),
             ])
-            ->values();
+            ->values()
+            ->all();
 
-        return EventHelper::successResponse(data: $preferences);
+        return response()->json($preferences);
     }
 
     public function update(Request $request, string $type)

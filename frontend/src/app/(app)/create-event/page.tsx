@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useContext } from 'react'
 import { useRouter } from 'next/navigation';
 import { createPost } from '@/utils/post_service';
 import { getCategories } from '@/utils/category_service';
@@ -16,16 +16,18 @@ import Loading from '@/components/Loading';
 import FriendSelector from '@/components/User/FriendSelector';
 import { validateEventData, type EventValidationSection } from '@/utils/eventValidation';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { SnackbarContext } from '@/context/SnackbarContext'
+import { extractErrorMessage, extractValidationErrors, isValidationError } from '@/utils/response_helper'
 
 export default function CreateEventPage() {
     const router = useRouter();
     const [currentStage, setCurrentStage] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [serverError, setServerError] = useState<string | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [isDirty, setIsDirty] = useState(false);
+    const addSnackbarMessage = useContext(SnackbarContext);
 
     const { user } = useAuth({middleware: 'auth'});
     useUnsavedChanges(isDirty);
@@ -37,7 +39,8 @@ export default function CreateEventPage() {
                 const fetchedCategories = await getCategories();
                 setCategories(fetchedCategories);
             } catch (error) {
-                console.error('Neizdevās ielādēt kategorijas:', error);
+                const errorMessage = extractErrorMessage(error);
+                addSnackbarMessage(errorMessage, 'error');
             } finally {
                 setLoadingCategories(false);
             }
@@ -102,7 +105,6 @@ export default function CreateEventPage() {
 
     const handleSubmit = useCallback(async () => {
         setIsSubmitting(true);
-        setServerError(null);
 
         try {
             const data = new FormData();
@@ -138,15 +140,23 @@ export default function CreateEventPage() {
             const response = await createPost(data);
 
             if (response.status == "ok") {
-                setIsDirty(false);
                 // Success
+                setIsDirty(false);
+                addSnackbarMessage('Pasākums veiksmīgi izveidots', 'success');
                 router.push(`/`);
             } else {
-                setServerError('Neizdevās izveidot pasākumu. Lūdzu, mēģiniet vēlreiz.');
+                addSnackbarMessage('Neizdevās izveidot pasākumu. Lūdzu, mēģiniet vēlreiz.', 'error');
             }
-        } catch (error: any) {
-            const errorMessage = error.response?.data?.message || 'Radusies kļūda. Lūdzu, mēģiniet vēlreiz.';
-            setServerError(errorMessage);
+        } catch (error) {
+            if (isValidationError(error)) {
+                const errors = extractValidationErrors(error);
+                Object.values(errors).forEach(messages => {
+                    messages?.forEach(message => addSnackbarMessage(message, 'error'));
+                });
+            } else {
+                const errorMessage = extractErrorMessage(error);
+                addSnackbarMessage(errorMessage, 'error');
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -162,11 +172,6 @@ export default function CreateEventPage() {
 
                 {/* Stage Content */}
                 <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-                    {serverError && (
-                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-red-800">{serverError}</p>
-                        </div>
-                    )}
 
                    {currentStage === 1 && (
                         <LocationStage

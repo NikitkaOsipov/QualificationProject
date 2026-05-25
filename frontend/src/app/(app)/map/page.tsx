@@ -3,12 +3,14 @@
 import EventSearchAndFilters from '@/components/Event/EventSearchAndFilters'
 import type { EventFilters, EventType } from '@/utils/Types'
 import Map from '@/components/Map/DynamicMarkerMap'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 import { getPosts } from '@/utils/post_service'
 import Loading from '@/components/Loading'
 import EventPreview from '@/components/Map/UI/EventPreview'
 import { useAuth } from '@/hooks/auth'
+import { extractErrorMessage, extractValidationErrors, isValidationError } from '@/utils/response_helper'
+import { SnackbarContext } from '@/context/SnackbarContext'
 
 const DEFAULT_FILTERS: EventFilters = {
     search: '',
@@ -28,6 +30,7 @@ const MapPage = () => {
     const [draftFilters, setDraftFilters] = useState<EventFilters>({ ...DEFAULT_FILTERS });
     const [currentFilters, setCurrentFilters] = useState<EventFilters>({ ...DEFAULT_FILTERS });
     const [isLoading, setIsLoading] = useState(true);
+    const addSnackbarMessage = useContext(SnackbarContext);
 
     useEffect(() => {
         const fetchEvents = async (filters: EventFilters) => {
@@ -42,6 +45,16 @@ const MapPage = () => {
                 });
 
                 setPosts(result.data);
+            } catch (error) {
+                if (isValidationError(error)) {
+                    const errors = extractValidationErrors(error);
+                    Object.values(errors).forEach(messages => {
+                        messages?.forEach(message => addSnackbarMessage(message, 'error'));
+                    });
+                } else {
+                    const errorMessage = extractErrorMessage(error);
+                    addSnackbarMessage(errorMessage, 'error');
+                }
             } finally {
                 setIsLoading(false);
             }
