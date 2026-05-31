@@ -129,7 +129,7 @@ const Login = () => {
                         Aizmirsāt paroli?
                     </Link>
 
-                    <Button className="w-full sm:w-auto">Pieslēgties</Button>
+                    <Button type="submit" className="w-full sm:w-auto">Pieslēgties</Button>
                 </div>
             </form>
         </>

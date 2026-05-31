@@ -234,6 +234,7 @@ function CommentsSection({ eventId }: Params) {
 
                     <div className="flex justify-end">
                         <Button
+                            type="submit"
                             onClick={handleSubmit}
                             disabled={!canSubmit}
                             className="text-sm font-medium"

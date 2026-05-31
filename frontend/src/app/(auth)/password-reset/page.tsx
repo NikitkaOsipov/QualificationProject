@@ -124,7 +124,7 @@ const PasswordReset = () => {
                 </div>
 
                 <div className="flex items-center justify-end mt-4">
-                    <Button>Atjaunot paroli</Button>
+                    <Button type="submit">Atjaunot paroli</Button>
                 </div>
             </form>
         </>

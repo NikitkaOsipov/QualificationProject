@@ -126,6 +126,7 @@ const AccountSettingsPanel = ({ user, onUserUpdatedAction }: Props) => {
 
                 <div className="mt-4 flex justify-end">
                     <Button
+                        type="submit"
                         disabled={isSaving}
                         className="text-sm font-medium"
                     >

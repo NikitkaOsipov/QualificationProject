@@ -132,7 +132,7 @@ const Page = () => {
                     Jau esat reģistrējies?
                 </Link>
 
-                <Button className="w-full sm:w-auto">Reģistrēties</Button>
+                <Button type="submit" className="w-full sm:w-auto">Reģistrēties</Button>
             </div>
         </form>
     )
