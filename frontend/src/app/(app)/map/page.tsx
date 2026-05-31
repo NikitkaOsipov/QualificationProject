@@ -85,7 +85,7 @@ const MapPage = () => {
             {isLoading ? (
                 <Loading/>
             ) : (
-                <div className="relative w-full h-[100dvh]">
+                <div className="relative w-full h-full">
                     {/* Shows only for mobile */}
                     <div className="sm:hidden w-full">
                         <ResponsiveOverlayPanel

@@ -41,7 +41,7 @@ const ConfirmationStage = ({ formData, imagePreview, categoryList }: Confirmatio
             </div>
 
             {/* Event Preview Card */}
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md">
+            <div>
                 {/* Hero Image */}
                 {imagePreview && (
                     <div className="relative w-full h-64 bg-gray-200">
