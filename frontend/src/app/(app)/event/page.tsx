@@ -56,7 +56,7 @@ export default function EventPage() {
         setGoingCount(eventResponse.meta.going_count ?? (eventResponse.meta.going_users?.length ?? 0));
         setInterestedCount(eventResponse.meta.interested_count ?? (eventResponse.meta.interested_users?.length ?? 0));
     };
-    // const searchParams = useSearchParams();
+
     useEffect(()  => {
         const id = typeof window !== "undefined"
             ? new URLSearchParams(window.location.search).get("id")
@@ -66,7 +66,6 @@ export default function EventPage() {
         async function fetchPost() {
             try {
                 const event = await getPost(id);
-                console.log(event);
                 setEventDetails(event);
                 setError(null);
             } catch (error: any) {
@@ -146,8 +145,8 @@ export default function EventPage() {
     return (
         event ? (
             <>
-                <div className="max-w-6xl mx-auto pb-16 px-2 sm:px-4">
-                    <div className="relative w-full h-56 sm:h-72 md:h-96 rounded-xl overflow-hidden mb-6 sm:mb-8">
+                <div className="mx-auto w-full pb-16 flex flex-col items-center">
+                    <div className="relative w-full h-56 sm:h-72 md:h-96 overflow-hidden mb-6 sm:mb-8">
                         <Image
                             src={eventImageSrc}
                             alt={event.title}
@@ -155,7 +154,7 @@ export default function EventPage() {
                             className="object-cover"
                         />
                     </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+                    <div className="w-full max-w-[1500px] grid grid-cols-1 lg:grid-cols-3 gap-6 px-2 sm:px-4 sm:gap-8">
                         {/* Main content */}
                         <div className="lg:col-span-2 flex flex-col gap-6 sm:gap-8">
                             <div>
@@ -296,4 +295,31 @@ export default function EventPage() {
             </>
         ) : <Loading/>
     )
+}
+
+
+function formatEventDate(start?: string | Date, end?: string | Date) {
+    if (!start) return "";
+
+    const startDate = new Date(start);
+    const endDate = end ? new Date(end) : null;
+
+    const options: Intl.DateTimeFormatOptions = {
+        weekday: "long",
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+    };
+
+    const formattedStart = startDate.toLocaleString('lv-LV', options);
+    if (!endDate) return formattedStart;
+
+    // If same day show only end time, otherwise full end datetime
+    const sameDay = startDate.toDateString() === endDate.toDateString();
+    const formattedEnd = sameDay
+        ? endDate.toLocaleString('lv-LV', { hour: '2-digit', minute: '2-digit' })
+        : endDate.toLocaleString('lv-LV', options);
+
+    return `${formattedStart} — ${formattedEnd}`;
 }

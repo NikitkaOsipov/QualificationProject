@@ -1,7 +1,7 @@
 "use client";
 
 import { useContext, useEffect, useState } from 'react'
-import "@/css/SideModal.css";
+
 import EventSearchAndFilters from '@/components/Event/EventSearchAndFilters';
 import { useAuth } from '@/hooks/auth';
 import type { EventFilters, EventType } from '@/utils/Types';

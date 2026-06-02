@@ -208,7 +208,8 @@ class EventController extends Controller
     public function show(Event $event)
     {
         $user = Auth::user();
-        $event->loadMissing(['user', 'visibility', 'categories']);
+        $event->loadMissing(['user', 'visibility', 'categories'])
+            ->loadCount(['goingUsers', 'interestedUsers']);
 
         if (! EventHelper::canUserAccessEvent($user, $event)) {
             return EventHelper::errorResponse('Jums nav piekļuves šim pasākumam.', 403);

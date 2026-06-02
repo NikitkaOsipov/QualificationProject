@@ -40,9 +40,19 @@ class Event extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function interestedUsersCount()
+    {
+        return $this->hasMany(EventInterested::class)->count();
+    }
+
     public function interestedUsers()
     {
         return $this->hasMany(EventInterested::class);
+    }
+
+    public function goingUsersCount()
+    {
+        return $this->hasMany(EventGoing::class)->count();
     }
 
     public function goingUsers()

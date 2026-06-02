@@ -1,17 +1,17 @@
-'use client'
+'use client';
 
-import EventSearchAndFilters from '@/components/Event/EventSearchAndFilters'
-import type { EventFilters, EventType } from '@/utils/Types'
-import Map from '@/components/Map/DynamicMarkerMap'
-import { useContext, useEffect, useState } from 'react'
+import EventSearchAndFilters from '@/components/Event/EventSearchAndFilters';
+import type { EventFilters, EventType, User } from '@/utils/Types';
+import Map from '@/components/Map/DynamicMarkerMap';
+import { useContext, useEffect, useState } from 'react';
 
-import { getPosts } from '@/utils/post_service'
-import Loading from '@/components/Loading'
-import EventPreview from '@/components/Map/UI/EventPreview'
-import { useAuth } from '@/hooks/auth'
-import { extractErrorMessage, extractValidationErrors, isValidationError } from '@/utils/response_helper'
-import { SnackbarContext } from '@/context/SnackbarContext'
-import ResponsiveOverlayPanel from '@/components/ResponsiveOverlayPanel'
+import { getPost, getPosts, setGoingPost, setInterestedPost, type EventResponse } from '@/utils/post_service';
+import Loading from '@/components/Loading';
+import EventPreview from '@/components/Map/UI/EventPreview';
+import { useAuth } from '@/hooks/auth';
+import { extractErrorMessage, extractValidationErrors, isValidationError } from '@/utils/response_helper';
+import { SnackbarContext } from '@/context/SnackbarContext';
+import ResponsiveOverlayPanel from '@/components/ResponsiveOverlayPanel';
 
 const DEFAULT_FILTERS: EventFilters = {
     search: '',
@@ -27,12 +27,20 @@ const MapPage = () => {
 
     const [posts, setPosts] = useState<EventType[]>([]);
     const [open, setOpen] = useState<boolean>(false);
+    
+    // Selected event
     const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
+    const [interested, setInterested] = useState<boolean>(false);
+    const [going, setGoing] = useState<boolean>(false);
+    const [goingUsers, setGoingUsers] = useState<User[]>([]);
+    const [interestedUsers, setInterestedUsers] = useState<User[]>([]);
+
     const [draftFilters, setDraftFilters] = useState<EventFilters>({ ...DEFAULT_FILTERS });
     const [currentFilters, setCurrentFilters] = useState<EventFilters>({ ...DEFAULT_FILTERS });
     const [isLoading, setIsLoading] = useState(true);
     const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
     const addSnackbarMessage = useContext(SnackbarContext);
+
 
     useEffect(() => {
         const fetchEvents = async (filters: EventFilters) => {
@@ -63,12 +71,35 @@ const MapPage = () => {
         }
 
         fetchEvents(currentFilters);
-    }, [currentFilters])
+    }, [currentFilters]);
+
+    const setEventDetails = (eventResponse: EventResponse) => {
+        setSelectedEvent(eventResponse.data);
+        setGoing(eventResponse.meta.is_going);
+        setInterested(eventResponse.meta.is_interested);
+        setGoingUsers(eventResponse.meta.going_users ?? []);
+        setInterestedUsers(eventResponse.meta.interested_users ?? []);
+    };
+
+    // After user clicks on interested or going, it will update this post
+    const refreshSelectedEvent = async (eventId: number) => {
+        const eventResponse = await getPost(eventId);
+        setEventDetails(eventResponse);
+
+        setPosts(prevPosts => prevPosts.map(post => post.id === eventId ? eventResponse.data : post));
+    };
 
     const toggleModal = (value: boolean) => setOpen(value);
-    const selectEvent = (event: EventType) => {
+    const selectEvent = async (event: EventType) => {
         setOpen(true);
         setSelectedEvent(event);
+        try {
+            const eventResponse = await getPost(event.id);
+            setEventDetails(eventResponse);
+        } catch (error) {
+            const errorMessage = extractErrorMessage(error);
+            addSnackbarMessage(errorMessage, 'error');
+        }
     }
 
     const handleResetFilters = () => {
@@ -78,6 +109,52 @@ const MapPage = () => {
     
     const handleApplyFilters = () => {
         setCurrentFilters({ ...draftFilters });
+    }
+
+    async function handleInterested(value: boolean, eventId: number) {
+        const response = await setInterestedPost(eventId, value);
+
+        if (response.status !== 'ok') {
+            addSnackbarMessage('Neizdevas atjaunot interesējas statusu.', 'error');
+            return;
+        }
+
+        try {
+            await refreshSelectedEvent(eventId);
+        } catch (error) {
+            if (isValidationError(error)) {
+                const errors = extractValidationErrors(error);
+                Object.values(errors).forEach(messages => {
+                    messages?.forEach(message => addSnackbarMessage(message, 'error'));
+                });
+            } else {
+                const errorMessage = extractErrorMessage(error);
+                addSnackbarMessage(errorMessage, 'error');
+            }
+        }
+    }
+
+    async function handleGoing(value: boolean, eventId: number) {
+        const response = await setGoingPost(eventId, value);
+
+        if (response.status !== 'ok') {
+            addSnackbarMessage('Neizdevas atjaunot piedalās statusu.', 'error');
+            return;
+        }
+
+        try {
+            await refreshSelectedEvent(eventId);
+        } catch (error) {
+            if (isValidationError(error)) {
+                const errors = extractValidationErrors(error);
+                Object.values(errors).forEach(messages => {
+                    messages?.forEach(message => addSnackbarMessage(message, 'error'));
+                });
+            } else {
+                const errorMessage = extractErrorMessage(error);
+                addSnackbarMessage(errorMessage, 'error');
+            }
+        }
     }
 
     return (
@@ -140,7 +217,14 @@ const MapPage = () => {
                         <EventPreview
                             isOpen={open}
                             toggleModal={toggleModal}
-                            event={selectedEvent}/>
+                            event={selectedEvent}
+                            isInterested={interested}
+                            isGoing={going}
+                            interestedUsers={interestedUsers}
+                            goingUsers={goingUsers}
+                            handleInterested={(value: boolean) => selectedEvent ? handleInterested(value, selectedEvent.id) : Promise.resolve()}
+                            handleGoing={(value: boolean) => selectedEvent ? handleGoing(value, selectedEvent.id) : Promise.resolve()}
+                        />
                     </div>
 
                     {posts.length === 0 && (
