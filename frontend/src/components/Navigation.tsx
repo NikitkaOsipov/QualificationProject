@@ -83,7 +83,7 @@ const Navigation = ({ user }) => {
                                     className="inline-flex items-center justify-center rounded-full transition duration-150 ease-in-out hover:opacity-90"
                                     aria-label="Profils">
                                     <UserAvatar
-                                        src={user?.avatar_path ?? user?.avatar}
+                                        avatarPath={user?.avatar_path}
                                         name={user?.name ?? 'Profils'}
                                         className="w-9 h-9"
                                     />

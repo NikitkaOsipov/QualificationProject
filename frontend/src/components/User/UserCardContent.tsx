@@ -24,7 +24,7 @@ export default function UserCardContent({
     return (
         <div className="flex items-center gap-4">
             <div className="flex-shrink-0 relative">
-                <UserAvatar src={user.avatar_path ?? user.avatar} name={user.name} className="w-12 h-12" />
+                <UserAvatar avatarPath={user.avatar_path} name={user.name} className="w-12 h-12" />
                 {showOnlineState && (
                     <span
                         className={`absolute right-0 top-0 h-3 w-3 rounded-full ring-2 ring-white ${isOnline ? 'bg-green-500' : 'bg-gray-300'}`}
@@ -47,4 +47,3 @@ export default function UserCardContent({
         </div>
     );
 }
-

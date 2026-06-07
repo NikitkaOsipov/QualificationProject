@@ -258,7 +258,7 @@ function CommentsSection({ eventId }: Params) {
                     return (
                         <article key={comment.id} className="py-4 first:pt-0">
                             <div className="flex items-start gap-3">
-                                <UserAvatar src={comment.user.avatar} name={comment.user.name} className="h-8 w-8 flex-shrink-0" />
+                                <UserAvatar avatarPath={comment.user.avatar_path} name={comment.user.name} className="h-8 w-8 flex-shrink-0" />
 
                                 <div className="min-w-0 flex-1">
                                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">

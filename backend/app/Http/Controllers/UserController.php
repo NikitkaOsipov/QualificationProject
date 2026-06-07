@@ -12,6 +12,8 @@ use App\Support\EventHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Throwable;
 
@@ -23,8 +25,6 @@ class UserController extends Controller
     public function update(Request $request) {
         $user = Auth::user();
 
-        abort_if(!$user, 401);
-
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => [
@@ -34,13 +34,44 @@ class UserController extends Controller
                 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
+            'avatar' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp,svg', 'max:4096'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
-        if (($validated['email'] ?? null) !== $user->email) {
-            $validated['email_verified_at'] = null;
+        $updated = [];
+
+        if (isset($validated['name'])) {
+            $updated['name'] = $validated['name'];
         }
 
-        $user->update($validated);
+        if (isset($validated['email'])) {
+            if ($validated['email'] !== $user->email) {
+                $updated['email_verified_at'] = null;
+            }
+            $updated['email'] = $validated['email'];
+        }
+
+        $oldAvatarPath = null;
+        if ($request->hasFile('avatar')) {
+            $newAvatarPath = Storage::disk('public')->putFile('AvatarImages', $request->file('avatar'));
+            if (!$newAvatarPath) {
+                return EventHelper::errorResponse('Neizdevās augšupielādēt profila attēlu.', 500);
+            }
+            $oldAvatarPath = $user->avatar_path;
+            $updated['avatar_path'] = $newAvatarPath;
+        }
+
+        if (!empty($validated['password'])) {
+            $updated['password'] = Hash::make($validated['password']);
+        }
+
+        if (!empty($updated)) {
+            $user->update($updated);
+        }
+
+        if ($oldAvatarPath && $oldAvatarPath !== ($updated['avatar_path'] ?? null)) {
+            Storage::disk('public')->delete($oldAvatarPath);
+        }
 
         return $user->fresh();
     }
@@ -51,7 +82,7 @@ class UserController extends Controller
             $authUser = Auth::user();
 
             if ($authUser->id === $targetUser->id) {
-                return EventHelper::errorResponse('You cannot follow yourself', 400);
+                return EventHelper::errorResponse('Jūs nevarat sekot pats sev', 400);
             }
 
             $existing = Follower::where([
@@ -71,7 +102,7 @@ class UserController extends Controller
             }
 
             return EventHelper::successResponse(
-                message: $isFollowing ? 'You are successfully following' : 'You successfully unfollowed'
+                message: $isFollowing ? 'Jūs veiksmīgi sekojat lietotājam' : 'Jūs veiksmīgi pārtraucāt sekošanu'
             );
 
         } catch (Throwable $e) {
@@ -79,7 +110,7 @@ class UserController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return EventHelper::errorResponse('Something went wrong', 500);
+            return EventHelper::errorResponse('Radās kļūda', 500);
         }
     }
 
@@ -92,15 +123,15 @@ class UserController extends Controller
             $authUser = Auth::user();
 
             if ($authUser->id === $targetUser->id) {
-                return EventHelper::errorResponse('You cannot add yourself', 400);
+                return EventHelper::errorResponse('Jūs nevarat pievienot pats sevi', 400);
             }
 
             if (Friend::areFriends($authUser->id, $targetUser->id)) {
-                return EventHelper::errorResponse('Already friends', 409);
+                return EventHelper::errorResponse('Jūs jau esat draugi', 409);
             }
 
             if (FriendshipRequest::getBetween($authUser->id, $targetUser->id)) {
-                return EventHelper::errorResponse('Request already exists', 409);
+                return EventHelper::errorResponse('Draudzības pieprasījums jau pastāv', 409);
             }
 
             FriendshipRequest::create([
@@ -111,10 +142,10 @@ class UserController extends Controller
 
             $targetUser->notify(new FriendRequestReceivedNotification($authUser));
 
-            return EventHelper::successResponse('Friend request sent');
+            return EventHelper::successResponse('Draudzības pieprasījums nosūtīts');
         } catch (Throwable $e) {
             \Log::error('sendFriendRequest failed', ['error' => $e->getMessage()]);
-            return EventHelper::errorResponse('Something went wrong', 500);
+            return EventHelper::errorResponse('Radās kļūda', 500);
         }
     }
 
@@ -139,14 +170,14 @@ class UserController extends Controller
 
                 $targetUser->notify(new FriendRequestAcceptedNotification($authUser));
 
-                return EventHelper::successResponse('Friend request accepted');
+                return EventHelper::successResponse('Draudzības pieprasījums pieņemts');
             } else {
                 $friendRequest->update(['status' => 'declined']);
-                return EventHelper::successResponse('Friend request declined');
+                return EventHelper::successResponse('Draudzības pieprasījums noraidīts');
             }
         } catch (Throwable $e) {
             \Log::error('respondFriendRequest failed', ['error' => $e->getMessage()]);
-            return EventHelper::errorResponse('Something went wrong', 500);
+            return EventHelper::errorResponse('Radās kļūda', 500);
         }
     }
 
@@ -166,10 +197,10 @@ class UserController extends Controller
             // Remove friendship
             Friend::removeFriendship($authUser->id, $targetUser->id);
 
-            return EventHelper::successResponse('Friendship removed');
+            return EventHelper::successResponse('Draudzība noņemta');
         } catch (Throwable $e) {
             \Log::error('removeFriend failed', ['error' => $e->getMessage()]);
-            return EventHelper::errorResponse('Something went wrong', 500);
+            return EventHelper::errorResponse('Radās kļūda', 500);
         }
     }
 
@@ -228,7 +259,8 @@ class UserController extends Controller
 
                 return strcasecmp($left['name'], $right['name']);
             })
-            ->values();
+            ->values()
+            ->all();
 
         return EventHelper::successResponse(data: $friendsPayload);
     }

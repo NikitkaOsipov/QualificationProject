@@ -44,7 +44,6 @@ export interface User {
     updated_at?: string;
     role?: 'user' | 'admin';
     events_count?: number;
-    avatar?: string;
     stats?: {
         events: number;
         followers: number;

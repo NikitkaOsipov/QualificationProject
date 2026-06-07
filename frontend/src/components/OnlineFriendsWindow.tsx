@@ -57,7 +57,7 @@ const OnlineFriendsWindow = ({ user }: Props) => {
                     onClick={() => setIsOpen(false)}
                 >
                     <div className="relative">
-                        <UserAvatar src={friend.avatar_path ?? friend.avatar} name={friend.name} className="w-9 h-9" />
+                        <UserAvatar avatarPath={friend.avatar_path} name={friend.name} className="w-9 h-9" />
                         <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full bg-green-500 ring-2 ring-white" />
                     </div>
                     <div className="min-w-0">
@@ -70,5 +70,5 @@ const OnlineFriendsWindow = ({ user }: Props) => {
     );
 };
 
-export default OnlineFriendsWindow;
 
+export default OnlineFriendsWindow;

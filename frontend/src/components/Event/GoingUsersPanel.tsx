@@ -42,7 +42,7 @@ export default function GoingUsersPanel({ goingCount, goingUsers }: GoingUsersPa
                     <div className="flex -space-x-2">
                         {goingFriendUsers.slice(0, 5).map((person) => (
                             <div key={person.id} className="ring-2 ring-white rounded-full bg-white">
-                                <UserAvatar src={person.avatar_path ?? null} name={person.name} className="w-8 h-8" />
+                                <UserAvatar avatarPath={person.avatar_path ?? null} name={person.name} className="w-8 h-8" />
                             </div>
                         ))}
                     </div>

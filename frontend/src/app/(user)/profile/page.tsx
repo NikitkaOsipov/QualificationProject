@@ -168,7 +168,7 @@ export default function ProfilePage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 {/* Avatar + Name */}
                 <div className="flex items-center gap-4">
-                    <UserAvatar src={profileUser.avatar} name={profileUser.name} className="w-20 h-20 ring-2 ring-gray-100" />
+                    <UserAvatar avatarPath={profileUser.avatar_path} name={profileUser.name} className="w-20 h-20 ring-2 ring-gray-100" />
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">{profileUser.name}</h1>
                         {friendshipStatus === 'friends' && (

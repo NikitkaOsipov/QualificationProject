@@ -9,7 +9,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/users/{targetUser}/friend', [UserController::class, 'removeFriend']);
     Route::get('/friends', [UserController::class, 'friends']);
     Route::post('/users/update-online-status', [UserController::class, 'updateOnlineStatus']);
-    Route::patch('/users', [UserController::class, 'update'])->middleware('verified');
+    Route::post('/users', [UserController::class, 'update'])->middleware('verified');
 });
 
 Route::get('/users/search', [UserController::class, 'search']);

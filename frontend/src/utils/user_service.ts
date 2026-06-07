@@ -41,8 +41,24 @@ export const updateOnlineStatus = async () =>
 export const searchUsers = async (params?: { search?: string; page?: number; per_page?: number }) =>
     axios.get('/api/users/search', { params }).then((r) => r.data as UserSearchResponse);
 
-export const updateCurrentUser = async (params?: { name: string; email: string; }) =>
-    axios.patch('/api/users', { ...params }).then((r) => r.data as User);
+export const updateCurrentUser = async (params: {
+    name?: string;
+    email?: string;
+    avatar?: File;
+    password?: string;
+    password_confirmation?: string;
+}) => {
+    const formData = new FormData();
+
+    if (params.name !== undefined) formData.append('name', params.name);
+    if (params.email !== undefined) formData.append('email', params.email);
+    if (params.avatar) formData.append('avatar', params.avatar);
+    if (params.password !== undefined) formData.append('password', params.password);
+    if (params.password_confirmation !== undefined) formData.append('password_confirmation', params.password_confirmation);
+
+    return axios.post('/api/users', formData).then((r) => r.data as User);
+};
+
 
 export const getUser = async () =>
     axios.get('/api/user').then((r) => r.data as User);

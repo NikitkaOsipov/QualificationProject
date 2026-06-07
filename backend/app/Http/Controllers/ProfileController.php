@@ -55,7 +55,7 @@ class ProfileController extends Controller
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
-                'avatar' => $user->avatar ?? null,
+                'avatar_path' => $user->avatar_path,
                 'stats' => [
                     'events' => $eventsCount,
                     'followers' => $followersCount,
