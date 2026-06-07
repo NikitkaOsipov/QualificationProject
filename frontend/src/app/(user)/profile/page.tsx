@@ -267,9 +267,6 @@ export default function ProfilePage() {
                 <Tab label="Pasākumi" active={activeTab === "events"} onClick={() => setActiveTab("events")} />
                 <Tab label="Seko" active={activeTab === "following"} onClick={() => setActiveTab("following")} />
                 <Tab label="Draugi" active={activeTab === "friends"} onClick={() => setActiveTab("friends")} />
-                {isOwner && (
-                    <Tab label="Komentāri" active={activeTab === "comments"} onClick={() => setActiveTab("comments")} />
-                )}
             </div>
 
             <div className="mt-2">

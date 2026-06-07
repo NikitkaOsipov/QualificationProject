@@ -94,7 +94,7 @@ const VisualsStage = ({
                         />
                         <label htmlFor="image-upload" className="cursor-pointer block">
                             <div className="text-4xl mb-2">📸</div>
-                            <p className="font-medium text-gray-900">Klikšķiniet, lai augšupielādētu, vai ievelciet failu</p>
+                            <p className="font-medium text-gray-900">Klikšķiniet, lai augšupielādētu failu</p>
                             <p className="text-xs text-gray-500 mt-1">PNG, JPG, JPEG, SVG vai WebP (maks. 2MB)</p>
                         </label>
                     </div>
