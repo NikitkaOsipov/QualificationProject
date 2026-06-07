@@ -16,8 +16,8 @@ class EmailVerificationNotificationController extends Controller
     {
         $user = $request->user();
 
-        if (! $user) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+        if (!$user) {
+            return response()->json(['message' => 'Lietotājs nav autentificējies.'], 401);
         }
 
         if ($user->hasVerifiedEmail()) {
