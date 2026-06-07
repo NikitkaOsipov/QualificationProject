@@ -4,7 +4,6 @@ import Map from '@/components/Map/Map';
 import { Marker, MapContainerProps } from 'react-leaflet';
 import type { EventType } from '@/utils/Types';
 import L from 'leaflet';
-import { API_BASE_URL } from '@/Config/api';
 
 export type MarkerMapProps = MapContainerProps & {
     markers: EventType[];
