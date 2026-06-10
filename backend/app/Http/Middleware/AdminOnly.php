@@ -1,4 +1,9 @@
 <?php
+/**
+ * Šī starpprogrammatūra (middleware) nodrošina, ka administratora maršruti ir pieejami tikai administratoriem.
+ * Tas satur galveno funkciju:
+ * - handle(): Pārbauda lietotāja tiesības un neatļautas piekļuves gadījumā atgriež 403 kļūdu.
+ */
 
 namespace App\Http\Middleware;
 

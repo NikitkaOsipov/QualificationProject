@@ -1,4 +1,16 @@
 <?php
+/**
+ * Šis kontrolieris nodrošina lietotāja profila un sociālo darbību pārvaldību.
+ * Tas satur astoņas galvenās funkcijas:
+ * - update(): Atjaunina lietotāja profila datus.
+ * - follow(): Sāk vai pārtrauc sekošanu citam lietotājam.
+ * - sendFriendRequest(): Nosūta draudzības pieprasījumu.
+ * - respondFriendRequest(): Pieņem vai noraida draudzības pieprasījumu.
+ * - removeFriend(): Noņem draudzību vai atceļ pieprasījumu.
+ * - friends(): Parāda draugu sarakstu ar tiešsaistes statusu.
+ * - search(): Meklē lietotājus.
+ * - updateOnlineStatus(): Atjaunina lietotāja tiešsaistes statusu.
+ */
 
 namespace App\Http\Controllers;
 

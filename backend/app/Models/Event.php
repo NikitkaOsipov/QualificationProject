@@ -1,4 +1,18 @@
 <?php
+/**
+ * Šis modelis nodrošina pasākumu datu glabāšanu, saites ar citām entītijām un dalībnieku attiecību iegūšanu.
+ * Tas satur desmit galvenās funkcijas:
+ * - getLatAttribute(): Atgriež pasākuma platumu no saistītās adreses.
+ * - address(): Atgriež ar pasākumu saistīto adresi.
+ * - comments(): Atgriež pasākuma komentārus.
+ * - user(): Atgriež pasākuma autoru.
+ * - interestedUsersCount(): Atgriež interesentu skaitu.
+ * - interestedUsers(): Atgriež interesentu attiecību ierakstus.
+ * - goingUsersCount(): Atgriež apmeklētāju skaitu.
+ * - goingUsers(): Atgriež apmeklētāju attiecību ierakstus.
+ * - categories(): Atgriež pasākumam piešķirtās kategorijas.
+ * - visibility(): Atgriež pasākuma redzamības tipu.
+ */
 
 namespace App\Models;
 

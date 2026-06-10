@@ -1,4 +1,10 @@
 <?php
+/**
+ * Šis kontrolieris nodrošina autentificētas sesijas pārvaldību.
+ * Tas satur divas galvenās funkcijas:
+ * - store(): Pieslēdz lietotāju un atgriež sesiju vai API tokenu.
+ * - destroy(): Atslēdz lietotāju un izbeidz sesiju vai tokenu.
+ */
 
 namespace App\Http\Controllers\Auth;
 

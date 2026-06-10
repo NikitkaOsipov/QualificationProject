@@ -1,4 +1,9 @@
 <?php
+/**
+ * Šis modelis nodrošina adrešu datu glabāšanu un saistību ar pasākumiem.
+ * Tas satur galveno funkciju:
+ * - events(): Atgriež ar šo adresi saistītos pasākumus.
+ */
 
 namespace App\Models;
 

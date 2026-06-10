@@ -1,4 +1,11 @@
 <?php
+/**
+ * Šis kontrolieris nodrošina lietotāju administrēšanu sistēmā.
+ * Tas satur trīs galvenās funkcijas:
+ * - index(): Parāda lietotāju sarakstu ar meklēšanu un lapošanu.
+ * - update(): Atjaunina izvēlētā lietotāja datus un lomu.
+ * - destroy(): Dzēš izvēlēto lietotāju.
+ */
 
 namespace App\Http\Controllers;
 

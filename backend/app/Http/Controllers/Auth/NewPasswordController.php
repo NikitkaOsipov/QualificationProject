@@ -1,4 +1,9 @@
 <?php
+/**
+ * Šis kontrolieris nodrošina paroles atiestatīšanu ar tokenu.
+ * Tas satur galveno funkciju:
+ * - store(): Iestata lietotājam jaunu paroli pēc verifikācijas.
+ */
 
 namespace App\Http\Controllers\Auth;
 

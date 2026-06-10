@@ -1,4 +1,10 @@
 <?php
+/**
+ * Šis modelis nodrošina draudzības attiecību glabāšanu un pārvaldību starp lietotājiem.
+ * Tas satur divas galvenās funkcijas:
+ * - areFriends(): Pārbauda, vai divi lietotāji ir draugi.
+ * - removeFriendship(): Noņem draudzības ierakstu starp diviem lietotājiem.
+ */
 
 namespace App\Models;
 

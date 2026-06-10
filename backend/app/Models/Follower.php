@@ -1,4 +1,7 @@
 <?php
+/**
+ * Šis modelis nodrošina sekošanas attiecību datu glabāšanu starp lietotājiem.
+ */
 
 namespace App\Models;
 

@@ -1,4 +1,10 @@
 <?php
+/**
+ * Šis kontrolieris nodrošina pasākumu kategoriju iegūšanu.
+ * Tas satur divas galvenās funkcijas:
+ * - index(): Parāda visu kategoriju sarakstu.
+ * - show(): Parāda vienas konkrētas kategorijas datus.
+ */
 
 namespace App\Http\Controllers;
 
@@ -27,5 +33,3 @@ class CategoryController extends Controller
         return response()->json($category);
     }
 }
-
-

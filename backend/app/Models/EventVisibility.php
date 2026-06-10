@@ -1,4 +1,9 @@
 <?php
+/**
+ * Šis modelis nodrošina pasākumu redzamības tipu glabāšanu.
+ * Tas satur galveno funkciju:
+ * - events(): Atgriež pasākumus ar konkrēto redzamības tipu.
+ */
 
 namespace App\Models;
 

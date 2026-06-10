@@ -1,4 +1,10 @@
 <?php
+/**
+ * Šis modelis nodrošina pasākuma interesēšanās reakciju glabāšanu.
+ * Tas satur divas galvenās funkcijas:
+ * - event(): Atgriež pasākumu, kuram reakcija ir piesaistīta.
+ * - user(): Atgriež lietotāju, kurš atzīmēja interesi par pasākumu.
+ */
 
 namespace App\Models;
 

@@ -1,4 +1,9 @@
 <?php
+/**
+ * Šis kontrolieris nodrošina jauna lietotāja reģistrāciju.
+ * Tas satur galveno funkciju:
+ * - store(): Reģistrē jaunu lietotāju un pieslēdz to sistēmai.
+ */
 
 namespace App\Http\Controllers\Auth;
 

@@ -1,4 +1,10 @@
 <?php
+/**
+ * Šī palīgklase nodrošina vienotu paziņojumu datu formātu dažādiem avotiem.
+ * Tas satur divas galvenās funkcijas:
+ * - fromBroadcast(): Izveido paziņojuma datu struktūru pārraides paziņojumiem.
+ * - fromDatabase(): Izveido paziņojuma datu struktūru datubāzes paziņojumiem.
+ */
 
 namespace App\Support;
 

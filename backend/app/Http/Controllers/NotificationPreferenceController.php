@@ -1,4 +1,10 @@
 <?php
+/**
+ * Šis kontrolieris nodrošina paziņojumu preferenču pārvaldību.
+ * Tas satur divas galvenās funkcijas:
+ * - index(): Parāda lietotāja paziņojumu iestatījumus.
+ * - update(): Atjaunina izvēlētā paziņojuma tipa iestatījumus.
+ */
 
 namespace App\Http\Controllers;
 
@@ -68,4 +74,3 @@ class NotificationPreferenceController extends Controller
         return EventHelper::successResponse();
     }
 }
-

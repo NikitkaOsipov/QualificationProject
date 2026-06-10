@@ -1,4 +1,9 @@
 <?php
+/**
+ * Šis modelis nodrošina lietotāja paziņojumu iestatījumu glabāšanu.
+ * Tas satur galveno funkciju:
+ * - user(): Atgriež lietotāju, kuram pieder konkrētais paziņojumu iestatījums.
+ */
 
 namespace App\Models;
 

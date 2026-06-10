@@ -1,4 +1,9 @@
 <?php
+/**
+ * Šis kontrolieris nodrošina e-pasta verifikācijas apstiprināšanu.
+ * Tas satur galveno funkciju:
+ * - __invoke(): Pārbauda verifikācijas datus un apstiprina e-pasta adresi.
+ */
 
 namespace App\Http\Controllers\Auth;
 

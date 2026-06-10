@@ -1,4 +1,9 @@
 <?php
+/**
+ * Šis modelis nodrošina pasākumu kategoriju datu glabāšanu un saistību pārvaldību.
+ * Tas satur galveno funkciju:
+ * - events(): Atgriež pasākumus, kas piesaistīti šai kategorijai.
+ */
 
 namespace App\Models;
 

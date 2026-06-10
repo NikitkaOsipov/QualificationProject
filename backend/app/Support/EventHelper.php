@@ -1,4 +1,13 @@
 <?php
+/**
+ * Šī palīgklase nodrošina vienotus API atbilžu formātus un pasākumu redzamības pārbaudes.
+ * Tas satur piecas galvenās funkcijas:
+ * - errorResponse(): Atgriež standartizētu kļūdas JSON atbildi ar statusa kodu.
+ * - successResponse(): Atgriež standartizētu veiksmīgas darbības JSON atbildi.
+ * - canUserAccessEvent(): Pārbauda, vai lietotājs drīkst atvērt konkrēta pasākuma detaļas.
+ * - canUserSeeEventInProfile(): Pārbauda, vai pasākums ir redzams profila pasākumu skatā.
+ * - canUserSeeEventInAllEvents(): Pārbauda, vai pasākums ir redzams kopējā visu pasākumu plūsmā.
+ */
 
 namespace App\Support;
 
@@ -8,7 +17,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Response status guide (internal note):
+ * Response statuses:
  * - 200: OK - request succeeded.
  * - 400: Bad Request - invalid input or request format.
  * - 403: Forbidden - user has no permission.

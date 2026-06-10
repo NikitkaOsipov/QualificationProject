@@ -1,4 +1,13 @@
 <?php
+/**
+ * Šis kontrolieris nodrošina komentāru pārvaldību pasākumos.
+ * Tas satur piecas galvenās funkcijas:
+ * - store(): Izveido jaunu komentāru pie pasākuma.
+ * - update(): Atjaunina esoša komentāra tekstu.
+ * - destroy(): Dzēš komentāru.
+ * - eventComments(): Atgriež visus komentārus konkrētam pasākumam.
+ * - userComments(): Atgriež konkrētā lietotāja komentārus.
+ */
 
 namespace App\Http\Controllers;
 
@@ -114,5 +123,4 @@ class CommentsController extends Controller
     {
         return response()->json($user->comments());
     }
-
 }

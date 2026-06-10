@@ -1,4 +1,13 @@
 <?php
+/**
+ * Šis kontrolieris nodrošina lietotāja paziņojumu pārvaldību.
+ * Tas satur piecas galvenās funkcijas:
+ * - index(): Parāda paziņojumu sarakstu ar nelasīto skaitu.
+ * - markAsRead(): Atzīmē vienu paziņojumu kā izlasītu.
+ * - markAllAsRead(): Atzīmē visus paziņojumus kā izlasītus.
+ * - delete(): Dzēš vienu paziņojumu.
+ * - deleteAll(): Dzēš visus lietotāja paziņojumus.
+ */
 
 namespace App\Http\Controllers;
 

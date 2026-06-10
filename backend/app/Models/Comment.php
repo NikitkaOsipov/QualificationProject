@@ -1,4 +1,10 @@
 <?php
+/**
+ * Šis modelis nodrošina komentāru datu glabāšanu un saiknes ar lietotājiem un pasākumiem.
+ * Tas satur divas galvenās funkcijas:
+ * - user(): Atgriež lietotāju, kurš izveidoja komentāru.
+ * - event(): Atgriež pasākumu, pie kura komentārs ir pievienots.
+ */
 
 namespace App\Models;
 

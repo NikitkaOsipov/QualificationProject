@@ -1,4 +1,14 @@
 <?php
+/**
+ * Šis kontrolieris nodrošina publiskā profila datu attēlošanu.
+ * Tas satur sešas galvenās funkcijas:
+ * - show(): Parāda profila pamatinformāciju un statistiku.
+ * - events(): Parāda lietotāja pasākumus.
+ * - comments(): Parāda lietotāja komentārus.
+ * - likes(): Parāda lietotāja atzīmētos pasākumus.
+ * - following(): Parāda lietotājus, kuriem lietotājs seko.
+ * - friends(): Parāda lietotāja draugu sarakstu.
+ */
 
 namespace App\Http\Controllers;
 

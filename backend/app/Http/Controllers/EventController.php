@@ -1,4 +1,16 @@
 <?php
+/**
+ * Šis kontrolieris nodrošina pasākumu pārvaldību un dalības statusu apstrādi.
+ * Tas satur astoņas galvenās funkcijas:
+ * - index(): Parāda filtrētu un kārtotu pasākumu sarakstu.
+ * - store(): Izveido jaunu pasākumu.
+ * - show(): Parāda konkrēta pasākuma detalizētu informāciju.
+ * - update(): Atjaunina pasākuma datus.
+ * - destroy(): Dzēš pasākumu.
+ * - interested(): Atjaunina lietotāja interesi par pasākumu.
+ * - going(): Atjaunina lietotāja dalības statusu pasākumā.
+ * - requestParticipation(): Nosūta draugiem dalības pieprasījumus.
+ */
 
 namespace App\Http\Controllers;
 
@@ -738,5 +750,4 @@ class EventController extends Controller
     {
         return $sortDirection === 'desc' ? -$comparison : $comparison;
     }
-
 }

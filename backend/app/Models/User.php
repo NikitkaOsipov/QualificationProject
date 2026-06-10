@@ -1,4 +1,19 @@
 <?php
+/**
+ * Šis modelis nodrošina lietotāja datu glabāšanu, autentifikāciju un saistīto attiecību pārvaldību.
+ * Tas satur trīspadsmit galvenās funkcijas:
+ * - sendPasswordResetNotification(): Nosūta lietotājam paroles atiestatīšanas paziņojumu.
+ * - events(): Atgriež lietotāja izveidotos pasākumus.
+ * - comments(): Atgriež lietotāja komentārus.
+ * - following(): Atgriež lietotājus, kuriem šis lietotājs seko.
+ * - followers(): Atgriež lietotājus, kuri seko šim lietotājam.
+ * - friends(): Atgriež lietotāja draugu vaicājumu.
+ * - friendsCount(): Aprēķina lietotāja draugu skaitu.
+ * - notificationPreferences(): Atgriež lietotāja paziņojumu iestatījumus.
+ * - notificationTypeEnabled(): Pārbauda, vai konkrētā tipa paziņojumi ir ieslēgti.
+ * - notificationChannelsForType(): Atgriež ieslēgtos paziņojumu kanālus konkrētam tipam.
+ * - isAdmin(): Pārbauda, vai lietotājam ir administratora loma.
+ */
 
 namespace App\Models;
 
@@ -68,16 +83,6 @@ class User extends Authenticatable implements MustVerifyEmail
     }
     public function comments() {
         return $this->hasMany(Comment::class);
-    }
-
-    public function interestedEvents()
-    {
-        return $this->hasMany(EventInterested::class);
-    }
-
-    public function goingEvents()
-    {
-        return $this->hasMany(EventGoing::class);
     }
 
     public function following()
