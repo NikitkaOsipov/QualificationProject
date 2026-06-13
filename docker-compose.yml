@@ -196,13 +196,23 @@ services:
       - app_network
     restart: unless-stopped
 
-  # Postal placeholder service for nginx proxy target (replace with real Postal stack later)
+  # Postal Mail Server
   postal:
-    image: hashicorp/http-echo:1.0.0
-    container_name: postal_stub
-    command: ["-listen=:5000", "-text=Postal stub endpoint is reachable via nginx"]
+    image: postalserver/postal:latest
+    container_name: postal_server
+    environment:
+      POSTAL_CONFIG_FILE: /config/postal.yml
+    volumes:
+      - /opt/postal/config:/config
+      - postal_data:/var/lib/postal
+    ports:
+      - "5000:5000"  # Web interface
+      - "25:25"      # SMTP
+      - "587:587"    # SMTP TLS
     networks:
       - app_network
+    depends_on:
+      - postgres
     restart: unless-stopped
 
   # Nginx Reverse Proxy
@@ -225,6 +235,7 @@ services:
 
 volumes:
   postgres_data:
+  postal_data:
 
 networks:
   app_network:
