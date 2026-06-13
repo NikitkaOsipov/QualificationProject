@@ -47,15 +47,15 @@ services:
       REVERB_SCHEME: ${REVERB_SCHEME:-http}
       REVERB_SERVER_HOST: ${REVERB_SERVER_HOST:-0.0.0.0}
       REVERB_SERVER_PORT: ${REVERB_SERVER_PORT:-8080}
-      MAIL_MAILER: ${MAIL_MAILER:-log}
-      MAIL_SCHEME: ${MAIL_SCHEME:-smtp}
-      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_MAILER: ${MAIL_MAILER:-smtp}
+      MAIL_SCHEME: ${MAIL_SCHEME:-tls}
+      MAIL_HOST: ${MAIL_HOST:-postal.birabidon.lat}
       MAIL_PORT: ${MAIL_PORT:-587}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       LOG_CHANNEL: ${LOG_CHANNEL:-stderr}
       MAIL_LOG_CHANNEL: ${MAIL_LOG_CHANNEL:-stderr}
-      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-tls}
+      MAIL_EHLO_DOMAIN: ${MAIL_EHLO_DOMAIN:-birabidon.lat}
       MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@birabidon.lat}
       MAIL_FROM_NAME: ${MAIL_FROM_NAME:-PasakumuKarte}
       SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-birabidon.lat}
@@ -106,15 +106,15 @@ services:
       REVERB_SERVER_PORT: ${REVERB_SERVER_PORT:-8080}
       SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:-birabidon.lat}
       SESSION_DOMAIN: ${SESSION_DOMAIN:-birabidon.lat}
-      MAIL_MAILER: ${MAIL_MAILER:-log}
-      MAIL_SCHEME: ${MAIL_SCHEME:-smtp}
-      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_MAILER: ${MAIL_MAILER:-smtp}
+      MAIL_SCHEME: ${MAIL_SCHEME:-tls}
+      MAIL_HOST: ${MAIL_HOST:-postal.birabidon.lat}
       MAIL_PORT: ${MAIL_PORT:-587}
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       LOG_CHANNEL: ${LOG_CHANNEL:-stderr}
       MAIL_LOG_CHANNEL: ${MAIL_LOG_CHANNEL:-stderr}
-      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-tls}
+      MAIL_EHLO_DOMAIN: ${MAIL_EHLO_DOMAIN:-birabidon.lat}
       MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@birabidon.lat}
       MAIL_FROM_NAME: ${MAIL_FROM_NAME:-PasakumuKarte}
     volumes:
@@ -192,6 +192,15 @@ services:
       - ./frontend/public:/app/public
     depends_on:
       - backend
+    networks:
+      - app_network
+    restart: unless-stopped
+
+  # Postal placeholder service for nginx proxy target (replace with real Postal stack later)
+  postal:
+    image: hashicorp/http-echo:1.0.0
+    container_name: postal_stub
+    command: ["-listen=:5000", "-text=Postal stub endpoint is reachable via nginx"]
     networks:
       - app_network
     restart: unless-stopped
