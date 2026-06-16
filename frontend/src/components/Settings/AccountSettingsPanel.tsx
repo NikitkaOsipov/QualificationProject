@@ -243,8 +243,6 @@ const AccountSettingsPanel = ({ user, onUserUpdatedAction }: Props) => {
                             {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                         </div>
                     </div>
-
-                    {errors.form && <p className="mt-3 text-sm text-red-600">{errors.form}</p>}
                 </div>
 
                 <div className="mt-6 border-t border-gray-100 pt-5">
