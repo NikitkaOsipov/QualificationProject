@@ -30,7 +30,6 @@ function CommentsSection({ eventId }: Params) {
     const [editingText, setEditingText] = useState('');
     const [editingError, setEditingError] = useState('');
     const [actionCommentId, setActionCommentId] = useState<number | null>(null);
-    const [nowMs, setNowMs] = useState<number | null>(null);
     const addSnackbarMessage = useContext(SnackbarContext);
 
     useEffect(() => {
@@ -42,15 +41,6 @@ function CommentsSection({ eventId }: Params) {
         }
         getComments();
     }, [eventId]);
-
-    useEffect(() => {
-        setNowMs(Date.now());
-        const intervalId = window.setInterval(() => {
-            setNowMs(Date.now());
-        }, 60_000);
-
-        return () => window.clearInterval(intervalId);
-    }, []);
 
     const validate = (text: string) => {
         const trimmedText = text.trim();
@@ -68,15 +58,11 @@ function CommentsSection({ eventId }: Params) {
     );
 
     const formatRelativeTime = (dateString: string) => {
-        if (!nowMs) return '';
-
         const date = new Date(dateString);
 
         if (Number.isNaN(date.getTime())) return '';
-        
-        setNowMs(Date.now());
 
-        const diffSeconds = Math.round((nowMs - date.getTime()) / 1000);
+        const diffSeconds = Math.round((Date.now() - date.getTime()) / 1000);
         const absSeconds = Math.abs(diffSeconds);
         const rtf = new Intl.RelativeTimeFormat('lv-LV', { numeric: 'auto' });
 
