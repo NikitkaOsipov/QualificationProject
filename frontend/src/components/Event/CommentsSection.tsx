@@ -73,6 +73,8 @@ function CommentsSection({ eventId }: Params) {
         const date = new Date(dateString);
 
         if (Number.isNaN(date.getTime())) return '';
+        
+        setNowMs(Date.now());
 
         const diffSeconds = Math.round((nowMs - date.getTime()) / 1000);
         const absSeconds = Math.abs(diffSeconds);
