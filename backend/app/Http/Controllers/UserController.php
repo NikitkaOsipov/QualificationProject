@@ -38,7 +38,12 @@ class UserController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('users', 'name')->ignore($user->id),
+            ],
             'email' => [
                 'required',
                 'string',
