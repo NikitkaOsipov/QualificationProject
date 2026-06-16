@@ -207,7 +207,7 @@ export default function EventPage() {
                                 <div className="flex flex-col gap-2 mb-4">
                                     <div className="flex items-center gap-2 text-gray-700">
                                         <FaCalendarAlt color="black" />
-                                        <span>{event.start_date?.toString()}</span>
+                                        <span>{formatEventDate(event.start_date, event.end_date)}</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-gray-700">
                                         <FaMapMarkerAlt color="black" />
@@ -321,5 +321,5 @@ function formatEventDate(start?: string | Date, end?: string | Date) {
         ? endDate.toLocaleString('lv-LV', { hour: '2-digit', minute: '2-digit' })
         : endDate.toLocaleString('lv-LV', options);
 
-    return `${formattedStart} — ${formattedEnd}`;
+    return `${formattedStart} - ${formattedEnd}`;
 }
